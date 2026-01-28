@@ -1,0 +1,17 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+	"linter": {
+		"includes": ["**/*.ts"],
+		"rules": {
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off"
+			},
+			"correctness": {
+				"useParseIntRadix": "off"
+			}
+		}
+	}
+}
