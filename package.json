@@ -19,6 +19,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/server.ts",
+    "load": "node --no-warnings=ExperimentalWarning --loader ts-node/esm src/loader/load.ts 2> error.log",
     "test": "vitest"
   }
 }
