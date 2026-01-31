@@ -1,12 +1,22 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import fastifyStatic from "@fastify/static";
 import { MikroORM, RequestContext, sql } from "@mikro-orm/mysql";
 import { mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export async function startServer(port = 3001) {
 	const orm = await MikroORM.init();
 	const app = fastify();
+
+	app.register(fastifyStatic, {
+		root: path.resolve(__dirname, "../../client/dist"),
+	});
 
 	app.addHook("onRequest", (_, __, done) =>
 		RequestContext.create(orm.em, done),

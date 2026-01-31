@@ -6,3 +6,4 @@ temp
 pnpm-lock.yaml
 data.json
 *.log
+*.code-workspace

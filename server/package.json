@@ -1,8 +1,9 @@
 {
-  "name": "leaderboard",
+  "name": "server",
   "version": "0.0.1",
   "type": "module",
   "dependencies": {
+    "@fastify/static": "^9.0.0",
     "@mikro-orm/core": "^6.6.5",
     "@mikro-orm/mysql": "^6.6.5",
     "@mikro-orm/reflection": "^6.6.5",
