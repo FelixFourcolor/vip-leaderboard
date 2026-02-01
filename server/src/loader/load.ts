@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { MikroORM } from "@mikro-orm/mysql";
 import { Reaction } from "../modules/reaction.entity.js";
 import { Ticket } from "../modules/ticket.entity.js";
@@ -13,11 +16,9 @@ const VIP_REACTIONS = [
 	"wastebasket",
 ];
 
-async function loadDb() {
-	const orm = await MikroORM.init();
-	await orm.schema.refreshDatabase();
-	return orm;
-}
+const orm = await MikroORM.init();
+await orm.schema.refreshDatabase();
+const db = orm.em.fork();
 
 const usersMap = new Map<User["id"], User>();
 const tickets: Ticket[] = [];
@@ -36,9 +37,8 @@ function getOrCreateUser({ name, nickname, avatarUrl, color }: UserDTO): User {
 	return user;
 }
 
-async function load() {
-	const ormPromise = loadDb();
-	const content = readFileSync("data.json");
+async function load(file: string) {
+	const content = await readFile(file);
 	const data: Data = JSON.parse(content.toString());
 
 	for (const { id, timestamp, author, reactions } of data.messages) {
@@ -66,13 +66,16 @@ async function load() {
 		}
 	}
 
-	const orm = await ormPromise;
-	const db = orm.em.fork();
 	db.persist(usersMap.values());
 	db.persist(tickets);
 	db.persist(reactionsMap.values());
-	await db.flush();
-	await orm.close();
 }
 
-load();
+const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "data");
+await Promise.all(
+	readdirSync(dataDir)
+		.map((f) => resolve(dataDir, f))
+		.map(load),
+);
+await db.flush();
+await orm.close();

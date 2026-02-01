@@ -4,6 +4,6 @@ temp
 *.db
 .vscode
 pnpm-lock.yaml
-data.json
+**/data/*.json
 *.log
 *.code-workspace
