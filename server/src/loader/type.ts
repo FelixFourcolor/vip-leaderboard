@@ -1,15 +1,14 @@
-type User = {
-	id: string;
+export type User = {
 	name: string;
-	roles: { name: string }[];
-	isBot: boolean;
+	nickname: string;
+	avatarUrl: string;
+	color: string | null;
 };
 
-export type Message = {
+type Message = {
 	id: string;
 	timestamp: string;
 	author: User;
-	embeds: unknown[];
 	reactions: {
 		emoji: { code: string };
 		users: User[];

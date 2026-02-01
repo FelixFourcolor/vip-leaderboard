@@ -3,10 +3,15 @@ import { MikroORM } from "@mikro-orm/mysql";
 import { Reaction } from "../modules/reaction.entity.js";
 import { Ticket } from "../modules/ticket.entity.js";
 import { User } from "../modules/user.entity.js";
-import type { Data, Message } from "./type.js";
+import type { Data, User as UserDTO } from "./type.js";
 
-const VIP_ROLE_NAME = "VIP";
-const CHECKMARK_CODES = ["white_check_mark", "x"];
+const VIP_REACTIONS = [
+	"white_check_mark",
+	"x",
+	"hammer",
+	"warning",
+	"wastebasket",
+];
 
 async function loadDb() {
 	const orm = await MikroORM.init();
@@ -14,65 +19,57 @@ async function loadDb() {
 	return orm;
 }
 
+const usersMap = new Map<User["id"], User>();
+const tickets: Ticket[] = [];
+const reactionsMap = new Map<`${Ticket["id"]}-${User["id"]}`, Reaction>();
+
+function getOrCreateUser({ name, nickname, avatarUrl, color }: UserDTO): User {
+	name = name.toLowerCase(); // sql primary key may be case-insensitive
+	let user = usersMap.get(name);
+	if (!user) {
+		user = new User(name, nickname, avatarUrl, color);
+		usersMap.set(name, user);
+	} else if (color) {
+		// don't know why user color is unreliable
+		user.color = color;
+	}
+	return user;
+}
+
 async function load() {
 	const ormPromise = loadDb();
-	const usersMap = new Map<User["id"], User>();
-	const ticketsMap = new Map<Ticket["id"], Ticket>();
-	const reactionsMap = new Map<`${Ticket["id"]}-${User["id"]}`, Reaction>();
-
 	const content = readFileSync("data.json");
 	const data: Data = JSON.parse(content.toString());
 
-	const ticketMessages: Pick<Message, "id" | "reactions">[] = [];
-	for (const { id, timestamp, author, embeds, reactions } of data.messages) {
-		if (author.isBot) {
+	for (const { id, timestamp, author, reactions } of data.messages) {
+		const vipReactions = reactions.filter((r) =>
+			VIP_REACTIONS.includes(r.emoji.code),
+		);
+		if (vipReactions.length === 0) {
 			continue;
 		}
-		const userId = BigInt(author.id);
-		let user = usersMap.get(userId);
-		if (!user) {
-			user = new User(
-				userId,
-				author.name,
-				author.roles.some((r) => r.name === VIP_ROLE_NAME),
-			);
-			usersMap.set(userId, user);
-		}
 
-		const checkmarks = reactions.filter((r) =>
-			CHECKMARK_CODES.includes(r.emoji.code),
+		const ticketId = BigInt(id);
+		const ticket = new Ticket(
+			ticketId,
+			getOrCreateUser(author),
+			new Date(timestamp),
 		);
-		const isTicket = embeds.length > 0 || checkmarks.length > 0;
-		if (isTicket) {
-			const ticketId = BigInt(id);
-			ticketMessages.push({ id, reactions: checkmarks });
-			ticketsMap.set(ticketId, new Ticket(ticketId, user, new Date(timestamp)));
-		}
-	}
+		tickets.push(ticket);
 
-	for (const { id: ticketStrId, reactions: checkmarks } of ticketMessages) {
-		const ticketId = BigInt(ticketStrId);
-		const ticket = ticketsMap.get(ticketId)!;
-		for (const { id: userStrId } of checkmarks.flatMap((r) => r.users)) {
-			const userId = BigInt(userStrId);
-			const user = usersMap.get(userId);
-			if (!user) {
-				console.error(`User ${userId} not found for ticket ${ticketId}`);
-				continue;
+		for (const user of vipReactions.flatMap((r) => r.users)) {
+			const reactor = getOrCreateUser(user);
+			const reactionId = `${ticketId}-${reactor.id}` as const;
+			if (!reactionsMap.has(reactionId)) {
+				reactionsMap.set(reactionId, new Reaction(ticket, reactor));
 			}
-			const reactionId = `${ticketId}-${userId}` as const;
-			if (reactionsMap.has(reactionId)) {
-				console.error(`Duplicate reaction for ${ticketId} by ${userId}`);
-				continue;
-			}
-			reactionsMap.set(reactionId, new Reaction(ticket, user));
 		}
 	}
 
 	const orm = await ormPromise;
 	const db = orm.em.fork();
 	db.persist(usersMap.values());
-	db.persist(ticketsMap.values());
+	db.persist(tickets);
 	db.persist(reactionsMap.values());
 	await db.flush();
 	await orm.close();

@@ -3,17 +3,26 @@ import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 @Entity()
 export class User {
 	@PrimaryKey()
-	id: bigint;
+	id: string;
 
 	@Property()
 	name: string;
 
 	@Property()
-	isVIP: boolean;
+	avatarUrl: string;
 
-	constructor(id: bigint, name: string, isVIP: boolean) {
+	@Property()
+	color: string | null;
+
+	constructor(
+		id: string,
+		name: string,
+		avatarUrl: string,
+		color: string | null,
+	) {
 		this.id = id;
 		this.name = name;
-		this.isVIP = isVIP;
+		this.avatarUrl = avatarUrl;
+		this.color = color;
 	}
 }

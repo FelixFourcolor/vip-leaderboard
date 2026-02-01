@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { MikroORM, RequestContext, sql } from "@mikro-orm/mysql";
-import { mapValues } from "es-toolkit";
+import { groupBy, mapValues, omit, pick } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
@@ -33,7 +33,13 @@ export async function startServer(port = 3001) {
 		rankingHandler(({ top, from, to }) => {
 			const query = orm.em
 				.createQueryBuilder(Reaction, "r")
-				.select(["u.name", sql`count(r.ticket_id) as count`])
+				.select([
+					"u.id",
+					"u.name",
+					"u.avatar_url",
+					"u.color",
+					sql`count(r.ticket_id) as count`,
+				])
 				.join("r.user", "u")
 				.join("r.ticket", "t")
 				.groupBy("u.id")
@@ -60,14 +66,14 @@ export async function startServer(port = 3001) {
 	});
 	app.get(
 		"/api/monthly-report",
-		reportHandler(({ top, from, to, user }) => {
+		reportHandler(async ({ top, from, to, user }) => {
 			const knex = orm.em.getKnex();
 
 			const userMonthQuery = knex("reaction as r")
 				.join("ticket as t", "t.id", "r.ticket_id")
 				.select(
 					"r.user_id",
-					knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m') AS fmt_month"),
+					knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m') AS month"),
 					knex.raw("COUNT(*) AS count"),
 				)
 				.groupBy("r.user_id", knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m')"));
@@ -88,64 +94,55 @@ export async function startServer(port = 3001) {
 				topUsersQuery.limit(top);
 			}
 
-			const boundsQuery =
-				from && to
-					? knex.select(
-							knex.raw(
-								"CAST(DATE_FORMAT(?, '%Y-%m-01') AS DATE) as start_month",
-								[from],
-							),
-							knex.raw("CAST(? AS DATETIME) as end_time", [to]),
-						)
-					: knex("ticket").select(
-							knex.raw(
-								`CAST(DATE_FORMAT(${
-									from ? "?" : "MIN(timestamp)"
-								}, '%Y-%m-01') AS DATE) as start_month`,
-								[from].filter(Boolean),
-							),
-							knex.raw(
-								`CAST(${to ? "?" : "MAX(timestamp)"} AS DATETIME) as end_time`,
-								[to].filter(Boolean),
-							),
-						);
-
+			type SqlResult = Array<{
+				id: string;
+				name: string;
+				avatar_url: string;
+				color: string;
+				total: number;
+				month: string;
+				count: number;
+			}>;
+			type Report = Array<{
+				user: {
+					id: string;
+					name: string;
+					avatar_url: string;
+					color: string;
+					total: number;
+				};
+				data: Array<{
+					month: string;
+					count: number;
+				}>;
+			}>;
 			return knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
-				.with("bounds", boundsQuery)
-				.withRecursive("months", (qb) => {
-					qb.select("start_month as month")
-						.from("bounds")
-						.unionAll((qb2) => {
-							qb2
-								.select(knex.raw("DATE_ADD(month, INTERVAL 1 MONTH)"))
-								.from("months")
-								.where(
-									knex.raw(
-										"DATE_ADD(month, INTERVAL 1 MONTH) < (SELECT end_time FROM bounds)",
-									),
-								);
-						});
-				})
 				.select(
+					"u.id",
 					"u.name",
-					knex.raw("DATE_FORMAT(m.month, '%Y-%m') as month"),
-					knex.raw("COALESCE(um.count, 0) as count"),
+					"u.avatar_url",
+					"u.color",
+					"um.month",
+					"um.count",
+					"tu.total",
 				)
 				.from("top_users as tu")
-				.crossJoin(knex.raw("months as m"))
-				.leftJoin("user_month as um", function () {
-					this.on("um.user_id", "tu.user_id").andOn(
-						knex.raw("um.fmt_month = DATE_FORMAT(m.month, '%Y-%m')"),
-					);
-				})
-				.join("user as u", "u.id", "tu.user_id")
+				.join("user_month as um", "um.user_id", "tu.user_id")
+				.join("user as u", "u.id", "um.user_id")
 				.orderBy([
 					{ column: "tu.total", order: "desc" },
-					{ column: "u.id", order: "asc" },
-					{ column: "m.month", order: "asc" },
-				]);
+					{ column: "um.month", order: "asc" },
+				])
+				.then((rows: SqlResult) => Object.values(groupBy(rows, (r) => r.id)))
+				.then(
+					(users): Report =>
+						users.map((months) => ({
+							user: omit(months[0]!, ["month", "count"]),
+							data: months.map((m) => pick(m, ["month", "count"])),
+						})),
+				);
 		}),
 	);
 

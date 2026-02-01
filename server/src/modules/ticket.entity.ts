@@ -3,18 +3,18 @@ import type { User } from "./user.entity.js";
 
 @Entity()
 export class Ticket {
-		@PrimaryKey()
-		id: bigint;
+	@PrimaryKey()
+	id: bigint;
 
-		@ManyToOne()
-		author: User;
+	@ManyToOne()
+	author: User;
 
-		@Property()
-		timestamp: Date;
+	@Property()
+	timestamp: Date;
 
-		constructor(id: bigint, author: User, timestamp: Date) {
-			this.id = id;
-			this.author = author;
-			this.timestamp = timestamp;
-		}
+	constructor(id: bigint, author: User, timestamp: Date) {
+		this.id = id;
+		this.author = author;
+		this.timestamp = timestamp;
 	}
+}
