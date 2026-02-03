@@ -36,9 +36,9 @@ export async function startServer(port = 3001) {
 				.select([
 					"u.id",
 					"u.name",
-					"u.avatar_url" as "avatarUrl",
+					"u.avatar_url AS avatarUrl",
 					"u.color",
-					sql`COUNT(r.ticket_id) as tickets`,
+					sql`COUNT(r.ticket_id) AS tickets`,
 				])
 				.join("r.user", "u")
 				.join("r.ticket", "t")
@@ -69,8 +69,8 @@ export async function startServer(port = 3001) {
 		monthlyHandler(async ({ top, from, to, user }) => {
 			const knex = orm.em.getKnex();
 
-			const userMonthQuery = knex("reaction as r")
-				.join("ticket as t", "t.id", "r.ticket_id")
+			const userMonthQuery = knex("reaction AS r")
+				.join("ticket AS t", "t.id", "r.ticket_id")
 				.select(
 					"r.user_id",
 					knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m') AS month"),
@@ -97,23 +97,66 @@ export async function startServer(port = 3001) {
 				topUsersQuery.limit(top);
 			}
 
+			const boundsQuery =
+				from && to
+					? knex.select(
+							knex.raw(
+								"CAST(DATE_FORMAT(?, '%Y-%m-01') AS DATE) AS start_month",
+								[from],
+							),
+							knex.raw("CAST(? AS DATETIME) AS end_time", [to]),
+						)
+					: knex("ticket").select(
+							knex.raw(
+								`CAST(DATE_FORMAT(${
+									from ? "?" : "MIN(timestamp)"
+								}, '%Y-%m-01') AS DATE) AS start_month`,
+								[from].filter(Boolean),
+							),
+							knex.raw(
+								`CAST(${to ? "?" : "MAX(timestamp)"} AS DATETIME) AS end_time`,
+								[to].filter(Boolean),
+							),
+						);
+
 			return knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
+				.with("bounds", boundsQuery)
+				.withRecursive("months", (qb) => {
+					qb.select("start_month AS month")
+						.from("bounds")
+						.unionAll((qb2) => {
+							qb2
+								.select(knex.raw("DATE_ADD(month, INTERVAL 1 MONTH)"))
+								.from("months")
+								.where(
+									knex.raw(
+										"DATE_ADD(month, INTERVAL 1 MONTH) < (SELECT end_time FROM bounds)",
+									),
+								);
+						});
+				})
 				.select(
 					"u.id",
 					"u.name",
-					"u.avatar_url as avatarUrl",
+					"u.avatar_url AS avatarUrl",
 					"u.color",
-					"um.month",
-					"um.count",
+					knex.raw("DATE_FORMAT(m.month, '%Y-%m') AS month"),
+					knex.raw("COALESCE(um.count, 0) AS count"),
 				)
-				.from("top_users as tu")
-				.join("user_month as um", "um.user_id", "tu.user_id")
-				.join("user as u", "u.id", "um.user_id")
+				.from("top_users AS tu")
+				.crossJoin(knex.raw("months AS m"))
+				.leftJoin("user_month AS um", function () {
+					this.on("um.user_id", "tu.user_id").andOn(
+						knex.raw("um.month = DATE_FORMAT(m.month, '%Y-%m')"),
+					);
+				})
+				.join("user AS u", "u.id", "tu.user_id")
 				.orderBy([
 					{ column: "tu.tickets", order: "DESC" },
-					{ column: "um.month", order: "ASC" },
+					{ column: "u.id", order: "ASC" },
+					{ column: "m.month", order: "ASC" },
 				])
 				.then((rows: SqlResult) => {
 					return mapValues(

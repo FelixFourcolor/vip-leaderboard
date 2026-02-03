@@ -21,10 +21,10 @@ function TestChart() {
 	const { data = {} } = useQuery<MonthlyData>({
 		queryKey: ["repoData"],
 		queryFn: () =>
-			fetch("api/monthly?from=2025&top=10").then((res) => res.json()),
+			fetch("api/monthly?from=2023&top=10").then((res) => res.json()),
 	});
 	return (
-		<div style={{ height: 600, width: 900 }}>
+		<div style={{ height: 600, width: 1000 }}>
 			<Chart data={data} />
 		</div>
 	);

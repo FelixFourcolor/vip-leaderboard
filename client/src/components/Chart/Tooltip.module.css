@@ -4,7 +4,6 @@
 	border-radius: 4px;
 	border: 2px dashed var(--series-color);
 
-	font-size: var(--text-small);
 	width: fit-content;
 	white-space: nowrap;
 
@@ -14,8 +13,8 @@
 		margin-bottom: 8px;
 
 		.avatar {
-			width: 20px;
-			height: 20px;
+			width: 24px;
+			height: 24px;
 			border-radius: 50%;
 			margin-right: 8px;
 		}

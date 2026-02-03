@@ -9,20 +9,19 @@ type Props = {
 };
 
 export function Chart({ data }: Props) {
-	const [prioritizedUser, setPrioritizedUser] = useState<string | null>(null);
+	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [cumulative, _] = useState(false);
 
-	const userRanks = useMemo(
-		() =>
-			Object.fromEntries(Object.keys(data).map((k, index) => [k, index + 1])),
+	const userIndices = useMemo(
+		() => Object.fromEntries(Object.keys(data).map((k, index) => [k, index])),
 		[data],
 	);
 
 	const chartData = useMemo(() => {
-		const orderedData = prioritizedUser
+		const orderedData = highlightedUser
 			? (() => {
-					const { [prioritizedUser]: first, ...rest } = data;
-					return first ? { [prioritizedUser]: first, ...rest } : data;
+					const { [highlightedUser]: first, ...rest } = data;
+					return first ? { [highlightedUser]: first, ...rest } : data;
 				})()
 			: data;
 
@@ -30,9 +29,7 @@ export function Chart({ data }: Props) {
 			id,
 			data: tickets.map(({ month: x, count: y }) => ({ x, y })),
 		}));
-	}, [data, prioritizedUser]);
-
-	console.log({ prioritizedUser });
+	}, [data, highlightedUser]);
 
 	const cumulativeChartData = useMemo(
 		() =>
@@ -52,12 +49,18 @@ export function Chart({ data }: Props) {
 	return (
 		<ResponsiveLine
 			data={cumulative ? cumulativeChartData : chartData}
-			colors={({ id }) => colorSchemes[userRanks[id] % colorSchemes.length]}
+			colors={({ id }) => {
+				const color = colorSchemes[userIndices[id] % colorSchemes.length];
+				if (!highlightedUser || highlightedUser === id) {
+					return color;
+				}
+				return `rgb(from ${color} r g b / 0.25)`;
+			}}
 			theme={themeConfig}
 			curve="monotoneX"
 			useMesh
-			enableCrosshair={false}
 			pointSize={7}
+			onMouseLeave={() => setHighlightedUser(null)}
 			xFormat="time:%Y-%m"
 			xScale={{ format: "%Y-%m", type: "time", useUTC: false }}
 			margin={{
@@ -87,7 +90,7 @@ export function Chart({ data }: Props) {
 						seriesColor={seriesColor}
 						month={new Date(x).toISOString().slice(0, 7)}
 						count={y}
-						onMount={() => setPrioritizedUser(seriesId)}
+						onMount={() => setHighlightedUser(seriesId)}
 					/>
 				);
 			}}
