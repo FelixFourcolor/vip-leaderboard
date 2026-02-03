@@ -2,11 +2,11 @@
   "name": "leaderboard",
   "private": true,
   "scripts": {
-    "install-all": "pnpm install && cd client && pnpm install && cd ../server && pnpm install",
-    "build:client": "cd client && pnpm build",
-    "build:server": "cd server && pnpm build",
-    "build": "pnpm build:client && pnpm build:server",
-    "start": "cd server && pnpm start",
-    "start:prod": "cd server && node dist/main.js"
+    "start:client": "cd client && pnpm dev",
+    "start:server": "cd server && pnpm start",
+    "start": "concurrently \"pnpm start:server\" \"pnpm start:client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

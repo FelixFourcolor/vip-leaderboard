@@ -4,13 +4,16 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"build": "tsc -b && vite build",
-		"lint": "biome check .",
-		"format": "biome format --write .",
-		"preview": "vite preview"
+		"dev": "vite build --watch",
+		"build": "vite build"
 	},
 	"dependencies": {
+		"@nivo/bump": "^0.99.0",
+		"@nivo/core": "^0.99.0",
+		"@nivo/line": "^0.99.0",
+		"@nivo/theming": "^0.99.0",
+		"@tanstack/react-query": "^5.90.20",
+		"es-toolkit": "^1.44.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0"
 	},

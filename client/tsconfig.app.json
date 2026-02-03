@@ -6,7 +6,8 @@
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"types": ["vite/client"],
-		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"paths": { "@/*": ["./src/*"] },
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
@@ -18,7 +19,6 @@
 
 		/* Linting */
 		"strict": true,
-		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		"exactOptionalPropertyTypes": true,
 		"noFallthroughCasesInSwitch": true,

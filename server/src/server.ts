@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { MikroORM, RequestContext, sql } from "@mikro-orm/mysql";
-import { groupBy, mapValues, omit, pick } from "es-toolkit";
+import { groupBy, mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
@@ -36,15 +36,15 @@ export async function startServer(port = 3001) {
 				.select([
 					"u.id",
 					"u.name",
-					"u.avatar_url",
+					"u.avatar_url" as "avatarUrl",
 					"u.color",
-					sql`count(r.ticket_id) as count`,
+					sql`COUNT(r.ticket_id) as tickets`,
 				])
 				.join("r.user", "u")
 				.join("r.ticket", "t")
 				.groupBy("u.id")
 				// biome-ignore lint/complexity/useLiteralKeys: sql raw string != literal key
-				.orderBy({ [sql`count`]: "DESC" });
+				.orderBy({ [sql`tickets`]: "DESC" });
 			if (top) {
 				query.limit(top);
 			}
@@ -58,15 +58,15 @@ export async function startServer(port = 3001) {
 		}),
 	);
 
-	const reportHandler = createHandler({
+	const monthlyHandler = createHandler({
 		from: "date",
 		to: "date",
 		user: "str",
 		top: "int",
 	});
 	app.get(
-		"/api/monthly-report",
-		reportHandler(async ({ top, from, to, user }) => {
+		"/api/monthly",
+		monthlyHandler(async ({ top, from, to, user }) => {
 			const knex = orm.em.getKnex();
 
 			const userMonthQuery = knex("reaction as r")
@@ -85,64 +85,68 @@ export async function startServer(port = 3001) {
 			}
 
 			const topUsersQuery = knex("user_month")
-				.select("user_id", knex.raw("SUM(count) AS total"))
+				.select("user_id", knex.raw("SUM(count) AS tickets"))
 				.groupBy("user_id")
-				.orderBy("total", "desc");
+				.orderBy("tickets", "desc");
 			if (user) {
-				topUsersQuery.where("user_id", "=", user);
+				for (const u of user.split(",")) {
+					console.log(u);
+					topUsersQuery.orWhere("user_id", "=", u);
+				}
 			} else if (top) {
 				topUsersQuery.limit(top);
 			}
 
-			type SqlResult = Array<{
-				id: string;
-				name: string;
-				avatar_url: string;
-				color: string;
-				total: number;
-				month: string;
-				count: number;
-			}>;
-			type Report = Array<{
-				user: {
-					id: string;
-					name: string;
-					avatar_url: string;
-					color: string;
-					total: number;
-				};
-				data: Array<{
-					month: string;
-					count: number;
-				}>;
-			}>;
 			return knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
 				.select(
 					"u.id",
 					"u.name",
-					"u.avatar_url",
+					"u.avatar_url as avatarUrl",
 					"u.color",
 					"um.month",
 					"um.count",
-					"tu.total",
 				)
 				.from("top_users as tu")
 				.join("user_month as um", "um.user_id", "tu.user_id")
 				.join("user as u", "u.id", "um.user_id")
 				.orderBy([
-					{ column: "tu.total", order: "desc" },
-					{ column: "um.month", order: "asc" },
+					{ column: "tu.tickets", order: "DESC" },
+					{ column: "um.month", order: "ASC" },
 				])
-				.then((rows: SqlResult) => Object.values(groupBy(rows, (r) => r.id)))
-				.then(
-					(users): Report =>
-						users.map((months) => ({
-							user: omit(months[0]!, ["month", "count"]),
-							data: months.map((m) => pick(m, ["month", "count"])),
-						})),
-				);
+				.then((rows: SqlResult) => {
+					return mapValues(
+						groupBy(rows, ({ id }) => id),
+						(data) => {
+							const { name, avatarUrl, color } = data[0]!;
+							return {
+								name,
+								avatarUrl,
+								color,
+								tickets: data.map(({ month, count }) => ({ month, count })),
+							};
+						},
+					) satisfies MonthlyData;
+				});
+
+			type SqlResult = Array<{
+				id: string;
+				name: string;
+				avatarUrl: string;
+				color: string;
+				month: string;
+				count: number;
+			}>;
+			type MonthlyData = Record<
+				string,
+				{
+					name: string;
+					avatarUrl: string;
+					color: string;
+					tickets: Array<{ month: string; count: number }>;
+				}
+			>;
 		}),
 	);
 

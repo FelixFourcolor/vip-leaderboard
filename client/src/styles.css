@@ -1,0 +1,27 @@
+:root {
+    --text-normal: 16px;
+    --text-small: 14px;
+    --text-mini: 12px;
+
+    --bg-primary: #191724;
+    --bg-secondary: #21202e;
+    --text-primary: #e0def4;
+    --text-secondary: #908caa;
+    --text-tertiary: #6e6a86;
+
+    &[data-theme="zack"] {
+        --bg-primary: #faf4ed;
+        --bg-secondary: #f4ede8;
+        --text-primary: #575279;
+        --text-secondary: #797593;
+        --text-tertiary: #9893a5;
+    }
+
+}
+
+body {
+    font-family: sans-serif;
+    font-size: var(--text-normal);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
