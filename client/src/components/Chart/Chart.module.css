@@ -1,3 +1,5 @@
-.chartContainer {
-    height: 100%;
+.container {
+    .toggle {
+        margin-bottom: 12px;
+    }
 }

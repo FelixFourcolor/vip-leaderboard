@@ -1,0 +1,42 @@
+.container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+
+    .toggle {
+        width: 40px;
+        height: 20px;
+        background: var(--bg-tertiary);
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.4s ease;
+
+        .slider {
+            width: 18px;
+            height: 18px;
+            background: #f4ede8;
+            border-radius: 50%;
+            transition: background 0.4s ease;
+        }
+
+        .dummy {
+            flex: 0;
+            transition: flex 0.4s ease;
+        }
+
+        &.isOn {
+            background: var(--accent);
+
+            .dummy {
+                flex: 1;
+            }
+        }
+    }
+
+    input {
+        display: none;
+    }
+
+}

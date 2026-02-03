@@ -1,34 +1,14 @@
 .tooltip {
 	padding: 8px;
-	background-color: rgb(from var(--bg-primary) r g b / 0.7);
+	background-color: rgb(from var(--bg-primary) r g b / 0.75);
 	border-radius: 4px;
 	border: 2px dashed var(--series-color);
-
 	width: fit-content;
 	white-space: nowrap;
 
-	.user {
-		display: flex;
-		align-items: center;
-		margin-bottom: 8px;
-
-		.avatar {
-			width: 24px;
-			height: 24px;
-			border-radius: 50%;
-			margin-right: 8px;
-		}
-
-		.name {
-			color: var(--user-color);
-
-			:root[data-theme="zack"] & {
-				font-weight: bold;
-			}
-		}
-	}
-
 	.detail {
+		margin-top: 8px;
+
 		.label {
 			margin-right: 4px;
 

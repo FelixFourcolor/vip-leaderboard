@@ -6,6 +6,7 @@ import { groupBy, mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
+import { Ticket } from "./modules/ticket.entity.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +23,20 @@ export async function startServer(port = 3001) {
 		RequestContext.create(orm.em, done),
 	);
 	app.addHook("onClose", () => orm.close());
+
+	const lastUpdatedHandler = createHandler();
+	app.get(
+		"/api/last-updated",
+		lastUpdatedHandler(() => {
+			return orm.em
+				.createQueryBuilder(Ticket)
+				.select("timestamp")
+				.orderBy({ timestamp: "DESC" })
+				.limit(1)
+				.execute()
+				.then((tickets) => tickets[0]?.timestamp);
+		}),
+	);
 
 	const rankingHandler = createHandler({
 		from: "date",
@@ -197,7 +212,7 @@ export async function startServer(port = 3001) {
 }
 
 function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
-	schema: Schema,
+	schema: Schema = {} as Schema,
 ) {
 	type ValidatedArgs = {
 		[K in keyof Schema]?: Schema[K] extends "int"

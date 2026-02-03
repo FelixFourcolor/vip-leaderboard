@@ -1,0 +1,19 @@
+.header {
+    display: flex;
+    align-items: center;
+
+    .avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .name {
+        color: var(--user-color);
+
+        :root[data-theme="zack"] & {
+            font-weight: bold;
+        }
+    }
+}

@@ -3,18 +3,23 @@
     --text-small: 14px;
     --text-mini: 12px;
 
+
     --bg-primary: #191724;
     --bg-secondary: #21202e;
+    --bg-tertiary: #908caa;
     --text-primary: #e0def4;
     --text-secondary: #908caa;
     --text-tertiary: #6e6a86;
+    --accent: #31748f;
 
     &[data-theme="zack"] {
         --bg-primary: #faf4ed;
         --bg-secondary: #f4ede8;
+        --bg-tertiary: #9893a5;
         --text-primary: #575279;
         --text-secondary: #797593;
         --text-tertiary: #9893a5;
+        --accent: #ea9d34;
     }
 
 }
@@ -24,4 +29,6 @@ body {
     font-size: var(--text-normal);
     background-color: var(--bg-primary);
     color: var(--text-primary);
+    height: 100%;
+    margin: 0;
 }

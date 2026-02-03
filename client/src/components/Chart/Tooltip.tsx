@@ -1,5 +1,9 @@
-import type { MonthTickets, User } from "@/types";
-import style from "./Tooltip.module.css";
+import classNames from "classnames/bind";
+import type { MonthTickets, User } from "@/api/types";
+import { UserHeader } from "@/components/UserHeader";
+import styles from "./Tooltip.module.css";
+
+const cx = classNames.bind(styles);
 
 interface Props extends Omit<User, "rank">, MonthTickets {
 	seriesColor: string;
@@ -7,37 +11,25 @@ interface Props extends Omit<User, "rank">, MonthTickets {
 }
 
 export function Tooltip({
-	name,
-	color,
-	avatarUrl,
 	seriesColor,
 	month,
 	count,
 	onMount,
+	...user
 }: Props) {
 	return (
 		<div
 			ref={onMount}
-			style={{
-				["--user-color" as string]: color,
-				["--series-color" as string]: seriesColor,
-			}}
-			className={style.tooltip}
+			style={{ ["--series-color" as string]: seriesColor }}
+			className={cx("tooltip")}
 		>
-			<div className={style.user}>
-				<img
-					src={avatarUrl}
-					alt={`${name}'s avatar`}
-					className={style.avatar}
-				/>
-				<div className={style.name}>{name}</div>
-			</div>
-			<div className={style.detail}>
-				<span className={style.label}>Month:</span>
-				<span className={style.data}>{month}</span>
+			<UserHeader {...user} />
+			<div className={cx("detail")}>
+				<span className={cx("label")}>Month:</span>
+				<span className={cx("data")}>{month}</span>
 				<br />
-				<span className={style.label}>Tickets:</span>
-				<span className={style.data}>{count}</span>
+				<span className={cx("label")}>Tickets:</span>
+				<span className={cx("data")}>{count}</span>
 			</div>
 		</div>
 	);

@@ -1,17 +1,22 @@
 import { ResponsiveLine } from "@nivo/line";
 import type { PartialTheme } from "@nivo/theming";
+import classNames from "classnames/bind";
 import { useMemo, useState } from "react";
-import type { MonthlyData } from "@/types";
-import style from "./Chart.module.css";
+import type { MonthlyData } from "@/api/types";
+import { Toggle } from "@/components/Toggle";
+import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
+
+const cx = classNames.bind(styles);
 
 type Props = {
 	data: MonthlyData;
+	height: number;
 };
 
-export function Chart({ data }: Props) {
+export function Chart({ data, height }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
-	const [cumulative, _] = useState(true);
+	const [isCumulative, setIsCumulative] = useState(false);
 
 	const lineColor = useMemo(
 		() =>
@@ -57,55 +62,61 @@ export function Chart({ data }: Props) {
 	const labelInterval = Math.ceil(seriesLength / 24);
 
 	return (
-		<div
-			role="none"
-			className={style.chartContainer}
-			onMouseLeave={() => setHighlightedUser(null)}
-		>
-			<Timeline
-				data={cumulative ? cumulativeChartData : chartData}
-				colors={({ id }) => {
-					const color = lineColor[id];
-					if (!highlightedUser || highlightedUser === id) {
-						return color;
-					}
-					return `rgb(from ${color} r g b / 0.1)`;
-				}}
-				pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
-					if (
-						highlightedUser === seriesId &&
-						(seriesLength - 1 - indexInSeries) % labelInterval === 0
-					) {
-						return String(y);
-					}
-					return "";
-				}}
-				tooltip={({
-					point: {
-						seriesId,
-						data: { x, y },
-						seriesColor,
-					},
-				}) => {
-					const { color, avatarUrl, name } = data[seriesId];
-					return (
-						<Tooltip
-							name={name}
-							color={color}
-							avatarUrl={avatarUrl}
-							seriesColor={seriesColor}
-							month={new Date(x).toISOString().slice(0, 7)}
-							count={y}
-							onMount={() => setHighlightedUser(seriesId)}
-						/>
-					);
-				}}
-			/>
+		<div className={cx("container")}>
+			<Toggle onChange={setIsCumulative} className={cx("toggle")}>
+				Cumulative
+			</Toggle>
+			<div
+				role="none"
+				className={cx("chart")}
+				style={{ height }}
+				onMouseLeave={() => setHighlightedUser(null)}
+			>
+				<CustomResponsiveLine
+					data={isCumulative ? cumulativeChartData : chartData}
+					colors={({ id }) => {
+						const color = lineColor[id] ?? colorSchemes[0];
+						if (!highlightedUser || highlightedUser === id) {
+							return color;
+						}
+						return `rgb(from ${color} r g b / 0.1)`;
+					}}
+					pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
+						if (
+							highlightedUser === seriesId &&
+							(seriesLength - 1 - indexInSeries) % labelInterval === 0
+						) {
+							return String(y);
+						}
+						return "";
+					}}
+					tooltip={({
+						point: {
+							seriesId,
+							data: { x, y },
+							seriesColor,
+						},
+					}) => {
+						const { color, avatarUrl, name } = data[seriesId]!;
+						return (
+							<Tooltip
+								name={name}
+								color={color}
+								avatarUrl={avatarUrl}
+								seriesColor={seriesColor}
+								month={new Date(x).toISOString().slice(0, 7)}
+								count={y}
+								onMount={() => setHighlightedUser(seriesId)}
+							/>
+						);
+					}}
+				/>
+			</div>
 		</div>
 	);
 }
 
-const Timeline: typeof ResponsiveLine = (props) => (
+const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 	<ResponsiveLine
 		theme={themeConfig}
 		curve="monotoneX"
@@ -132,12 +143,12 @@ const colorSchemes = [
 	"#7f7f7f",
 	"#bcbd22",
 	"#17becf",
-];
+] as const;
 
 const themeConfig: PartialTheme = {
 	background: "var(--bg-secondary)",
 	text: {
-		fill: "var(--text-secondary)",
+		fill: "var(--text-primary)",
 		fontSize: "var(--text-small)",
 	},
 	crosshair: {
@@ -156,10 +167,7 @@ const themeConfig: PartialTheme = {
 			},
 		},
 		legend: {
-			text: {
-				fill: "var(--text-primary)",
-				fontSize: "var(--text-regular)",
-			},
+			text: { fontSize: "var(--text-regular)" },
 		},
 	},
 	grid: {

@@ -1,0 +1,23 @@
+footer {
+    padding: 1rem;
+
+    hr {
+        margin-bottom: 1rem;
+        border: none;
+        height: 1px;
+        /* Set the hr color */
+        background-color: var(--text-secondary);
+    }
+
+    .container {
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: 1rem;
+
+        .lastUpdated {
+            font-size: var(--text-small);
+        }
+
+    }
+}
