@@ -2,6 +2,7 @@ import { ResponsiveLine } from "@nivo/line";
 import type { PartialTheme } from "@nivo/theming";
 import { useMemo, useState } from "react";
 import type { MonthlyData } from "@/types";
+import style from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
 type Props = {
@@ -10,10 +11,16 @@ type Props = {
 
 export function Chart({ data }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
-	const [cumulative, _] = useState(false);
+	const [cumulative, _] = useState(true);
 
-	const userIndices = useMemo(
-		() => Object.fromEntries(Object.keys(data).map((k, index) => [k, index])),
+	const lineColor = useMemo(
+		() =>
+			Object.fromEntries(
+				Object.keys(data).map((userId, i) => [
+					userId,
+					colorSchemes[i % colorSchemes.length],
+				]),
+			),
 		[data],
 	);
 
@@ -46,57 +53,73 @@ export function Chart({ data }: Props) {
 		[chartData],
 	);
 
+	const seriesLength = Object.values(data)[0]?.tickets.length || 0;
+	const labelInterval = Math.ceil(seriesLength / 24);
+
 	return (
-		<ResponsiveLine
-			data={cumulative ? cumulativeChartData : chartData}
-			colors={({ id }) => {
-				const color = colorSchemes[userIndices[id] % colorSchemes.length];
-				if (!highlightedUser || highlightedUser === id) {
-					return color;
-				}
-				return `rgb(from ${color} r g b / 0.25)`;
-			}}
-			theme={themeConfig}
-			curve="monotoneX"
-			useMesh
-			pointSize={7}
+		<div
+			role="none"
+			className={style.chartContainer}
 			onMouseLeave={() => setHighlightedUser(null)}
-			xFormat="time:%Y-%m"
-			xScale={{ format: "%Y-%m", type: "time", useUTC: false }}
-			margin={{
-				top: 12,
-				right: 24,
-				bottom: 24,
-				left: 56,
-			}}
-			axisLeft={{
-				legend: "Tickets handled",
-				legendOffset: -42,
-			}}
-			axisBottom={{ format: "%Y-%m" }}
-			tooltip={({
-				point: {
-					seriesId,
-					data: { x, y },
-					seriesColor,
-				},
-			}) => {
-				const { color, avatarUrl, name } = data[seriesId];
-				return (
-					<Tooltip
-						name={name}
-						color={color}
-						avatarUrl={avatarUrl}
-						seriesColor={seriesColor}
-						month={new Date(x).toISOString().slice(0, 7)}
-						count={y}
-						onMount={() => setHighlightedUser(seriesId)}
-					/>
-				);
-			}}
-		/>
+		>
+			<Timeline
+				data={cumulative ? cumulativeChartData : chartData}
+				colors={({ id }) => {
+					const color = lineColor[id];
+					if (!highlightedUser || highlightedUser === id) {
+						return color;
+					}
+					return `rgb(from ${color} r g b / 0.1)`;
+				}}
+				pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
+					if (
+						highlightedUser === seriesId &&
+						(seriesLength - 1 - indexInSeries) % labelInterval === 0
+					) {
+						return String(y);
+					}
+					return "";
+				}}
+				tooltip={({
+					point: {
+						seriesId,
+						data: { x, y },
+						seriesColor,
+					},
+				}) => {
+					const { color, avatarUrl, name } = data[seriesId];
+					return (
+						<Tooltip
+							name={name}
+							color={color}
+							avatarUrl={avatarUrl}
+							seriesColor={seriesColor}
+							month={new Date(x).toISOString().slice(0, 7)}
+							count={y}
+							onMount={() => setHighlightedUser(seriesId)}
+						/>
+					);
+				}}
+			/>
+		</div>
 	);
 }
+
+const Timeline: typeof ResponsiveLine = (props) => (
+	<ResponsiveLine
+		theme={themeConfig}
+		curve="monotoneX"
+		useMesh
+		pointSize={7}
+		enablePointLabel
+		xFormat="time:%Y-%m"
+		xScale={{ format: "%Y-%m", type: "time", useUTC: false }}
+		margin={{ top: 12, right: 24, bottom: 24, left: 60 }}
+		axisLeft={{ legend: "Tickets handled", legendOffset: -44 }}
+		axisBottom={{ format: "%Y-%m" }}
+		{...props}
+	/>
+);
 
 const colorSchemes = [
 	"#1f77b4",
@@ -113,7 +136,10 @@ const colorSchemes = [
 
 const themeConfig: PartialTheme = {
 	background: "var(--bg-secondary)",
-	text: { fill: "var(--text-primary)" },
+	text: {
+		fill: "var(--text-secondary)",
+		fontSize: "var(--text-small)",
+	},
 	crosshair: {
 		line: { stroke: "var(--text-secondary)" },
 	},
@@ -130,7 +156,10 @@ const themeConfig: PartialTheme = {
 			},
 		},
 		legend: {
-			text: { fontSize: "var(--text-small)" },
+			text: {
+				fill: "var(--text-primary)",
+				fontSize: "var(--text-regular)",
+			},
 		},
 	},
 	grid: {

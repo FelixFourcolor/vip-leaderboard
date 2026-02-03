@@ -19,8 +19,6 @@
 
 		/* Linting */
 		"strict": true,
-		"noImplicitOverride": true,
-		"exactOptionalPropertyTypes": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedSideEffectImports": true,
 		"isolatedModules": true
