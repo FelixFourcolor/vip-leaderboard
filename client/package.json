@@ -17,6 +17,7 @@
 		"es-toolkit": "^1.44.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
+		"react-range": "^1.10.0",
 		"styled-components": "^6.3.8",
 		"ts-pattern": "^5.9.0"
 	},

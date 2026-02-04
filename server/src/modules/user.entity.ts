@@ -22,7 +22,7 @@ export class User {
 	) {
 		this.id = id;
 		this.name = name;
-		this.avatarUrl = avatarUrl;
+		this.avatarUrl = avatarUrl.substring(0, avatarUrl.indexOf("?"));
 		this.color = color;
 	}
 }
