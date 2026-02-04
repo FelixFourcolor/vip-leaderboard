@@ -1,31 +1,8 @@
 import { useEffect, useState } from "react";
-import { Toggle } from "@/components/Toggle";
-import { UserHeader } from "@/components/UserHeader";
-
-export function ZackModeToggle() {
-	const [isZack, setIsZack] = useZackMode();
-
-	return (
-		<Toggle
-			initial={isZack}
-			onChange={setIsZack}
-			customStyles={{
-				container: {
-					backgroundColor: isZack ? "#68D5F8" : undefined,
-				},
-				slider: {
-					backgroundImage: `url("https://cdn.discordapp.com/avatars/1000499951597523125/54c74dd3bf04d27bd73479a1f9935a52.png?size=16")`,
-				},
-			}}
-		>
-			<UserHeader name="Zack mode" color="#68D5F8" />
-		</Toggle>
-	);
-}
 
 const STORAGE_KEY = "zack-mode";
 
-function useZackMode() {
+export function useZackMode() {
 	const [isZack, setIsZack] = useState(
 		() => getSessionStorage() ?? getBrowserPreference(),
 	);

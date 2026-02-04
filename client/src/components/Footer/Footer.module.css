@@ -1,5 +1,6 @@
 footer {
     padding: 1rem;
+    font-size: var(--text-small);
 
     hr {
         margin-bottom: 1rem;
@@ -14,10 +15,5 @@ footer {
         align-items: center;
         justify-content: space-evenly;
         gap: 1rem;
-
-        .lastUpdated {
-            font-size: var(--text-small);
-        }
-
     }
 }

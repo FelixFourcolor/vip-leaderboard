@@ -4,6 +4,7 @@ import classNames from "classnames/bind";
 import { useMemo, useState } from "react";
 import type { MonthlyData } from "@/api/types";
 import { Toggle } from "@/components/Toggle";
+import { useZackMode } from "@/hooks/zackMode";
 import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
@@ -17,6 +18,7 @@ type Props = {
 export function Chart({ data, height }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [isCumulative, setIsCumulative] = useState(false);
+	const [isZack] = useZackMode();
 
 	const lineColor = useMemo(
 		() =>
@@ -79,7 +81,7 @@ export function Chart({ data, height }: Props) {
 						if (!highlightedUser || highlightedUser === id) {
 							return color;
 						}
-						return `rgb(from ${color} r g b / 0.1)`;
+						return `rgb(from ${color} r g b / ${isZack ? 0.2 : 0.1})`;
 					}}
 					pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
 						if (
