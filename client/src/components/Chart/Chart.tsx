@@ -13,11 +13,11 @@ const cx = classNames.bind(styles);
 type Props = {
 	data: MonthlyData;
 	height: number;
+	setCumulative: (cumulative: boolean) => void;
 };
 
-export function Chart({ data, height }: Props) {
+export function Chart({ data, height, setCumulative }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
-	const [isCumulative, setIsCumulative] = useState(false);
 	const [isZack] = useZackMode();
 
 	const lineColor = useMemo(
@@ -45,27 +45,12 @@ export function Chart({ data, height }: Props) {
 		}));
 	}, [data, highlightedUser]);
 
-	const cumulativeChartData = useMemo(
-		() =>
-			chartData.map(({ id, data }) => {
-				let cumulativeY = 0;
-				return {
-					id,
-					data: data.map(({ x, y }) => {
-						cumulativeY += y;
-						return { x, y: cumulativeY };
-					}),
-				};
-			}),
-		[chartData],
-	);
-
 	const seriesLength = Object.values(data)[0]?.tickets.length || 0;
 	const labelInterval = Math.ceil(seriesLength / 24);
 
 	return (
 		<div className={cx("container")}>
-			<Toggle onChange={setIsCumulative} className={cx("toggle")}>
+			<Toggle onChange={setCumulative} className={cx("toggle")}>
 				Cumulative
 			</Toggle>
 			<div
@@ -75,13 +60,13 @@ export function Chart({ data, height }: Props) {
 				onMouseLeave={() => setHighlightedUser(null)}
 			>
 				<CustomResponsiveLine
-					data={isCumulative ? cumulativeChartData : chartData}
+					data={chartData}
 					colors={({ id }) => {
 						const color = lineColor[id] ?? colorSchemes[0];
 						if (!highlightedUser || highlightedUser === id) {
 							return color;
 						}
-						return `rgb(from ${color} r g b / ${isZack ? 0.2 : 0.1})`;
+						return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
 					}}
 					pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
 						if (
@@ -123,7 +108,7 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 		theme={themeConfig}
 		curve="monotoneX"
 		useMesh
-		pointSize={7}
+		pointSize={8}
 		enablePointLabel
 		xFormat="time:%Y-%m"
 		xScale={{ format: "%Y-%m", type: "time", useUTC: false }}

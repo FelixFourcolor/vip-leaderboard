@@ -19,6 +19,7 @@
 
 		.data {
 			:root[data-theme="zack"] & {
+				color: var(--text-secondary);
 				font-weight: bold;
 			}
 		}

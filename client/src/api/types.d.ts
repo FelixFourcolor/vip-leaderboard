@@ -12,6 +12,7 @@ export interface UserRanking extends User {
 export type RankingData = UserRanking[];
 
 export interface MonthTickets {
+	/** yyyy-mm */
 	month: string;
 	count: number;
 }

@@ -88,10 +88,10 @@ export async function startServer(port = 3001) {
 				.join("ticket AS t", "t.id", "r.ticket_id")
 				.select(
 					"r.user_id",
-					knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m') AS month"),
-					knex.raw("COUNT(*) AS count"),
+					knex.raw`DATE_FORMAT(t.timestamp, '%Y-%m') AS month`,
+					knex.raw`COUNT(*) AS count`,
 				)
-				.groupBy("r.user_id", knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m')"));
+				.groupBy("r.user_id", knex.raw`DATE_FORMAT(t.timestamp, '%Y-%m')`);
 			if (from) {
 				userMonthQuery.where("t.timestamp", ">=", from);
 			}
@@ -100,7 +100,7 @@ export async function startServer(port = 3001) {
 			}
 
 			const topUsersQuery = knex("user_month")
-				.select("user_id", knex.raw("SUM(count) AS tickets"))
+				.select("user_id", knex.raw`SUM(count) AS tickets`)
 				.groupBy("user_id")
 				.orderBy("tickets", "desc");
 			if (user) {
@@ -134,37 +134,36 @@ export async function startServer(port = 3001) {
 							),
 						);
 
+			const monthsQuery = knex
+				.queryBuilder()
+				.select("start_month AS month")
+				.from("bounds")
+				.unionAll((qb) => {
+					qb.select(knex.raw`DATE_ADD(month, INTERVAL 1 MONTH)`)
+						.from("months")
+						.whereRaw(
+							"DATE_ADD(month, INTERVAL 1 MONTH) < (SELECT end_time FROM bounds)",
+						);
+				});
+
 			return knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
 				.with("bounds", boundsQuery)
-				.withRecursive("months", (qb) => {
-					qb.select("start_month AS month")
-						.from("bounds")
-						.unionAll((qb2) => {
-							qb2
-								.select(knex.raw("DATE_ADD(month, INTERVAL 1 MONTH)"))
-								.from("months")
-								.where(
-									knex.raw(
-										"DATE_ADD(month, INTERVAL 1 MONTH) < (SELECT end_time FROM bounds)",
-									),
-								);
-						});
-				})
+				.withRecursive("months", monthsQuery)
 				.select(
 					"u.id",
 					"u.name",
 					"u.avatar_url AS avatarUrl",
 					"u.color",
-					knex.raw("DATE_FORMAT(m.month, '%Y-%m') AS month"),
-					knex.raw("COALESCE(um.count, 0) AS count"),
+					knex.raw`DATE_FORMAT(m.month, '%Y-%m') AS month`,
+					knex.raw`COALESCE(um.count, 0) AS count`,
 				)
 				.from("top_users AS tu")
-				.crossJoin(knex.raw("months AS m"))
+				.crossJoin(knex.raw`months AS m`)
 				.leftJoin("user_month AS um", function () {
 					this.on("um.user_id", "tu.user_id").andOn(
-						knex.raw("um.month = DATE_FORMAT(m.month, '%Y-%m')"),
+						knex.raw`um.month = DATE_FORMAT(m.month, '%Y-%m')`,
 					);
 				})
 				.join("user AS u", "u.id", "tu.user_id")
@@ -225,8 +224,9 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 	};
 
 	function validate({ query }: { query: Record<string, string> }) {
-		return mapValues(query, (v, k) =>
-			match(schema[k])
+		return mapValues(query, (v, k) => {
+			const expectedType = schema[k];
+			return match(expectedType)
 				.with(undefined, () => {
 					throw new Error(`Unknown param: ${k}`);
 				})
@@ -245,8 +245,8 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 					}
 					return validated;
 				})
-				.exhaustive(),
-		) as ValidatedArgs;
+				.exhaustive();
+		}) as ValidatedArgs;
 	}
 
 	function wrapper(logic: (args: ValidatedArgs) => Promise<unknown>) {

@@ -1,10 +1,7 @@
-import {
-	QueryClient,
-	QueryClientProvider,
-	useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 import styled from "styled-components";
-import type { MonthlyData } from "./api/types";
+import { useGetMonthlyData } from "./api/queries";
 import { Chart } from "./components/Chart";
 import { Footer } from "./components/Footer";
 import "./styles.css";
@@ -36,10 +33,10 @@ const Main = styled.div`
 `;
 
 function TestChart() {
-	const { data = {} } = useQuery<MonthlyData>({
-		queryKey: ["repoData"],
-		queryFn: () =>
-			fetch("api/monthly?from=2023&top=10").then((res) => res.json()),
-	});
-	return <Chart data={data} height={600} />;
+	const [cumulative, setCumulative] = useState(false);
+	const data = useGetMonthlyData({ cumulative, top: 10, from: "2024-01" });
+	if (!data) {
+		return;
+	}
+	return <Chart data={data} setCumulative={setCumulative} height={600} />;
 }

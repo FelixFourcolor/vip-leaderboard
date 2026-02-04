@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import classNames from "classnames/bind";
+import { useGetLastUpdated } from "@/api/queries";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/zackMode";
@@ -8,24 +8,12 @@ import styles from "./Footer.module.css";
 const cx = classNames.bind(styles);
 
 export function Footer() {
-	const { data: lastUpdated } = useQuery({
-		queryKey: ["lastUpdated"],
-		queryFn: () =>
-			fetch("/api/last-updated")
-				.then((res) => res.json())
-				.then((ts) => (ts ? new Date(ts) : undefined))
-				.then((date) => date?.toLocaleString()),
-	});
-
+	const lastUpdated = useGetLastUpdated()?.toLocaleString();
 	return (
 		<footer>
 			<hr />
 			<div className={cx("container")}>
-				{lastUpdated && (
-					<span className={cx("lastUpdated")}>
-						Last updated: <span className={cx("timestamp")}>{lastUpdated}</span>
-					</span>
-				)}
+				{lastUpdated && <span>Last updated: {lastUpdated}</span>}
 				<ZackModeToggle />
 			</div>
 		</footer>
