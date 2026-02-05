@@ -251,6 +251,7 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 
 	function wrapper(logic: (args: ValidatedArgs) => Promise<unknown>) {
 		return (request: any, reply: FastifyReply) => {
+			reply.header("Cache-Control", "public, max-age=86400");
 			try {
 				return logic(validate(request));
 			} catch (e) {

@@ -2,7 +2,7 @@ import classNames from "classnames/bind";
 import { useGetLastUpdated } from "@/api/queries";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
-import { useZackMode } from "@/hooks/zackMode";
+import { useZackMode } from "@/hooks/useZackMode";
 import styles from "./Footer.module.css";
 
 const cx = classNames.bind(styles);

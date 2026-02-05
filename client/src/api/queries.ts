@@ -1,16 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { mapValues } from "es-toolkit";
 import type { MonthlyData } from "./types";
 
-export function useGetLastUpdated(): Date | undefined {
-	const { data } = useQuery({
+export function useGetLastUpdated(): Date {
+	const { data } = useSuspenseQuery({
 		queryKey: ["lastUpdated"],
 		queryFn: () =>
 			fetch("/api/last-updated")
 				.then((res) => res.json())
-				.then((ts) => (ts ? new Date(ts) : undefined)),
+				.then((ts) => new Date(ts)),
+		staleTime: Infinity,
 	});
-
 	return data;
 }
 

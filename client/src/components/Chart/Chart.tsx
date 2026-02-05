@@ -1,35 +1,39 @@
 import { ResponsiveLine } from "@nivo/line";
 import type { PartialTheme } from "@nivo/theming";
 import classNames from "classnames/bind";
-import { useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import { useGetLastUpdated } from "@/api/queries";
 import type { MonthlyData } from "@/api/types";
+import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
-import { useZackMode } from "@/hooks/zackMode";
+import { useZackMode } from "@/hooks/useZackMode";
 import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
 const cx = classNames.bind(styles);
 
+type State<T> = [initial: T, onChange: Dispatch<SetStateAction<T>>];
+
 type Props = {
 	data: MonthlyData;
 	height: number;
-	setCumulative: (cumulative: boolean) => void;
+	cumulative: State<boolean>;
+	from: State<string>;
+	to: State<string>;
 };
 
-export function Chart({ data, height, setCumulative }: Props) {
+export function Chart({ data, height, cumulative, from, to }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [isZack] = useZackMode();
 
-	const lineColor = useMemo(
-		() =>
-			Object.fromEntries(
-				Object.keys(data).map((userId, i) => [
-					userId,
-					colorSchemes[i % colorSchemes.length],
-				]),
-			),
-		[data],
-	);
+	const lineColor = useMemo(() => {
+		return Object.fromEntries(
+			Object.keys(data).map((userId, i) => [
+				userId,
+				colorSchemes[i % colorSchemes.length],
+			]),
+		);
+	}, [data]);
 
 	const chartData = useMemo(() => {
 		const orderedData = highlightedUser
@@ -45,14 +49,33 @@ export function Chart({ data, height, setCumulative }: Props) {
 		}));
 	}, [data, highlightedUser]);
 
-	const seriesLength = Object.values(data)[0]?.tickets.length || 0;
+	const seriesLength = getAnyValue(data)?.tickets.length || 0;
 	const labelInterval = Math.ceil(seriesLength / 24);
 
 	return (
 		<div className={cx("container")}>
-			<Toggle onChange={setCumulative} className={cx("toggle")}>
+			<Toggle
+				initial={cumulative[0]}
+				onChange={cumulative[1]}
+				className={cx("toggle")}
+			>
 				Cumulative
 			</Toggle>
+			<TimeSlider
+				domain={{
+					from: "2020-01",
+					to: useGetLastUpdated().toISOString().slice(0, 7),
+				}}
+				initial={{
+					from: from[0],
+					to: to[0],
+				}}
+				onChange={{
+					from: from[1],
+					to: to[1],
+				}}
+			/>
+			<br />
 			<div
 				role="none"
 				className={cx("chart")}
@@ -101,6 +124,12 @@ export function Chart({ data, height, setCumulative }: Props) {
 			</div>
 		</div>
 	);
+}
+
+function getAnyValue<T>(obj: Record<any, T>): T | undefined {
+	for (const key in obj) {
+		return obj[key];
+	}
 }
 
 const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
