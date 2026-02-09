@@ -10,7 +10,7 @@
     --text-primary: #e0def4;
     --text-secondary: #908caa;
     --text-tertiary: #6e6a86;
-    --accent: #31748f;
+    --accent: #eb6f92;
 
     &[data-theme="zack"] {
         --bg-primary: #faf4ed;
@@ -19,7 +19,6 @@
         --text-primary: #575279;
         --text-secondary: #797593;
         --text-tertiary: #9893a5;
-        --accent: #ea9d34;
     }
 
 }

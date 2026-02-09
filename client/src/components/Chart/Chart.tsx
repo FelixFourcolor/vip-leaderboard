@@ -54,28 +54,6 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 
 	return (
 		<div className={cx("container")}>
-			<Toggle
-				initial={cumulative[0]}
-				onChange={cumulative[1]}
-				className={cx("toggle")}
-			>
-				Cumulative
-			</Toggle>
-			<TimeSlider
-				domain={{
-					from: "2020-01",
-					to: useGetLastUpdated().toISOString().slice(0, 7),
-				}}
-				initial={{
-					from: from[0],
-					to: to[0],
-				}}
-				onChange={{
-					from: from[1],
-					to: to[1],
-				}}
-			/>
-			<br />
 			<div
 				role="none"
 				className={cx("chart")}
@@ -119,6 +97,30 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 								onMount={() => setHighlightedUser(seriesId)}
 							/>
 						);
+					}}
+				/>
+			</div>
+			<br />
+			<div className={cx("controls")}>
+				<Toggle
+					initial={cumulative[0]}
+					onChange={cumulative[1]}
+					className={cx("toggle")}
+				>
+					Cumulative
+				</Toggle>
+				<TimeSlider
+					domain={{
+						from: "2020-01",
+						to: useGetLastUpdated().toISOString().slice(0, 7),
+					}}
+					initial={{
+						from: from[0],
+						to: to[0],
+					}}
+					onChange={{
+						from: from[1],
+						to: to[1],
 					}}
 				/>
 			</div>

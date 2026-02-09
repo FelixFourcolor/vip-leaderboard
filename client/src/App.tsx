@@ -54,7 +54,7 @@ function TestChart() {
 			cumulative={cumulativeState}
 			from={fromState}
 			to={toState}
-			height={600}
+			height={500}
 		/>
 	);
 }

@@ -1,5 +1,7 @@
 .container {
-    .toggle {
-        margin-bottom: 12px;
+    .controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }
 }
