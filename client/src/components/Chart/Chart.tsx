@@ -73,7 +73,97 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 	}, [data, from[0], to[0], cumulative[0], highlightedUser]);
 
 	const seriesLength = getAnyValue(data)?.tickets.length || 0;
-	const labelInterval = Math.ceil(seriesLength / 24);
+	const labelInterval = Math.ceil(seriesLength / 16);
+
+	const line = (
+		<CustomResponsiveLine
+			data={chartData}
+			colors={({ id }) => {
+				const color = lineColor[id] ?? colorSchemes[0];
+				if (!highlightedUser || highlightedUser === id) {
+					return color;
+				}
+				return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
+			}}
+			pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
+				if (
+					highlightedUser === seriesId &&
+					(seriesLength - 1 - indexInSeries) % labelInterval === 0
+				) {
+					return String(y);
+				}
+				return "";
+			}}
+			pointSymbol={({ color, datum: { x, y } }) => {
+				const date = x as any as Date; // nivo type is wrong
+				if (
+					!hoveredPoint ||
+					hoveredPoint.x.getTime() !== date.getTime() ||
+					hoveredPoint.y !== y
+				) {
+					return null;
+				}
+				return <circle r={6} fill={color} />;
+			}}
+			tooltip={({
+				point: {
+					seriesId,
+					data: { x, y },
+					seriesColor,
+				},
+			}) => {
+				if (y === null) {
+					return null;
+				}
+
+				const { color, avatarUrl, name } = data[seriesId]!;
+				const date = x as any as Date; // nivo type is wrong
+				const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+				return (
+					<Tooltip
+						name={name}
+						color={color}
+						avatarUrl={avatarUrl}
+						seriesColor={seriesColor}
+						month={month}
+						count={y}
+						onMount={() => {
+							setHighlightedUser(seriesId);
+							setHoveredPoint({ x: date, y });
+						}}
+					/>
+				);
+			}}
+		/>
+	);
+
+	const controls = (
+		<div className={cx("controls")}>
+			<Toggle
+				initial={cumulative[0]}
+				onChange={cumulative[1]}
+				className={cx("toggle")}
+			>
+				Cumulative
+			</Toggle>
+			<TimeSlider
+				domain={{
+					// hardcoded earliest month with "meaningful" data
+					from: "2020-10",
+					to: useGetLastUpdated().toISOString().slice(0, 7),
+				}}
+				initial={{
+					from: from[0],
+					to: to[0],
+				}}
+				onChange={{
+					from: from[1],
+					to: to[1],
+				}}
+			/>
+		</div>
+	);
 
 	return (
 		<div className={cx("container")}>
@@ -86,94 +176,10 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 					setHoveredPoint(null);
 				}}
 			>
-				<CustomResponsiveLine
-					data={chartData}
-					colors={({ id }) => {
-						const color = lineColor[id] ?? colorSchemes[0];
-						if (!highlightedUser || highlightedUser === id) {
-							return color;
-						}
-						return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
-					}}
-					pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
-						if (
-							highlightedUser === seriesId &&
-							(seriesLength - 1 - indexInSeries) % labelInterval === 0
-						) {
-							return String(y);
-						}
-						return "";
-					}}
-					pointSymbol={({ color, datum: { x, y } }) => {
-						const date = x as any as Date; // nivo type is wrong
-						if (
-							!hoveredPoint ||
-							hoveredPoint.x.getTime() !== date.getTime() ||
-							hoveredPoint.y !== y
-						) {
-							return null;
-						}
-						return <circle r={6} fill={color} />;
-					}}
-					tooltip={({
-						point: {
-							seriesId,
-							data: { x, y },
-							seriesColor,
-						},
-					}) => {
-						if (y === null) {
-							return null;
-						}
-
-						const { color, avatarUrl, name } = data[seriesId]!;
-						const date = x as any as Date; // nivo type is wrong
-						const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-
-						return (
-							<Tooltip
-								name={name}
-								color={color}
-								avatarUrl={avatarUrl}
-								seriesColor={seriesColor}
-								month={month}
-								count={y}
-								onMount={() => {
-									setHighlightedUser(seriesId);
-									setHoveredPoint({ x: date, y });
-								}}
-							/>
-						);
-					}}
-				/>
+				{line}
 			</div>
 			<br />
-			<div className={cx("controls")}>
-				<Toggle
-					initial={cumulative[0]}
-					onChange={cumulative[1]}
-					className={cx("toggle")}
-				>
-					Cumulative
-				</Toggle>
-				<TimeSlider
-					domain={{
-						// hardcoded earliest month with "meaningful" data
-						// what counts as meaningful is kinda hard to define
-						// so hardcoding is easier than finding a dynamic solution
-						from: "2020-10",
-						to: useGetLastUpdated().toISOString().slice(0, 7),
-					}}
-					initial={{
-						from: from[0],
-						to: to[0],
-					}}
-					onChange={{
-						from: from[1],
-						to: to[1],
-					}}
-				/>
-			</div>
+			{controls}
 		</div>
 	);
 }
@@ -190,7 +196,6 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 		curve="monotoneX"
 		useMesh
 		enableCrosshair={false}
-		pointSize={8}
 		enablePointLabel
 		xFormat="time:%Y-%m"
 		xScale={{
@@ -223,7 +228,7 @@ const themeConfig: PartialTheme = {
 	background: "var(--bg-secondary)",
 	text: {
 		fill: "var(--text-primary)",
-		fontSize: "var(--text-small)",
+		fontSize: "var(--text-mini)",
 	},
 	crosshair: {
 		line: { stroke: "var(--text-secondary)" },
@@ -235,7 +240,6 @@ const themeConfig: PartialTheme = {
 				strokeWidth: 0.5,
 			},
 			text: {
-				fontSize: "var(--text-mini)",
 				fill: "var(--text-secondary)",
 				fontWeight: "bold",
 			},
