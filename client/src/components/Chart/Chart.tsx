@@ -1,13 +1,15 @@
 import { ResponsiveLine } from "@nivo/line";
 import type { PartialTheme } from "@nivo/theming";
 import classNames from "classnames/bind";
+import { mapValues } from "es-toolkit";
 import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import { useGetLastUpdated } from "@/api/queries";
 import type { MonthlyData } from "@/api/types";
 import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
 import { useZackMode } from "@/hooks/useZackMode";
-import { monthsInRange } from "@/utils/time";
+import { slidingWindow } from "@/utils/iter";
+import { monthsInRange, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
@@ -32,30 +34,47 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 
 	const [isZack] = useZackMode();
 
-	const lineColor = useMemo(() => {
+	const colorById = useMemo(() => {
 		return Object.fromEntries(
 			Object.keys(data).map((userId, i) => [
 				userId,
-				colorSchemes[i % colorSchemes.length],
+				colorSchemes[i % colorSchemes.length]!,
 			]),
 		);
 	}, [data]);
 
+	const idByColor = useMemo(
+		() =>
+			Object.fromEntries(
+				Object.entries(colorById).map(([id, color]) => [color, id]),
+			),
+		[colorById],
+	);
+
+	const dataByMonth = useMemo(
+		() =>
+			mapValues(data, ({ tickets }) =>
+				Object.fromEntries(tickets.map(({ month, count }) => [month, count])),
+			),
+		[data],
+	);
+
+	const months = useMemo(
+		// query "to" is exclusive, but monthsInRange is inclusive
+		() => monthsInRange(from[0], to[0]).slice(0, -1),
+		[from[0], to[0]],
+	);
+
 	const chartData = useMemo(() => {
 		const orderedData = highlightedUser
 			? (() => {
-					const { [highlightedUser]: first, ...rest } = data;
-					return first ? { [highlightedUser]: first, ...rest } : data;
+					const { [highlightedUser]: first, ...rest } = dataByMonth;
+					return first ? { [highlightedUser]: first, ...rest } : dataByMonth;
 				})()
-			: data;
+			: dataByMonth;
 
-		return Object.entries(orderedData).map(([id, { tickets }]) => {
-			const ticketsByMonth = Object.fromEntries(
-				tickets.map(({ month, count }) => [month, count]),
-			);
-
-			const data = monthsInRange(from[0], to[0])
-				.slice(0, -1) // query "to" is exclusive, but monthsInRange is inclusive
+		return Object.entries(orderedData).map(([id, ticketsByMonth]) => {
+			const data = months
 				.map((month) => {
 					const tickets = ticketsByMonth[month];
 					if (tickets !== undefined) {
@@ -70,7 +89,27 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 
 			return { id, data };
 		});
-	}, [data, from[0], to[0], cumulative[0], highlightedUser]);
+	}, [dataByMonth, months, cumulative[0], highlightedUser]);
+
+	const isolatedPoints = useMemo(() => {
+		const windows = Array.from(slidingWindow(months, 3, true));
+		return mapValues(
+			dataByMonth,
+			(ticketsByMonth) =>
+				new Set(
+					windows
+						.filter(([prev, , next]) => {
+							const prevMissing =
+								prev === undefined || ticketsByMonth[prev] === undefined;
+							const nextMissing =
+								next === undefined || ticketsByMonth[next] === undefined;
+							return prevMissing && nextMissing;
+						})
+						.map(([, value]) => value),
+				),
+		);
+	}, [dataByMonth, months]);
+	console.log(isolatedPoints);
 
 	const seriesLength = getAnyValue(data)?.tickets.length || 0;
 	const labelInterval = Math.ceil(seriesLength / 16);
@@ -79,7 +118,7 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 		<CustomResponsiveLine
 			data={chartData}
 			colors={({ id }) => {
-				const color = lineColor[id] ?? colorSchemes[0];
+				const color = colorById[id] ?? colorSchemes[0];
 				if (!highlightedUser || highlightedUser === id) {
 					return color;
 				}
@@ -97,13 +136,17 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 			pointSymbol={({ color, datum: { x, y } }) => {
 				const date = x as any as Date; // nivo type is wrong
 				if (
-					!hoveredPoint ||
-					hoveredPoint.x.getTime() !== date.getTime() ||
-					hoveredPoint.y !== y
+					hoveredPoint &&
+					hoveredPoint.x.getTime() === date.getTime() &&
+					hoveredPoint.y === y
 				) {
-					return null;
+					return <circle r={6} fill={color} />;
 				}
-				return <circle r={6} fill={color} />;
+
+				const seriesId = idByColor[color]; // nivo's bug for not exposing seriesId
+				if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
+					return <circle r={3} fill={color} />;
+				}
 			}}
 			tooltip={({
 				point: {
