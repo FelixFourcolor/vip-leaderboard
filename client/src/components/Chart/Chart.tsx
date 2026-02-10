@@ -25,6 +25,11 @@ type Props = {
 
 export function Chart({ data, height, cumulative, from, to }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
+	const [hoveredPoint, setHoveredPoint] = useState<{
+		x: Date;
+		y: number;
+	} | null>(null);
+
 	const [isZack] = useZackMode();
 
 	const lineColor = useMemo(() => {
@@ -76,7 +81,10 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 				role="none"
 				className={cx("chart")}
 				style={{ height }}
-				onMouseLeave={() => setHighlightedUser(null)}
+				onMouseLeave={() => {
+					setHighlightedUser(null);
+					setHoveredPoint(null);
+				}}
 			>
 				<CustomResponsiveLine
 					data={chartData}
@@ -96,6 +104,17 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 						}
 						return "";
 					}}
+					pointSymbol={({ color, datum: { x, y } }) => {
+						const date = x as any as Date; // nivo type is wrong
+						if (
+							!hoveredPoint ||
+							hoveredPoint.x.getTime() !== date.getTime() ||
+							hoveredPoint.y !== y
+						) {
+							return null;
+						}
+						return <circle r={6} fill={color} />;
+					}}
 					tooltip={({
 						point: {
 							seriesId,
@@ -110,6 +129,7 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 						const { color, avatarUrl, name } = data[seriesId]!;
 						const date = x as any as Date; // nivo type is wrong
 						const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
 						return (
 							<Tooltip
 								name={name}
@@ -118,7 +138,10 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 								seriesColor={seriesColor}
 								month={month}
 								count={y}
-								onMount={() => setHighlightedUser(seriesId)}
+								onMount={() => {
+									setHighlightedUser(seriesId);
+									setHoveredPoint({ x: date, y });
+								}}
 							/>
 						);
 					}}
@@ -166,6 +189,7 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 		theme={themeConfig}
 		curve="monotoneX"
 		useMesh
+		enableCrosshair={false}
 		pointSize={8}
 		enablePointLabel
 		xFormat="time:%Y-%m"
