@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
 import { type ComponentProps, useMemo, useState } from "react";
 import { Range } from "react-range";
+import { monthsInRange } from "@/utils/time";
 import styles from "./TimeSlider.module.css";
 
 const cx = classNames.bind(styles);
@@ -96,21 +97,3 @@ const Track = ({
 const Thumb: React.FC<ComponentProps<"div">> = ({ className, ...props }) => (
 	<div {...props} className={cx("thumb", className)} />
 );
-
-function monthsInRange(from: string, to: string): string[] {
-	const fromDate = new Date(from);
-	const fromYear = fromDate.getUTCFullYear();
-	const fromMonth = fromDate.getUTCMonth();
-
-	const toDate = new Date(to);
-	const toYear = toDate.getUTCFullYear();
-	const toMonth = toDate.getUTCMonth();
-
-	return Array.from(
-		{ length: (toYear - fromYear) * 12 + (toMonth - fromMonth) + 1 },
-		(_, i) => {
-			const date = new Date(Date.UTC(fromYear, fromMonth + i, 1));
-			return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-		},
-	);
-}

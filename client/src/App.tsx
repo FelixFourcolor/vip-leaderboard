@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import styled from "styled-components";
-import { useGetLastUpdated, useGetMonthlyData } from "./api/queries";
-import { Chart } from "./components/Chart";
-import { Footer } from "./components/Footer";
-import { useLastDefined } from "./hooks/useLastDefined";
+import { useGetLastUpdated, useGetMonthlyData } from "@/api/queries";
+import { Chart } from "@/components/Chart";
+import { Footer } from "@/components/Footer";
+import { useLastDefined } from "@/hooks/useLastDefined";
+import { toYyyyMm } from "@/utils/time";
 import "./styles.css";
 
 const queryClient = new QueryClient();
@@ -35,7 +36,7 @@ const Main = styled.div`
 
 function TestChart() {
 	const _lastUpdated = useGetLastUpdated();
-	const toState = useState(() => _lastUpdated.toISOString().slice(0, 7));
+	const toState = useState(() => toYyyyMm(_lastUpdated));
 	const fromState = useState(() => `${_lastUpdated.getUTCFullYear() - 1}-01`);
 	const cumulativeState = useState(false);
 

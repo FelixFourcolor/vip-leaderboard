@@ -7,6 +7,7 @@ import type { MonthlyData } from "@/api/types";
 import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
 import { useZackMode } from "@/hooks/useZackMode";
+import { monthsInRange } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
@@ -43,11 +44,28 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 				})()
 			: data;
 
-		return Object.entries(orderedData).map(([id, { tickets }]) => ({
-			id,
-			data: tickets.map(({ month: x, count: y }) => ({ x, y })),
-		}));
-	}, [data, highlightedUser]);
+		return Object.entries(orderedData).map(([id, { tickets }]) => {
+			const ticketsByMonth = Object.fromEntries(
+				tickets.map(({ month, count }) => [month, count]),
+			);
+
+			const data = monthsInRange(from[0], to[0])
+				.slice(0, -1) // query "to" is exclusive, but monthsInRange is inclusive
+				.map((month) => {
+					const tickets = ticketsByMonth[month];
+					if (tickets !== undefined) {
+						return { x: month, y: tickets };
+					}
+					if (cumulative[0]) {
+						return null;
+					}
+					return { x: month, y: null };
+				})
+				.filter((x) => x !== null);
+
+			return { id, data };
+		});
+	}, [data, from[0], to[0], cumulative[0], highlightedUser]);
 
 	const seriesLength = getAnyValue(data)?.tickets.length || 0;
 	const labelInterval = Math.ceil(seriesLength / 24);
@@ -85,6 +103,10 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 							seriesColor,
 						},
 					}) => {
+						if (y === null) {
+							return null;
+						}
+
 						const { color, avatarUrl, name } = data[seriesId]!;
 						const date = x as any as Date; // nivo type is wrong
 						const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -113,7 +135,10 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 				</Toggle>
 				<TimeSlider
 					domain={{
-						from: "2020-01",
+						// hardcoded earliest month with "meaningful" data
+						// what counts as meaningful is kinda hard to define
+						// so hardcoding is easier than finding a dynamic solution
+						from: "2020-10",
 						to: useGetLastUpdated().toISOString().slice(0, 7),
 					}}
 					initial={{
