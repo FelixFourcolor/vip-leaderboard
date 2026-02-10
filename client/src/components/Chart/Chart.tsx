@@ -86,13 +86,15 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 						},
 					}) => {
 						const { color, avatarUrl, name } = data[seriesId]!;
+						const date = x as any as Date; // nivo type is wrong
+						const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 						return (
 							<Tooltip
 								name={name}
 								color={color}
 								avatarUrl={avatarUrl}
 								seriesColor={seriesColor}
-								month={new Date(x).toISOString().slice(0, 7)}
+								month={month}
 								count={y}
 								onMount={() => setHighlightedUser(seriesId)}
 							/>
@@ -142,7 +144,12 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 		pointSize={8}
 		enablePointLabel
 		xFormat="time:%Y-%m"
-		xScale={{ format: "%Y-%m", type: "time", useUTC: false }}
+		xScale={{
+			format: "%Y-%m",
+			type: "time",
+			// useUTC means convert input date to local time for display.Set to false to not apply any timezone conversion
+			useUTC: false,
+		}}
 		margin={{ top: 12, right: 24, bottom: 24, left: 60 }}
 		axisLeft={{ legend: "Tickets handled", legendOffset: -44 }}
 		axisBottom={{ format: "%Y-%m" }}

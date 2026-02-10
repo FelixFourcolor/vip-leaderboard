@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { MikroORM, RequestContext, sql } from "@mikro-orm/mysql";
-import { groupBy, mapValues } from "es-toolkit";
+import { mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
@@ -69,6 +69,7 @@ export async function startServer(port = 3001) {
 			if (to) {
 				query.andWhere({ "t.timestamp": { $lt: to } });
 			}
+
 			return query.execute();
 		}),
 	);
@@ -84,108 +85,64 @@ export async function startServer(port = 3001) {
 		monthlyHandler(async ({ top, from, to, user }) => {
 			const knex = orm.em.getKnex();
 
-			const userMonthQuery = knex("reaction AS r")
-				.join("ticket AS t", "t.id", "r.ticket_id")
+			const userMonthQuery = knex("reaction as r")
+				.join("ticket as t", "t.id", "r.ticket_id")
 				.select(
 					"r.user_id",
-					knex.raw`DATE_FORMAT(t.timestamp, '%Y-%m') AS month`,
-					knex.raw`COUNT(*) AS count`,
+					knex.raw("DATE_FORMAT(t.timestamp, '%Y-%m') AS month"),
+					knex.raw("COUNT(*) AS count"),
 				)
-				.groupBy("r.user_id", knex.raw`DATE_FORMAT(t.timestamp, '%Y-%m')`);
+				.groupBy("r.user_id", "month");
 			if (from) {
-				userMonthQuery.where("t.timestamp", ">=", from);
+				userMonthQuery.where("t.timestamp", ">=", from.toISOString());
 			}
 			if (to) {
-				userMonthQuery.where("t.timestamp", "<", to);
+				userMonthQuery.where("t.timestamp", "<", to.toISOString());
 			}
 
 			const topUsersQuery = knex("user_month")
-				.select("user_id", knex.raw`SUM(count) AS tickets`)
+				.select("user_id", knex.raw("SUM(count) AS total"))
 				.groupBy("user_id")
-				.orderBy("tickets", "desc");
+				.orderBy("total", "desc");
 			if (user) {
-				for (const u of user.split(",")) {
-					console.log(u);
-					topUsersQuery.orWhere("user_id", "=", u);
-				}
+				topUsersQuery.where("user_id", "=", user);
 			} else if (top) {
 				topUsersQuery.limit(top);
 			}
 
-			const boundsQuery =
-				from && to
-					? knex.select(
-							knex.raw(
-								"CAST(DATE_FORMAT(?, '%Y-%m-01') AS DATE) AS start_month",
-								[from],
-							),
-							knex.raw("CAST(? AS DATETIME) AS end_time", [to]),
-						)
-					: knex("ticket").select(
-							knex.raw(
-								`CAST(DATE_FORMAT(${
-									from ? "?" : "MIN(timestamp)"
-								}, '%Y-%m-01') AS DATE) AS start_month`,
-								[from].filter(Boolean),
-							),
-							knex.raw(
-								`CAST(${to ? "?" : "MAX(timestamp)"} AS DATETIME) AS end_time`,
-								[to].filter(Boolean),
-							),
-						);
-
-			const monthsQuery = knex
-				.queryBuilder()
-				.select("start_month AS month")
-				.from("bounds")
-				.unionAll((qb) => {
-					qb.select(knex.raw`DATE_ADD(month, INTERVAL 1 MONTH)`)
-						.from("months")
-						.whereRaw(
-							"DATE_ADD(month, INTERVAL 1 MONTH) < (SELECT end_time FROM bounds)",
-						);
-				});
-
-			return knex
+			const query = knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
-				.with("bounds", boundsQuery)
-				.withRecursive("months", monthsQuery)
 				.select(
 					"u.id",
 					"u.name",
-					"u.avatar_url AS avatarUrl",
+					"u.avatar_url",
 					"u.color",
-					knex.raw`DATE_FORMAT(m.month, '%Y-%m') AS month`,
-					knex.raw`COALESCE(um.count, 0) AS count`,
+					"um.month",
+					"um.count",
+					"tu.total",
 				)
-				.from("top_users AS tu")
-				.crossJoin(knex.raw`months AS m`)
-				.leftJoin("user_month AS um", function () {
-					this.on("um.user_id", "tu.user_id").andOn(
-						knex.raw`um.month = DATE_FORMAT(m.month, '%Y-%m')`,
-					);
-				})
-				.join("user AS u", "u.id", "tu.user_id")
+				.from("top_users as tu")
+				.join("user_month as um", "um.user_id", "tu.user_id")
+				.join("user as u", "u.id", "um.user_id")
 				.orderBy([
-					{ column: "tu.tickets", order: "DESC" },
-					{ column: "u.id", order: "ASC" },
-					{ column: "m.month", order: "ASC" },
-				])
-				.then((rows: SqlResult) => {
-					return mapValues(
-						groupBy(rows, ({ id }) => id),
-						(data) => {
-							const { name, avatarUrl, color } = data[0]!;
-							return {
-								name,
-								avatarUrl,
-								color,
-								tickets: data.map(({ month, count }) => ({ month, count })),
-							};
-						},
-					) satisfies MonthlyData;
-				});
+					{ column: "tu.total", order: "desc" },
+					{ column: "um.month", order: "asc" },
+				]);
+
+			const rows: SqlResult = await query;
+			return mapValues(
+				Object.groupBy(rows, ({ id }) => id),
+				(data) => {
+					const { name, avatarUrl, color } = data![0]!;
+					return {
+						name,
+						avatarUrl,
+						color,
+						tickets: data!.map(({ month, count }) => ({ month, count })),
+					};
+				},
+			) satisfies MonthlyData;
 
 			type SqlResult = Array<{
 				id: string;
@@ -251,7 +208,7 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 
 	function wrapper(logic: (args: ValidatedArgs) => Promise<unknown>) {
 		return (request: any, reply: FastifyReply) => {
-			reply.header("Cache-Control", "public, max-age=86400");
+			// reply.header("Cache-Control", "public, max-age=86400");
 			try {
 				return logic(validate(request));
 			} catch (e) {

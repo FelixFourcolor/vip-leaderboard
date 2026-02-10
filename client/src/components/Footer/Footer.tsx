@@ -8,7 +8,9 @@ import styles from "./Footer.module.css";
 const cx = classNames.bind(styles);
 
 export function Footer() {
-	const lastUpdated = useGetLastUpdated()?.toLocaleString();
+	const lastUpdated = useGetLastUpdated()?.toLocaleString(undefined, {
+		timeZone: "UTC",
+	});
 	return (
 		<footer>
 			<hr />
