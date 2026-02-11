@@ -118,9 +118,6 @@ export function Chart({ height }: Props) {
 		);
 	}, [data, months]);
 
-	const seriesLength = getAnyValue(queryData)?.tickets.length || 0;
-	const labelInterval = Math.ceil(seriesLength / (cumulative ? 12 : 24));
-
 	const controls = (
 		<div className={cx("controls")}>
 			<Toggle
@@ -153,14 +150,23 @@ export function Chart({ height }: Props) {
 				return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
 			}}
 			pointLabel={({ seriesId, indexInSeries, data: { x, y } }) => {
-				const date = x as any as Date; // nivo type is wrong
-				if (
-					highlightedUser === seriesId &&
-					((seriesLength - 1 - indexInSeries) % labelInterval === 0 ||
-						isolatedPoints[seriesId]?.has(toYyyyMm(date)))
-				) {
+				if (highlightedUser !== seriesId || y === null) {
+					return "";
+				}
+
+				const seriesLength = cumulative
+					? months.length
+					: (queryData[seriesId]?.tickets.length ?? 0);
+				const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
+				if ((seriesLength - 1 - indexInSeries) % labelInterval === 0) {
 					return String(y);
 				}
+
+				const date = x as any as Date; // nivo type is wrong
+				if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
+					return String(y);
+				}
+
 				return "";
 			}}
 			pointSymbol={({ color, datum: { x, y } }) => {
@@ -229,12 +235,6 @@ export function Chart({ height }: Props) {
 			{controls}
 		</div>
 	);
-}
-
-function getAnyValue<T>(obj: Record<any, T>): T | undefined {
-	for (const key in obj) {
-		return obj[key];
-	}
 }
 
 const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
