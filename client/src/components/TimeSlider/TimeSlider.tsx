@@ -29,7 +29,7 @@ export function TimeSlider({
 	);
 
 	const onChange = (values: [number, number]) => {
-		if (values[1] - values[0] >= 2) {
+		if (values[1] - values[0] >= 1) {
 			setValues(values);
 		}
 	};

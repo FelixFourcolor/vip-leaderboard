@@ -25,11 +25,11 @@ export function Chart({ height }: Props) {
 	const [from, setFrom] = useState(() => offset(to, { years: -2 }));
 	const [cumulative, setCumulative] = useState(false);
 
-	const data =
+	const queryData =
 		useLastDefined(
 			useGetMonthlyData({
 				cumulative,
-				top: 5,
+				top: 10,
 				from,
 				to: offset(to, { months: 1 }), // make "to" inclusive
 			}),
@@ -45,12 +45,12 @@ export function Chart({ height }: Props) {
 
 	const colorById = useMemo(() => {
 		return Object.fromEntries(
-			Object.keys(data).map((userId, i) => [
+			Object.keys(queryData).map((userId, i) => [
 				userId,
 				colorSchemes[i % colorSchemes.length]!,
 			]),
 		);
-	}, [data]);
+	}, [queryData]);
 
 	const idByColor = useMemo(
 		() =>
@@ -60,63 +60,66 @@ export function Chart({ height }: Props) {
 		[colorById],
 	);
 
-	const dataByMonth = useMemo(
-		() =>
-			mapValues(data, ({ tickets }) =>
-				Object.fromEntries(tickets.map(({ month, count }) => [month, count])),
-			),
-		[data],
-	);
-
 	const months = useMemo(() => monthsInRange(from, to), [from, to]);
+
+	const data = useMemo(
+		() =>
+			mapValues(queryData, ({ tickets }) => {
+				const ticketsByMonth = Object.fromEntries(
+					tickets.map(({ month, count }) => [month, count]),
+				);
+				let previous: number | null = null;
+				const data = months.map((month) => {
+					const tickets = ticketsByMonth[month];
+					if (tickets !== undefined) {
+						previous = tickets;
+						return [month, tickets] as const;
+					}
+					if (cumulative) {
+						return [month, previous] as const;
+					}
+					return [month, null] as const;
+				});
+				return Object.fromEntries(data);
+			}),
+		[queryData, cumulative, months],
+	);
 
 	const chartData = useMemo(() => {
 		const orderedData = highlightedUser
 			? (() => {
-					const { [highlightedUser]: first, ...rest } = dataByMonth;
-					return first ? { [highlightedUser]: first, ...rest } : dataByMonth;
+					const { [highlightedUser]: first, ...rest } = data;
+					return first ? { [highlightedUser]: first, ...rest } : data;
 				})()
-			: dataByMonth;
+			: data;
 
-		return Object.entries(orderedData).map(([id, ticketsByMonth]) => {
-			const data = months
-				.map((month) => {
-					const tickets = ticketsByMonth[month];
-					if (tickets !== undefined) {
-						return { x: month, y: tickets };
-					}
-					if (cumulative) {
-						return null;
-					}
-					return { x: month, y: null };
-				})
-				.filter((x) => x !== null);
-
-			return { id, data };
-		});
-	}, [dataByMonth, months, cumulative, highlightedUser]);
+		return Object.entries(orderedData).map(([id, ticketsByMonth]) => ({
+			id,
+			data: Object.entries(ticketsByMonth).map(([x, y]) => ({ x, y })),
+		}));
+	}, [data, highlightedUser]);
 
 	const isolatedPoints = useMemo(() => {
 		const windows = Array.from(slidingWindow(months, 3, true));
 		return mapValues(
-			dataByMonth,
+			data,
 			(ticketsByMonth) =>
 				new Set(
 					windows
 						.filter(([prev, , next]) => {
 							const prevMissing =
-								prev === undefined || ticketsByMonth[prev] === undefined;
+								prev === undefined || ticketsByMonth[prev] === null;
 							const nextMissing =
-								next === undefined || ticketsByMonth[next] === undefined;
+								next === undefined || ticketsByMonth[next] === null;
 							return prevMissing && nextMissing;
 						})
 						.map(([, value]) => value),
 				),
 		);
-	}, [dataByMonth, months]);
+	}, [data, months]);
 
-	const seriesLength = getAnyValue(data)?.tickets.length || 0;
-	const labelInterval = Math.ceil(seriesLength / 16);
+	const seriesLength = getAnyValue(queryData)?.tickets.length || 0;
+	const labelInterval = Math.ceil(seriesLength / (cumulative ? 12 : 24));
 
 	const controls = (
 		<div className={cx("controls")}>
@@ -129,7 +132,8 @@ export function Chart({ height }: Props) {
 			</Toggle>
 			<TimeSlider
 				domain={[
-					"2020-10", // hardcoded earliest month with "meaningful" data
+					"2020-10", // earliest month with "meaningful" data
+					// kinda hard to define "meaningful", so just hardcode a value
 					toYyyyMm(useGetLastUpdated()),
 				]}
 				initial={[from, to]}
@@ -148,10 +152,12 @@ export function Chart({ height }: Props) {
 				}
 				return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
 			}}
-			pointLabel={({ seriesId, indexInSeries, data: { y } }) => {
+			pointLabel={({ seriesId, indexInSeries, data: { x, y } }) => {
+				const date = x as any as Date; // nivo type is wrong
 				if (
 					highlightedUser === seriesId &&
-					(seriesLength - 1 - indexInSeries) % labelInterval === 0
+					((seriesLength - 1 - indexInSeries) % labelInterval === 0 ||
+						isolatedPoints[seriesId]?.has(toYyyyMm(date)))
 				) {
 					return String(y);
 				}
@@ -166,10 +172,9 @@ export function Chart({ height }: Props) {
 				) {
 					return <circle r={6} fill={color} />;
 				}
-				if (cumulative) {
-					return null;
-				}
-				const seriesId = idByColor[color]; // nivo's bug for not exposing seriesId
+				// nivo's bug for not exposing seriesId,
+				// requires a stupid workaround to determine seriesId from color
+				const seriesId = idByColor[color];
 				if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 					return <circle r={3} fill={color} />;
 				}
@@ -185,7 +190,7 @@ export function Chart({ height }: Props) {
 					return null;
 				}
 
-				const { color, avatarUrl, name } = data[seriesId]!;
+				const { color, avatarUrl, name } = queryData[seriesId]!;
 				const date = x as any as Date; // nivo type is wrong
 				const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
