@@ -1,61 +1,70 @@
-.container {
-    height: 20px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    margin: 0 1rem;
-}
-
 .track {
-    height: 2px;
-    width: 100%;
-    background-color: var(--bg-tertiary);
-    display: flex;
+	height: 20px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	margin: 0 1rem;
 
-    .selected {
-        background-color: var(--accent);
-        height: 4px;
-        align-self: center;
-    }
+	&,
+	.label {
+		cursor: grab !important;
+	}
 
-    .thumb {
-        height: 20px;
-        width: 4px;
-        background-color: var(--text-primary);
-    }
+	&.dragged,
+	&.dragged .label {
+		cursor: grabbing !important;
+	}
 
-    .limit {
-        position: absolute;
-        top: -7px;
-        height: 16px;
-        width: 3px;
-        background-color: var(--bg-tertiary);
+	.bar {
+		height: 2px;
+		width: 100%;
+		background-color: var(--bg-tertiary);
+		display: flex;
 
-        &.from {
-            left: -2px;
-        }
+		.selected {
+			background-color: var(--accent);
+			height: 4px;
+			align-self: center;
+		}
+	}
 
-        &.to {
-            right: -2px;
-        }
-    }
+	.thumb {
+		height: 20px;
+		width: 3px;
+		background-color: var(--accent);
+		outline: none;
+	}
 
-    .label {
-        cursor: default;
-        position: absolute;
-        top: 16px;
-        font-size: var(--text-mini);
-        color: var(--text-secondary);
-        font-weight: bold;
+	.limit {
+		position: absolute;
+		height: 16px;
+		background-color: var(--bg-tertiary);
 
-        &.min {
-            left: 0;
-            transform: translateX(-50%);
-        }
+		&.from {
+			left: -2px;
+		}
 
-        &.max {
-            right: 0;
-            transform: translateX(50%);
-        }
-    }
+		&.to {
+			right: -2px;
+		}
+	}
+
+	.label {
+		cursor: default;
+		position: absolute;
+		top: 22px;
+		font-size: var(--text-mini);
+		color: var(--text-secondary);
+		font-weight: bold;
+
+		&.min {
+			left: 0;
+			transform: translateX(-50%);
+		}
+
+		&.max {
+			right: 0;
+			transform: translateX(50%);
+		}
+	}
 }

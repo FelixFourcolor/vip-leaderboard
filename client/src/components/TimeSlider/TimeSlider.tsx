@@ -40,30 +40,34 @@ export function TimeSlider({
 	};
 
 	return (
-		<div className={cx("container")}>
-			<Range
-				// screw react-range's bad types!
-				values={values as number[]}
-				onChange={onChange as (values: number[]) => void}
-				onFinalChange={onFinalChange as (values: number[]) => void}
-				min={0}
-				step={1}
-				max={months.length - 1}
-				draggableTrack
-				renderTrack={({ props, children }) => (
-					<Track {...props} min={0} max={months.length - 1} values={values}>
-						{children}
-						<span className={cx("label", "min")}>{domainFrom}</span>
-						<span className={cx("label", "max")}>{domainTo}</span>
-					</Track>
-				)}
-				renderThumb={({ props }) => <Thumb {...props} />}
-			/>
-		</div>
+		<Range
+			// screw react-range's bad types!
+			values={values as number[]}
+			onChange={onChange as (values: number[]) => void}
+			onFinalChange={onFinalChange as (values: number[]) => void}
+			min={0}
+			step={1}
+			max={months.length - 1}
+			renderTrack={({ props, children, ...rest }) => (
+				<Track
+					{...props}
+					{...rest}
+					min={0}
+					max={months.length - 1}
+					values={values}
+				>
+					{children}
+					<span className={cx("label", "min")}>{domainFrom}</span>
+					<span className={cx("label", "max")}>{domainTo}</span>
+				</Track>
+			)}
+			renderThumb={({ props }) => <Thumb {...props} />}
+		/>
 	);
 }
 
 interface TrackProps extends ComponentProps<"div"> {
+	isDragged: boolean;
 	min: number;
 	max: number;
 	values: [number, number];
@@ -73,6 +77,7 @@ const Track = ({
 	min,
 	max,
 	values: [fromValue, toValue],
+	isDragged,
 	className,
 	children,
 	...props
@@ -82,10 +87,12 @@ const Track = ({
 	const selected = ((toValue - fromValue) / total) * 100;
 
 	return (
-		<div {...props} className={cx("track", className)}>
+		<div {...props} className={cx("track", isDragged && "dragged", className)}>
 			<Thumb className={cx("limit", "from")} />
-			<div style={{ width: `${pre}%` }} />
-			<div className={cx("selected")} style={{ width: `${selected}%` }} />
+			<div className={cx("bar")}>
+				<div style={{ width: `${pre}%` }} />
+				<div className={cx("selected")} style={{ width: `${selected}%` }} />
+			</div>
 			<Thumb className={cx("limit", "to")} />
 			{children}
 		</div>

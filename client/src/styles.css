@@ -1,33 +1,33 @@
 :root {
-    --text-normal: 16px;
-    --text-small: 14px;
-    --text-mini: 12px;
+	--text-normal: 16px;
+	--text-small: 14px;
+	--text-mini: 12px;
 
 
-    --bg-primary: #191724;
-    --bg-secondary: #21202e;
-    --bg-tertiary: #908caa;
-    --text-primary: #e0def4;
-    --text-secondary: #908caa;
-    --text-tertiary: #6e6a86;
-    --accent: #eb6f92;
+	--bg-primary: #191724;
+	--bg-secondary: #21202e;
+	--bg-tertiary: #908caa;
+	--text-primary: #e0def4;
+	--text-secondary: #908caa;
+	--text-tertiary: #6e6a86;
+	--accent: #eb6f92;
 
-    &[data-theme="zack"] {
-        --bg-primary: #faf4ed;
-        --bg-secondary: #f4ede8;
-        --bg-tertiary: #9893a5;
-        --text-primary: #575279;
-        --text-secondary: #797593;
-        --text-tertiary: #9893a5;
-    }
+	&[data-theme="zack"] {
+		--bg-primary: #faf4ed;
+		--bg-secondary: #f4ede8;
+		--bg-tertiary: #9893a5;
+		--text-primary: #575279;
+		--text-secondary: #797593;
+		--text-tertiary: #9893a5;
+	}
 
 }
 
 body {
-    font-family: sans-serif;
-    font-size: var(--text-normal);
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    height: 100%;
-    margin: 0;
+	font-family: sans-serif;
+	font-size: var(--text-normal);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	height: 100%;
+	margin: 0;
 }
