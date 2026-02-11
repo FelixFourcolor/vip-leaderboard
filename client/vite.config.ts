@@ -4,9 +4,12 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [react()],
-	resolve: {
-		alias: {
-			"@": resolve(__dirname, "./src"),
+	server: {
+		proxy: {
+			"/": { target: "http://localhost:3001" },
 		},
+	},
+	resolve: {
+		alias: { "@": resolve(__dirname, "./src") },
 	},
 });
