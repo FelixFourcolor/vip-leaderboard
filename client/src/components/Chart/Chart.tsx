@@ -2,30 +2,39 @@ import { ResponsiveLine } from "@nivo/line";
 import type { PartialTheme } from "@nivo/theming";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
-import { useGetLastUpdated } from "@/api/queries";
-import type { MonthlyData } from "@/api/types";
+import { useMemo, useState } from "react";
+import { useGetLastUpdated, useGetMonthlyData } from "@/api/queries";
 import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
+import { useLastDefined } from "@/hooks/useLastDefined";
 import { useZackMode } from "@/hooks/useZackMode";
 import { slidingWindow } from "@/utils/iter";
-import { monthsInRange, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { Tooltip } from "./Tooltip";
 
 const cx = classNames.bind(styles);
 
-type State<T> = [initial: T, onChange: Dispatch<SetStateAction<T>>];
-
 type Props = {
-	data: MonthlyData;
 	height: number;
-	cumulative: State<boolean>;
-	from: State<string>;
-	to: State<string>;
 };
 
-export function Chart({ data, height, cumulative, from, to }: Props) {
+export function Chart({ height }: Props) {
+	const lastUpdated = useGetLastUpdated();
+	const [to, setTo] = useState(() => toYyyyMm(lastUpdated));
+	const [from, setFrom] = useState(() => offset(to, { years: -2 }));
+	const [cumulative, setCumulative] = useState(false);
+
+	const data =
+		useLastDefined(
+			useGetMonthlyData({
+				cumulative,
+				top: 5,
+				from,
+				to: offset(to, { months: 1 }), // make "to" inclusive
+			}),
+		) ?? {};
+
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [hoveredPoint, setHoveredPoint] = useState<{
 		x: Date;
@@ -59,11 +68,7 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 		[data],
 	);
 
-	const months = useMemo(
-		// query "to" is exclusive, but monthsInRange is inclusive
-		() => monthsInRange(from[0], to[0]).slice(0, -1),
-		[from[0], to[0]],
-	);
+	const months = useMemo(() => monthsInRange(from, to), [from, to]);
 
 	const chartData = useMemo(() => {
 		const orderedData = highlightedUser
@@ -80,7 +85,7 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 					if (tickets !== undefined) {
 						return { x: month, y: tickets };
 					}
-					if (cumulative[0]) {
+					if (cumulative) {
 						return null;
 					}
 					return { x: month, y: null };
@@ -89,7 +94,7 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 
 			return { id, data };
 		});
-	}, [dataByMonth, months, cumulative[0], highlightedUser]);
+	}, [dataByMonth, months, cumulative, highlightedUser]);
 
 	const isolatedPoints = useMemo(() => {
 		const windows = Array.from(slidingWindow(months, 3, true));
@@ -109,10 +114,29 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 				),
 		);
 	}, [dataByMonth, months]);
-	console.log(isolatedPoints);
 
 	const seriesLength = getAnyValue(data)?.tickets.length || 0;
 	const labelInterval = Math.ceil(seriesLength / 16);
+
+	const controls = (
+		<div className={cx("controls")}>
+			<Toggle
+				initial={cumulative}
+				onChange={setCumulative}
+				className={cx("toggle")}
+			>
+				Cumulative
+			</Toggle>
+			<TimeSlider
+				domain={[
+					"2020-10", // hardcoded earliest month with "meaningful" data
+					toYyyyMm(useGetLastUpdated()),
+				]}
+				initial={[from, to]}
+				onChange={[setFrom, setTo]}
+			/>
+		</div>
+	);
 
 	const line = (
 		<CustomResponsiveLine
@@ -142,7 +166,9 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 				) {
 					return <circle r={6} fill={color} />;
 				}
-
+				if (cumulative) {
+					return null;
+				}
 				const seriesId = idByColor[color]; // nivo's bug for not exposing seriesId
 				if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 					return <circle r={3} fill={color} />;
@@ -181,33 +207,6 @@ export function Chart({ data, height, cumulative, from, to }: Props) {
 		/>
 	);
 
-	const controls = (
-		<div className={cx("controls")}>
-			<Toggle
-				initial={cumulative[0]}
-				onChange={cumulative[1]}
-				className={cx("toggle")}
-			>
-				Cumulative
-			</Toggle>
-			<TimeSlider
-				domain={{
-					// hardcoded earliest month with "meaningful" data
-					from: "2020-10",
-					to: useGetLastUpdated().toISOString().slice(0, 7),
-				}}
-				initial={{
-					from: from[0],
-					to: to[0],
-				}}
-				onChange={{
-					from: from[1],
-					to: to[1],
-				}}
-			/>
-		</div>
-	);
-
 	return (
 		<div className={cx("container")}>
 			<div
@@ -237,6 +236,7 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 	<ResponsiveLine
 		theme={themeConfig}
 		curve="monotoneX"
+		animate={false} // nivo's animation looks nice but is buggy
 		useMesh
 		enableCrosshair={false}
 		enablePointLabel
@@ -244,7 +244,7 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 		xScale={{
 			format: "%Y-%m",
 			type: "time",
-			// useUTC means convert input date to local time for display.Set to false to not apply any timezone conversion
+			// useUTC means convert input date to local time for display. False to not apply any timezone conversion
 			useUTC: false,
 		}}
 		margin={{ top: 12, right: 24, bottom: 24, left: 60 }}

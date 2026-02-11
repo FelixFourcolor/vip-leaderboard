@@ -6,28 +6,26 @@ import styles from "./TimeSlider.module.css";
 
 const cx = classNames.bind(styles);
 
-type MonthRange = {
-	from: string;
-	to: string;
-};
+type MonthRange = [from: string, to: string];
 
 type Props = {
 	domain: MonthRange;
 	initial: MonthRange;
-	onChange: {
-		from: (from: string) => void;
-		to: (to: string) => void;
-	};
+	onChange: [from: (from: string) => void, to: (to: string) => void];
 };
 
-export function TimeSlider({ domain, initial, ...props }: Props) {
+export function TimeSlider({
+	domain: [domainFrom, domainTo],
+	initial: [initialFrom, initialTo],
+	onChange: [onChangeFrom, onChangeTo],
+}: Props) {
 	const months = useMemo(
-		() => monthsInRange(domain.from, domain.to),
-		[domain.from, domain.to],
+		() => monthsInRange(domainFrom, domainTo),
+		[domainFrom, domainTo],
 	);
 
 	const [values, setValues] = useState<[number, number]>(
-		() => [months.indexOf(initial.from), months.indexOf(initial.to)] as const,
+		() => [months.indexOf(initialFrom), months.indexOf(initialTo)] as const,
 	);
 
 	const onChange = (values: [number, number]) => {
@@ -36,9 +34,9 @@ export function TimeSlider({ domain, initial, ...props }: Props) {
 		}
 	};
 
-	const onFinalChange = (values: [number, number]) => {
-		props.onChange.from(months[values[0]]!);
-		props.onChange.to(months[values[1]]!);
+	const onFinalChange = ([from, to]: [number, number]) => {
+		onChangeFrom(months[from]!);
+		onChangeTo(months[to]!);
 	};
 
 	return (
@@ -55,8 +53,8 @@ export function TimeSlider({ domain, initial, ...props }: Props) {
 				renderTrack={({ props, children }) => (
 					<Track {...props} min={0} max={months.length - 1} values={values}>
 						{children}
-						<span className={cx("label", "min")}>{domain.from}</span>
-						<span className={cx("label", "max")}>{domain.to}</span>
+						<span className={cx("label", "min")}>{domainFrom}</span>
+						<span className={cx("label", "max")}>{domainTo}</span>
 					</Track>
 				)}
 				renderThumb={({ props }) => <Thumb {...props} />}

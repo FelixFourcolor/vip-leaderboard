@@ -19,3 +19,17 @@ export function monthsInRange(from: string, to: string): string[] {
 		},
 	);
 }
+
+export function offset(
+	yyymm: string,
+	offset: Partial<Record<"months" | "years", number>>,
+): string {
+	const date = new Date(yyymm);
+	if (offset.months) {
+		date.setUTCMonth(date.getUTCMonth() + offset.months);
+	}
+	if (offset.years) {
+		date.setUTCFullYear(date.getUTCFullYear() + offset.years);
+	}
+	return toYyyyMm(date);
+}
