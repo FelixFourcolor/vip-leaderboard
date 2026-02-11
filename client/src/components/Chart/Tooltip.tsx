@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
 import type { MonthTickets, User } from "@/api/types";
 import { UserHeader } from "@/components/UserHeader";
+import { useOnMount } from "@/hooks/useOnMount";
 import styles from "./Tooltip.module.css";
 
 const cx = classNames.bind(styles);
@@ -17,9 +18,10 @@ export function Tooltip({
 	onMount,
 	...user
 }: Props) {
+	useOnMount(onMount);
+
 	return (
 		<div
-			ref={onMount}
 			style={{ ["--series-color" as string]: seriesColor }}
 			className={cx("tooltip")}
 		>
