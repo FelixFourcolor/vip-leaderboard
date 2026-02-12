@@ -241,7 +241,6 @@ const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
 	<ResponsiveLine
 		theme={themeConfig}
 		curve="monotoneX"
-		animate={false} // nivo's animation looks nice but is buggy
 		useMesh
 		enableCrosshair={false}
 		enablePointLabel
