@@ -58,7 +58,12 @@ export function TimeSlider({
 					<span className={cx("label", "max")}>{domainTo}</span>
 				</Track>
 			)}
-			renderThumb={({ props }) => <Thumb {...props} />}
+			renderThumb={({ props, isDragged, index }) => (
+				<Thumb
+					{...props}
+					popup={isDragged ? months[values[index]!] : undefined}
+				/>
+			)}
 		/>
 	);
 }
@@ -96,6 +101,12 @@ const Track = ({
 	);
 };
 
-const Thumb: React.FC<ComponentProps<"div">> = ({ className, ...props }) => (
-	<div {...props} className={cx("thumb", className)} />
+type ThumbProps = ComponentProps<"div"> & {
+	popup?: string;
+};
+
+const Thumb: React.FC<ThumbProps> = ({ className, popup, ...props }) => (
+	<div {...props} className={cx("thumb", className)}>
+		{popup && <span className={cx("label", "popup")}>{popup}</span>}
+	</div>
 );

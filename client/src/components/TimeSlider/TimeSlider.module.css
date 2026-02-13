@@ -29,10 +29,18 @@
 	}
 
 	.thumb {
+		position: relative;
 		height: 20px;
 		width: 3px;
 		background-color: var(--accent);
 		outline: none;
+
+		.popup {
+			top: -16px;
+			left: 50%;
+			transform: translateX(-50%);
+			color: var(--accent);
+		}
 	}
 
 	.limit {
@@ -53,7 +61,7 @@
 	.label {
 		cursor: default;
 		position: absolute;
-		top: 22px;
+		bottom: -16px;
 		font-size: var(--text-mini);
 		color: var(--text-secondary);
 		font-weight: bold;

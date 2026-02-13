@@ -29,7 +29,7 @@ export function Chart({ height }: Props) {
 		useLastDefined(
 			useGetMonthlyData({
 				cumulative,
-				top: 10,
+				top: 5,
 				from,
 				to: offset(to, { months: 1 }), // make "to" inclusive
 			}),
@@ -143,7 +143,7 @@ export function Chart({ height }: Props) {
 		<CustomResponsiveLine
 			data={chartData}
 			colors={({ id }) => {
-				const color = colorById[id] ?? colorSchemes[0];
+				const color = colorById[id]!;
 				if (!highlightedUser || highlightedUser === id) {
 					return color;
 				}
@@ -189,13 +189,13 @@ export function Chart({ height }: Props) {
 				point: {
 					seriesId,
 					data: { x, y },
-					seriesColor,
 				},
 			}) => {
 				if (y === null) {
 					return null;
 				}
 
+				const seriesColor = colorById[seriesId]!;
 				const { color, avatarUrl, name } = queryData[seriesId]!;
 				const date = x as any as Date; // nivo type is wrong
 				const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -221,7 +221,6 @@ export function Chart({ height }: Props) {
 	return (
 		<div className={cx("container")}>
 			<div
-				role="none"
 				className={cx("chart")}
 				style={{ height }}
 				onMouseLeave={() => {

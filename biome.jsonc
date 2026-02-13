@@ -1,17 +1,18 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
-	"linter": {
-		"includes": ["**/*.ts", "**/*.tsx"],
-		"rules": {
-			"style": {
-				"noNonNullAssertion": "off"
-			},
-			"suspicious": {
-				"noExplicitAny": "off"
-			},
-			"correctness": {
-				"useParseIntRadix": "off"
-			}
-		}
-	}
+    "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+    "linter": {
+        "includes": ["**/*.ts", "**/*.tsx"],
+        "rules": {
+            "style": {
+                "noNonNullAssertion": "off",
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+            },
+            "correctness": {
+                "useParseIntRadix": "off",
+            },
+            "a11y": "off",
+        },
+    },
 }

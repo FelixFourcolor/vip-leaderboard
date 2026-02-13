@@ -11,11 +11,7 @@ export function UserHeader({ name, avatarUrl, color }: Partial<User>) {
 			className={cx("header")}
 		>
 			{avatarUrl && (
-				<img
-					src={`${avatarUrl}?size=24`}
-					alt={`${name}'s avatar`}
-					className={cx("avatar")}
-				/>
+				<img src={`${avatarUrl}?size=24`} className={cx("avatar")} />
 			)}
 			<div className={cx("name")}>{name}</div>
 		</div>
