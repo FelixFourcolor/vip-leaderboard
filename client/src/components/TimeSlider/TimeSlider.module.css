@@ -23,7 +23,7 @@
 
 		.selected {
 			background-color: var(--accent);
-			height: 4px;
+			height: 3px;
 			align-self: center;
 		}
 	}
@@ -38,6 +38,7 @@
 	.limit {
 		position: absolute;
 		height: 16px;
+		width: 2px;
 		background-color: var(--bg-tertiary);
 
 		&.from {

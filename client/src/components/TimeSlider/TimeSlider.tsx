@@ -24,9 +24,12 @@ export function TimeSlider({
 		[domainFrom, domainTo],
 	);
 
-	const [values, setValues] = useState<[number, number]>(
-		() => [months.indexOf(initialFrom), months.indexOf(initialTo)] as const,
-	);
+	const max = months.length - 1;
+
+	const [values, setValues] = useState<[number, number]>(() => [
+		months.indexOf(initialFrom),
+		months.indexOf(initialTo),
+	]);
 
 	const onChange = (values: [number, number]) => {
 		if (values[1] - values[0] >= 1) {
@@ -47,15 +50,9 @@ export function TimeSlider({
 			onFinalChange={onFinalChange as (values: number[]) => void}
 			min={0}
 			step={1}
-			max={months.length - 1}
+			max={max}
 			renderTrack={({ props, children, ...rest }) => (
-				<Track
-					{...props}
-					{...rest}
-					min={0}
-					max={months.length - 1}
-					values={values}
-				>
+				<Track {...props} {...rest} min={0} max={max} values={values}>
 					{children}
 					<span className={cx("label", "min")}>{domainFrom}</span>
 					<span className={cx("label", "max")}>{domainTo}</span>

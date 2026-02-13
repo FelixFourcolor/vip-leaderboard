@@ -116,7 +116,7 @@ export async function startServer(port = 3001) {
 				.select(
 					"u.id",
 					"u.name",
-					"u.avatar_url",
+					"u.avatar_url as avatarUrl",
 					"u.color",
 					"um.month",
 					"um.count",
