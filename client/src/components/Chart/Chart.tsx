@@ -1,8 +1,7 @@
-import { ResponsiveLine } from "@nivo/line";
-import type { PartialTheme } from "@nivo/theming";
+import type { Point, PointTooltipProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useGetLastUpdated, useGetMonthlyData } from "@/api/queries";
 import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
@@ -11,12 +10,19 @@ import { useZackMode } from "@/hooks/useZackMode";
 import { slidingWindow } from "@/utils/iter";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
-import { Tooltip } from "./Tooltip";
+import { ChartContext } from "./context";
+import { Line } from "./Line";
+import { PointSymbol } from "./PointSymbol";
 
 const cx = classNames.bind(styles);
 
 type Props = {
 	height: number;
+};
+
+export type ChartPoint = {
+	id: string;
+	data: { x: Date; y: number | null }[];
 };
 
 export function Chart({ height }: Props) {
@@ -52,6 +58,7 @@ export function Chart({ height }: Props) {
 		);
 	}, [queryData]);
 
+	// workaround for nivo's bug for not exposing seriesId for each point
 	const idByColor = useMemo(
 		() =>
 			Object.fromEntries(
@@ -76,7 +83,7 @@ export function Chart({ height }: Props) {
 						return [month, tickets] as const;
 					}
 					if (cumulative) {
-						return [month, previous] as const;
+						return [month, previous ?? 0] as const;
 					}
 					return [month, null] as const;
 				});
@@ -85,7 +92,7 @@ export function Chart({ height }: Props) {
 		[queryData, cumulative, months],
 	);
 
-	const chartData = useMemo(() => {
+	const chartData = useMemo<ChartPoint[]>(() => {
 		const orderedData = highlightedUser
 			? (() => {
 					const { [highlightedUser]: first, ...rest } = data;
@@ -95,7 +102,10 @@ export function Chart({ height }: Props) {
 
 		return Object.entries(orderedData).map(([id, ticketsByMonth]) => ({
 			id,
-			data: Object.entries(ticketsByMonth).map(([x, y]) => ({ x, y })),
+			data: Object.entries(ticketsByMonth).map(([x, y]) => ({
+				x: new Date(x),
+				y,
+			})),
 		}));
 	}, [data, highlightedUser]);
 
@@ -107,10 +117,8 @@ export function Chart({ height }: Props) {
 				new Set(
 					windows
 						.filter(([prev, , next]) => {
-							const prevMissing =
-								prev === undefined || ticketsByMonth[prev] === null;
-							const nextMissing =
-								next === undefined || ticketsByMonth[next] === null;
+							const prevMissing = !prev || ticketsByMonth[prev] === null;
+							const nextMissing = !next || ticketsByMonth[next] === null;
 							return prevMissing && nextMissing;
 						})
 						.map(([, value]) => value),
@@ -129,8 +137,10 @@ export function Chart({ height }: Props) {
 			</Toggle>
 			<TimeSlider
 				domain={[
-					"2020-10", // earliest month with "meaningful" data
-					// kinda hard to define "meaningful", so just hardcode a value
+					// earliest month with meaningful data
+					"2020-01",
+					// kinda hard to define "meaningful",
+					// so just hardcode a value instead of querying it
 					toYyyyMm(useGetLastUpdated()),
 				]}
 				initial={[from, to]}
@@ -139,123 +149,84 @@ export function Chart({ height }: Props) {
 		</div>
 	);
 
-	const line = (
-		<CustomResponsiveLine
-			data={chartData}
-			colors={({ id }) => {
-				const color = colorById[id]!;
-				if (!highlightedUser || highlightedUser === id) {
-					return color;
-				}
-				return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
-			}}
-			pointLabel={({ seriesId, indexInSeries, data: { x, y } }) => {
-				if (highlightedUser !== seriesId || y === null) {
-					return "";
-				}
+	const onMouseMove = useCallback(
+		({ point: { seriesId, data } }: PointTooltipProps<ChartPoint>) => {
+			const { x, y } = data;
+			if (y !== null) {
+				setHighlightedUser(seriesId);
+				setHoveredPoint({ x, y });
+			}
+			return null;
+		},
+		[],
+	);
 
-				const seriesLength = cumulative
-					? months.length
-					: (queryData[seriesId]?.tickets.length ?? 0);
-				const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
-				if ((seriesLength - 1 - indexInSeries) % labelInterval === 0) {
-					return String(y);
-				}
-
-				const date = x as any as Date; // nivo type is wrong
-				if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
-					return String(y);
-				}
-
+	const pointLabel = useCallback(
+		({ seriesId, indexInSeries, data: { x: date, y } }: Point<ChartPoint>) => {
+			if (highlightedUser !== seriesId || y === null) {
 				return "";
-			}}
-			pointSymbol={({ color, datum: { x, y } }) => {
-				const date = x as any as Date; // nivo type is wrong
-				if (
-					hoveredPoint &&
-					hoveredPoint.x.getTime() === date.getTime() &&
-					hoveredPoint.y === y
-				) {
-					return <circle r={6} fill={color} />;
-				}
-				// nivo's bug for not exposing seriesId,
-				// requires a stupid workaround to determine seriesId from color
-				const seriesId = idByColor[color];
-				if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
-					return <circle r={3} fill={color} />;
-				}
-			}}
-			tooltip={({
-				point: {
-					seriesId,
-					data: { x, y },
-				},
-			}) => {
-				if (y === null) {
-					return null;
-				}
+			}
 
-				const seriesColor = colorById[seriesId]!;
-				const { color, avatarUrl, name } = queryData[seriesId]!;
-				const date = x as any as Date; // nivo type is wrong
-				const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+			const seriesLength = cumulative
+				? months.length
+				: (queryData[seriesId]?.tickets.length ?? 0);
+			const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
+			if ((seriesLength - 1 - indexInSeries) % labelInterval === 0) {
+				return String(y);
+			}
 
-				return (
-					<Tooltip
-						name={name}
-						color={color}
-						avatarUrl={avatarUrl}
-						seriesColor={seriesColor}
-						month={month}
-						count={y}
-						onMount={() => {
-							setHighlightedUser(seriesId);
-							setHoveredPoint({ x: date, y });
-						}}
-					/>
-				);
-			}}
-		/>
+			if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
+				return String(y);
+			}
+
+			return "";
+		},
+		[highlightedUser, cumulative, months.length, queryData, isolatedPoints],
+	);
+
+	const lineColor = useCallback(
+		({ id }: { id: string }) => {
+			const color = colorById[id]!;
+			if (!highlightedUser || highlightedUser === id) {
+				return color;
+			}
+			return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
+		},
+		[colorById, highlightedUser, isZack],
 	);
 
 	return (
-		<div className={cx("container")}>
-			<div
-				className={cx("chart")}
-				style={{ height }}
-				onMouseLeave={() => {
-					setHighlightedUser(null);
-					setHoveredPoint(null);
-				}}
-			>
-				{line}
+		<ChartContext.Provider
+			value={{
+				hoveredPoint,
+				idByColor,
+				isolatedPoints,
+				colorById,
+				queryData,
+			}}
+		>
+			<div className={cx("container")}>
+				<div
+					style={{ height }}
+					onMouseLeave={() => {
+						setHighlightedUser(null);
+						setHoveredPoint(null);
+					}}
+				>
+					<Line
+						data={chartData}
+						colors={lineColor}
+						pointLabel={pointLabel}
+						pointSymbol={PointSymbol}
+						tooltip={onMouseMove}
+					/>
+				</div>
+				<br />
+				{controls}
 			</div>
-			<br />
-			{controls}
-		</div>
+		</ChartContext.Provider>
 	);
 }
-
-const CustomResponsiveLine: typeof ResponsiveLine = (props) => (
-	<ResponsiveLine
-		theme={themeConfig}
-		curve="monotoneX"
-		useMesh
-		enableCrosshair={false}
-		enablePointLabel
-		xFormat="time:%Y-%m"
-		xScale={{
-			format: "%Y-%m",
-			type: "time",
-			// useUTC means convert input date to local time for display. False to not apply any timezone conversion
-			useUTC: false,
-		}}
-		margin={{ top: 12, right: 24, bottom: 24, left: 60 }}
-		axisLeft={{ legend: "Tickets handled", legendOffset: -44 }}
-		axisBottom={{ format: "%Y-%m" }}
-		{...props}
-	/>
-);
 
 const colorSchemes = [
 	"#1f77b4",
@@ -269,35 +240,3 @@ const colorSchemes = [
 	"#bcbd22",
 	"#17becf",
 ] as const;
-
-const themeConfig: PartialTheme = {
-	background: "var(--bg-secondary)",
-	text: {
-		fill: "var(--text-primary)",
-		fontSize: "var(--text-mini)",
-	},
-	crosshair: {
-		line: { stroke: "var(--text-secondary)" },
-	},
-	axis: {
-		ticks: {
-			line: {
-				stroke: "var(--text-tertiary)",
-				strokeWidth: 0.5,
-			},
-			text: {
-				fill: "var(--text-secondary)",
-				fontWeight: "bold",
-			},
-		},
-		legend: {
-			text: { fontSize: "var(--text-regular)" },
-		},
-	},
-	grid: {
-		line: {
-			stroke: "var(--text-tertiary)",
-			strokeWidth: 0.5,
-		},
-	},
-} as const;

@@ -22,9 +22,12 @@ export function monthsInRange(from: string, to: string): string[] {
 
 export function offset(
 	yyymm: string,
-	offset: Partial<Record<"months" | "years", number>>,
+	offset: Partial<Record<"days" | "months" | "years", number>>,
 ): string {
 	const date = new Date(yyymm);
+	if (offset.days) {
+		date.setUTCDate(date.getUTCDate() + offset.days);
+	}
 	if (offset.months) {
 		date.setUTCMonth(date.getUTCMonth() + offset.months);
 	}

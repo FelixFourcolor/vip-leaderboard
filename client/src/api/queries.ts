@@ -19,7 +19,9 @@ type MonthlyDataParams = { from?: string; to?: string; cumulative: boolean } & (
 	| { top?: never; user?: string }
 );
 
-export function useGetMonthlyData(params: MonthlyDataParams) {
+export function useGetMonthlyData(
+	params: MonthlyDataParams,
+): MonthlyData | undefined {
 	const { cumulative, ...apiParams } = params;
 	const query = new URLSearchParams(
 		Object.entries(apiParams).filter(([_, v]) => v !== undefined),
@@ -42,5 +44,5 @@ export function useGetMonthlyData(params: MonthlyDataParams) {
 			return { month, count: cumulativeCount };
 		});
 		return { ...userInfo, tickets: cumulativeTickets };
-	}) satisfies MonthlyData;
+	});
 }
