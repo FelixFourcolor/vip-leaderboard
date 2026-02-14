@@ -5,16 +5,16 @@ import classNames from "classnames/bind";
 import { createPortal } from "react-dom";
 import { UserHeader } from "@/components/UserHeader";
 import { toYyyyMm } from "@/utils/time";
-import type { ChartPoint } from "./Chart";
+import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
 
-export function PointSymbol({
+export function ChartPoint({
 	color,
 	datum: { x, y },
-}: DotsItemSymbolProps<Point<ChartPoint>>) {
+}: DotsItemSymbolProps<Point<ChartSeries>>) {
 	const { hoveredPoint, idByColor, isolatedPoints } = useChart();
 	const date = x as any as Date; // nivo type is wrong
 
@@ -23,18 +23,16 @@ export function PointSymbol({
 		if (!seriesId) {
 			return <circle r={6} fill={color} />;
 		}
-		return <TooltipPoint color={color} date={date} y={y} seriesId={seriesId} />;
+		return <PointWithTooltip {...{ color, date, y, seriesId }} />;
 	}
 
 	const seriesId = idByColor[color];
 	if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 		return <circle r={3} fill={color} />;
 	}
-
-	return null;
 }
 
-function TooltipPoint({
+function PointWithTooltip({
 	color,
 	date,
 	y,

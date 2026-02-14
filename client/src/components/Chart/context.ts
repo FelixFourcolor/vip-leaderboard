@@ -7,6 +7,7 @@ interface ChartContextValue {
 	isolatedPoints: Record<string, Set<string>>;
 	colorById: Record<string, string>;
 	queryData: MonthlyData;
+	highlightedUser: string | null;
 }
 
 export const ChartContext = createContext<ChartContextValue | null>(null);

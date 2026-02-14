@@ -1,37 +1,28 @@
-import type { Point, PointTooltipProps } from "@nivo/line";
+import type { PointTooltipProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
 import { useGetMonthlyData } from "@/api/hooks";
-import { TimeSlider } from "@/components/TimeSlider";
-import { Toggle } from "@/components/Toggle";
 import { useLastDefined } from "@/hooks/useLastDefined";
-import { useZackMode } from "@/hooks/useZackMode";
-import { paramDefaults, Route } from "@/routes/index";
+import { useSearch } from "@/routes/index";
 import { slidingWindow } from "@/utils/iter";
-import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset } from "@/utils/time";
 import styles from "./Chart.module.css";
+import { ChartLine } from "./ChartLine";
+import { ChartSettings } from "./ChartSettings";
 import { ChartContext } from "./context";
-import { Line } from "./Line";
-import { PointSymbol } from "./PointSymbol";
 
 const cx = classNames.bind(styles);
 
-type Props = {
-	height: number;
-};
+type Props = { height: number };
 
-export type ChartPoint = {
+export type ChartSeries = {
 	id: string;
 	data: { x: Date; y: number | null }[];
 };
 
 export function Chart({ height }: Props) {
-	const { to, from, cumulative, top } = {
-		...paramDefaults,
-		...Route.useSearch(),
-	};
-	const navigate = Route.useNavigate();
+	const [{ to, from, cumulative, top }] = useSearch();
 
 	const queryData =
 		useLastDefined(
@@ -48,8 +39,6 @@ export function Chart({ height }: Props) {
 		x: Date;
 		y: number;
 	} | null>(null);
-
-	const [isZack] = useZackMode();
 
 	const colorById = useMemo(() => {
 		return Object.fromEntries(
@@ -94,7 +83,7 @@ export function Chart({ height }: Props) {
 		[queryData, cumulative, months],
 	);
 
-	const chartData = useMemo<ChartPoint[]>(() => {
+	const chartData = useMemo<ChartSeries[]>(() => {
 		const orderedData = highlightedUser
 			? (() => {
 					const { [highlightedUser]: first, ...rest } = data;
@@ -128,34 +117,8 @@ export function Chart({ height }: Props) {
 		);
 	}, [data, months]);
 
-	const controls = (
-		<div className={cx("controls")}>
-			<Toggle
-				value={cumulative}
-				onChange={(cumulative) => navigate({ search: { cumulative } })}
-				className={cx("toggle")}
-			>
-				Cumulative
-			</Toggle>
-			<TimeSlider
-				domain={[
-					// earliest month with meaningful data
-					"2020-01",
-					// kinda hard to define "meaningful",
-					// so just hardcode a value instead of querying it
-					paramDefaults.to,
-				]}
-				selected={[from, to]}
-				onChange={[
-					(from) => navigate({ search: { from } }),
-					(to) => navigate({ search: { to } }),
-				]}
-			/>
-		</div>
-	);
-
 	const onMouseMove = useCallback(
-		({ point: { seriesId, data } }: PointTooltipProps<ChartPoint>) => {
+		({ point: { seriesId, data } }: PointTooltipProps<ChartSeries>) => {
 			const { x, y } = data;
 			if (y !== null) {
 				setHighlightedUser(seriesId);
@@ -166,39 +129,10 @@ export function Chart({ height }: Props) {
 		[],
 	);
 
-	const pointLabel = useCallback(
-		({ seriesId, indexInSeries, data: { x: date, y } }: Point<ChartPoint>) => {
-			if (highlightedUser !== seriesId || y === null) {
-				return "";
-			}
-
-			const seriesLength = cumulative
-				? months.length
-				: (queryData[seriesId]?.tickets.length ?? 0);
-			const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
-			if ((seriesLength - 1 - indexInSeries) % labelInterval === 0) {
-				return String(y);
-			}
-
-			if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
-				return String(y);
-			}
-
-			return "";
-		},
-		[highlightedUser, cumulative, months.length, queryData, isolatedPoints],
-	);
-
-	const lineColor = useCallback(
-		({ id }: { id: string }) => {
-			const color = colorById[id]!;
-			if (!highlightedUser || highlightedUser === id) {
-				return color;
-			}
-			return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
-		},
-		[colorById, highlightedUser, isZack],
-	);
+	const onMouseLeave = useCallback(() => {
+		setHighlightedUser(null);
+		setHoveredPoint(null);
+	}, []);
 
 	return (
 		<ChartContext.Provider
@@ -208,26 +142,15 @@ export function Chart({ height }: Props) {
 				isolatedPoints,
 				colorById,
 				queryData,
+				highlightedUser,
 			}}
 		>
 			<div className={cx("container")}>
-				<div
-					style={{ height }}
-					onMouseLeave={() => {
-						setHighlightedUser(null);
-						setHoveredPoint(null);
-					}}
-				>
-					<Line
-						data={chartData}
-						colors={lineColor}
-						pointLabel={pointLabel}
-						pointSymbol={PointSymbol}
-						tooltip={onMouseMove}
-					/>
+				<div style={{ height }} onMouseLeave={onMouseLeave}>
+					<ChartLine data={chartData} tooltip={onMouseMove} />
 				</div>
 				<br />
-				{controls}
+				<ChartSettings />
 			</div>
 		</ChartContext.Provider>
 	);
