@@ -4,12 +4,11 @@ import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
 import { useGetMonthlyData } from "@/api/hooks";
 import { useLastDefined } from "@/hooks/useLastDefined";
-import { useSearch } from "@/routes/index";
 import { slidingWindow } from "@/utils/iter";
 import { monthsInRange, offset } from "@/utils/time";
 import styles from "./Chart.module.css";
+import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLine } from "./ChartLine";
-import { ChartSettings } from "./ChartSettings";
 import { ChartContext } from "./context";
 
 const cx = classNames.bind(styles);
@@ -22,7 +21,7 @@ export type ChartSeries = {
 };
 
 export function Chart({ height }: Props) {
-	const [{ to, from, cumulative, top }] = useSearch();
+	const [{ to, from, cumulative, top }] = useChartControls();
 
 	const queryData =
 		useLastDefined(
@@ -150,7 +149,7 @@ export function Chart({ height }: Props) {
 					<ChartLine data={chartData} tooltip={onMouseMove} />
 				</div>
 				<br />
-				<ChartSettings />
+				<ChartControls />
 			</div>
 		</ChartContext.Provider>
 	);

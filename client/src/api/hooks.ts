@@ -18,13 +18,10 @@ export function useGetLastUpdated(): Date {
 export function useGetMonthlyData(
 	params: MonthlyDataParams,
 ): MonthlyData | undefined {
-	const { cumulative, ...apiParams } = params;
-
 	const { data } = useQuery<MonthlyData>({
-		queryKey: ["monthly", apiParams, cumulative],
+		queryKey: ["monthly", params],
 		queryFn: () => getMonthlyData(params),
 		staleTime: Infinity,
 	});
-
 	return data;
 }

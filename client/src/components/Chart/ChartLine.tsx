@@ -1,9 +1,9 @@
 import { type Point, type PointTooltipProps, ResponsiveLine } from "@nivo/line";
 import { useCallback } from "react";
 import { useZackMode } from "@/hooks/useZackMode";
-import { useSearch } from "@/routes/index";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
+import { useChartControls } from "./ChartControls";
 import { ChartPoint } from "./ChartPoint";
 import { useChart } from "./context";
 
@@ -14,7 +14,7 @@ export const ChartLine = ({
 	data: ChartSeries[];
 	tooltip: (_: PointTooltipProps<ChartSeries>) => null;
 }) => {
-	const [{ cumulative }] = useSearch();
+	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
 	const { queryData, colorById, highlightedUser, isolatedPoints } = useChart();
 
