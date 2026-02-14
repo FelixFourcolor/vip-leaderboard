@@ -2,11 +2,12 @@ import type { Point, PointTooltipProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
-import { useGetLastUpdated, useGetMonthlyData } from "@/api/queries";
+import { useGetMonthlyData } from "@/api/hooks";
 import { TimeSlider } from "@/components/TimeSlider";
 import { Toggle } from "@/components/Toggle";
 import { useLastDefined } from "@/hooks/useLastDefined";
 import { useZackMode } from "@/hooks/useZackMode";
+import { paramDefaults, Route } from "@/routes/index";
 import { slidingWindow } from "@/utils/iter";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
@@ -26,16 +27,17 @@ export type ChartPoint = {
 };
 
 export function Chart({ height }: Props) {
-	const lastUpdated = useGetLastUpdated();
-	const [to, setTo] = useState(() => toYyyyMm(lastUpdated));
-	const [from, setFrom] = useState(() => offset(to, { years: -2 }));
-	const [cumulative, setCumulative] = useState(false);
+	const { to, from, cumulative, top } = {
+		...paramDefaults,
+		...Route.useSearch(),
+	};
+	const navigate = Route.useNavigate();
 
 	const queryData =
 		useLastDefined(
 			useGetMonthlyData({
 				cumulative,
-				top: 5,
+				top,
 				from,
 				to: offset(to, { months: 1 }), // make "to" inclusive
 			}),
@@ -129,8 +131,8 @@ export function Chart({ height }: Props) {
 	const controls = (
 		<div className={cx("controls")}>
 			<Toggle
-				initial={cumulative}
-				onChange={setCumulative}
+				value={cumulative}
+				onChange={(cumulative) => navigate({ search: { cumulative } })}
 				className={cx("toggle")}
 			>
 				Cumulative
@@ -141,10 +143,13 @@ export function Chart({ height }: Props) {
 					"2020-01",
 					// kinda hard to define "meaningful",
 					// so just hardcode a value instead of querying it
-					toYyyyMm(useGetLastUpdated()),
+					paramDefaults.to,
 				]}
-				initial={[from, to]}
-				onChange={[setFrom, setTo]}
+				selected={[from, to]}
+				onChange={[
+					(from) => navigate({ search: { from } }),
+					(to) => navigate({ search: { to } }),
+				]}
 			/>
 		</div>
 	);

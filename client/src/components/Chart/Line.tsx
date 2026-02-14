@@ -9,7 +9,7 @@ export const Line: typeof ResponsiveLine = (props) => (
 		enablePointLabel
 		xFormat="time:%Y-%m"
 		xScale={{ type: "time", useUTC: false }}
-		margin={{ top: 16, right: 24, bottom: 24, left: 60 }}
+		margin={{ top: 24, right: 24, bottom: 24, left: 60 }}
 		axisLeft={{ legend: "Tickets handled", legendOffset: -44 }}
 		axisBottom={{ format: "%Y-%m" }}
 		{...props}

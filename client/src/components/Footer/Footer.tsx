@@ -1,5 +1,5 @@
 import classNames from "classnames/bind";
-import { useGetLastUpdated } from "@/api/queries";
+import { useGetLastUpdated } from "@/api/hooks";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/useZackMode";
@@ -30,7 +30,7 @@ function ZackModeToggle() {
 
 	return (
 		<Toggle
-			initial={isZack}
+			value={isZack}
 			onChange={setIsZack}
 			customStyles={{
 				container: {

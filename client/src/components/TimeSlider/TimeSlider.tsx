@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
-import { type ComponentProps, useMemo, useState } from "react";
+import { type ComponentProps, useCallback, useMemo } from "react";
 import { Range } from "react-range";
+import { useControlled } from "@/hooks/useControlled";
 import { monthsInRange } from "@/utils/time";
 import styles from "./TimeSlider.module.css";
 
@@ -10,13 +11,13 @@ type MonthRange = [from: string, to: string];
 
 type Props = {
 	domain: MonthRange;
-	initial: MonthRange;
+	selected: MonthRange;
 	onChange: [from: (from: string) => void, to: (to: string) => void];
 };
 
 export function TimeSlider({
 	domain: [domainFrom, domainTo],
-	initial: [initialFrom, initialTo],
+	selected: [selectedFrom, selectedTo],
 	onChange: [onChangeFrom, onChangeTo],
 }: Props) {
 	const months = useMemo(
@@ -24,12 +25,15 @@ export function TimeSlider({
 		[domainFrom, domainTo],
 	);
 
-	const max = months.length - 1;
-
-	const [values, setValues] = useState<[number, number]>(() => [
-		months.indexOf(initialFrom),
-		months.indexOf(initialTo),
-	]);
+	const [values, setValues] = useControlled(
+		useCallback(
+			(): [number, number] => [
+				months.indexOf(selectedFrom),
+				months.indexOf(selectedTo),
+			],
+			[selectedFrom, selectedTo, months],
+		),
+	);
 
 	const onChange = (values: [number, number]) => {
 		if (values[1] - values[0] >= 1) {
@@ -41,6 +45,8 @@ export function TimeSlider({
 		onChangeFrom(months[from]!);
 		onChangeTo(months[to]!);
 	};
+
+	const max = months.length - 1;
 
 	return (
 		<Range
