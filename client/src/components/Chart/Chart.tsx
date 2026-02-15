@@ -1,4 +1,4 @@
-import type { PointTooltipProps } from "@nivo/line";
+import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
@@ -116,14 +116,17 @@ export function Chart({ height }: Props) {
 		);
 	}, [data, months]);
 
-	const onMouseMove = useCallback(
-		({ point: { seriesId, data } }: PointTooltipProps<ChartSeries>) => {
+	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
+		(datum) => {
+			if (!("seriesId" in datum)) {
+				return;
+			}
+			const { seriesId, data } = datum;
+			setHighlightedUser(seriesId);
 			const { x, y } = data;
 			if (y !== null) {
-				setHighlightedUser(seriesId);
 				setHoveredPoint({ x, y });
 			}
-			return null;
 		},
 		[],
 	);
@@ -146,7 +149,7 @@ export function Chart({ height }: Props) {
 		>
 			<div className={cx("container")}>
 				<div style={{ height }} onMouseLeave={onMouseLeave}>
-					<ChartLine data={chartData} tooltip={onMouseMove} />
+					<ChartLine data={chartData} onMouseMove={onMouseMove} />
 				</div>
 				<br />
 				<ChartControls />

@@ -1,4 +1,8 @@
-import { type Point, type PointTooltipProps, ResponsiveLine } from "@nivo/line";
+import {
+	type Point,
+	type PointOrSliceMouseHandler,
+	ResponsiveLine,
+} from "@nivo/line";
 import { useCallback } from "react";
 import { useZackMode } from "@/hooks/useZackMode";
 import { toYyyyMm } from "@/utils/time";
@@ -9,10 +13,10 @@ import { useChart } from "./context";
 
 export const ChartLine = ({
 	data,
-	tooltip,
+	onMouseMove,
 }: {
 	data: ChartSeries[];
-	tooltip: (_: PointTooltipProps<ChartSeries>) => null;
+	onMouseMove: PointOrSliceMouseHandler<ChartSeries>;
 }) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
@@ -28,19 +32,16 @@ export const ChartLine = ({
 			if (highlightedUser !== seriesId || y === null) {
 				return "";
 			}
-
 			const seriesLength = cumulative
 				? (data[seriesIndex]?.data.length ?? 0)
 				: (queryData[seriesId]?.tickets.length ?? 0);
 			const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
-			if ((seriesLength - 1 - indexInSeries) % labelInterval === 0) {
+			if (
+				(seriesLength - 1 - indexInSeries) % labelInterval === 0 ||
+				isolatedPoints[seriesId]?.has(toYyyyMm(date))
+			) {
 				return String(y);
 			}
-
-			if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
-				return String(y);
-			}
-
 			return "";
 		},
 		[highlightedUser, cumulative, data, queryData, isolatedPoints],
@@ -63,47 +64,52 @@ export const ChartLine = ({
 			colors={lineColor}
 			pointLabel={pointLabel}
 			pointSymbol={ChartPoint}
-			tooltip={tooltip}
-			curve="monotoneX"
-			useMesh
-			enableCrosshair={false}
-			enablePointLabel
-			xFormat="time:%Y-%m"
-			xScale={{ type: "time", useUTC: false }}
-			margin={{ top: 24, right: 24, bottom: 24, left: 60 }}
-			axisLeft={{ legend: "Tickets handled", legendOffset: -44 }}
-			axisBottom={{ format: "%Y-%m" }}
-			theme={{
-				background: "var(--bg-secondary)",
-				text: {
-					fill: "var(--text-primary)",
-					fontSize: "var(--text-mini)",
-				},
-				crosshair: {
-					line: { stroke: "var(--text-secondary)" },
-				},
-				axis: {
-					ticks: {
-						line: {
-							stroke: "var(--text-tertiary)",
-							strokeWidth: 0.5,
-						},
-						text: {
-							fill: "var(--text-secondary)",
-							fontWeight: "bold",
-						},
-					},
-					legend: {
-						text: { fontSize: "var(--text-regular)" },
-					},
-				},
-				grid: {
-					line: {
-						stroke: "var(--text-tertiary)",
-						strokeWidth: 0.5,
-					},
-				},
-			}}
+			onMouseMove={onMouseMove}
+			{...chartConfigs}
 		/>
 	);
 };
+
+const chartConfigs = {
+	tooltip: () => null,
+	curve: "monotoneX",
+	useMesh: true,
+	enableCrosshair: false,
+	enablePointLabel: true,
+	xFormat: "time:%Y-%m",
+	xScale: { type: "time", useUTC: false },
+	margin: { top: 24, right: 24, bottom: 24, left: 60 },
+	axisLeft: { legend: "Tickets handled", legendOffset: -44 },
+	axisBottom: { format: "%Y-%m" },
+	theme: {
+		background: "var(--bg-secondary)",
+		text: {
+			fill: "var(--text-primary)",
+			fontSize: "var(--text-mini)",
+		},
+		crosshair: {
+			line: { stroke: "var(--text-secondary)" },
+		},
+		axis: {
+			ticks: {
+				line: {
+					stroke: "var(--text-tertiary)",
+					strokeWidth: 0.5,
+				},
+				text: {
+					fill: "var(--text-secondary)",
+					fontWeight: "bold",
+				},
+			},
+			legend: {
+				text: { fontSize: "var(--text-regular)" },
+			},
+		},
+		grid: {
+			line: {
+				stroke: "var(--text-tertiary)",
+				strokeWidth: 0.5,
+			},
+		},
+	},
+} as const;
