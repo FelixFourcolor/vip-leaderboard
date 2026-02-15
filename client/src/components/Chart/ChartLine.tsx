@@ -58,7 +58,7 @@ export const ChartLine = ({
 			if (!highlightedUser || highlightedUser === id) {
 				return color;
 			}
-			return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.1})`;
+			return `rgb(from ${color} r g b / ${isZack ? 0.2 : 0.1})`;
 		},
 		[colorById, highlightedUser, isZack],
 	);
@@ -83,8 +83,8 @@ const chartConfigs = {
 	enablePointLabel: true,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
-	margin: { top: 24, right: 24, bottom: 24, left: 60 },
-	axisLeft: { legend: "Tickets handled", legendOffset: -44 },
+	margin: { top: 24, right: 24, bottom: 24, left: 64 },
+	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
 	axisBottom: { format: "%Y-%m" },
 	theme: {
 		background: "var(--bg-secondary)",

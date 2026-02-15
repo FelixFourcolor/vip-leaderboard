@@ -3,24 +3,22 @@
 	--text-small: 14px;
 	--text-mini: 12px;
 
-
 	--bg-primary: #191724;
 	--bg-secondary: #21202e;
-	--bg-tertiary: #908caa;
+	--bg-tertiary: #26233a;
 	--text-primary: #e0def4;
 	--text-secondary: #908caa;
-	--text-tertiary: #6e6a86;
-	--accent: #eb6f92;
+	--text-tertiary: rgb(from var(--text-secondary) r g b / 0.5);
+	--accent: rgba(235, 111, 146, 0.85);
 
 	&[data-theme="zack"] {
 		--bg-primary: #faf4ed;
-		--bg-secondary: #f4ede8;
-		--bg-tertiary: #9893a5;
+		--bg-secondary: #f2e9e1;
+		--bg-tertiary: #dfdad9;
 		--text-primary: #575279;
 		--text-secondary: #797593;
-		--text-tertiary: #9893a5;
+		--accent: rgba(235, 111, 146);
 	}
-
 }
 
 body {

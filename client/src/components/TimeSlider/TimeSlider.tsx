@@ -13,12 +13,14 @@ type Props = {
 	domain: MonthRange;
 	selected: MonthRange;
 	onChange: [from: (from: string) => void, to: (to: string) => void];
+	className?: string;
 };
 
 export function TimeSlider({
 	domain: [domainFrom, domainTo],
 	selected: [selectedFrom, selectedTo],
 	onChange: [onChangeFrom, onChangeTo],
+	className,
 }: Props) {
 	const months = useMemo(
 		() => monthsInRange(domainFrom, domainTo),
@@ -58,7 +60,14 @@ export function TimeSlider({
 			step={1}
 			max={max}
 			renderTrack={({ props, children, ...rest }) => (
-				<Track {...props} {...rest} min={0} max={max} values={values}>
+				<Track
+					{...props}
+					{...rest}
+					className={className}
+					min={0}
+					max={max}
+					values={values}
+				>
 					{children}
 					<span className={cx("label", "min")}>{domainFrom}</span>
 					<span className={cx("label", "max")}>{domainTo}</span>

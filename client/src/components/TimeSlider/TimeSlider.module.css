@@ -1,9 +1,7 @@
 .track {
 	height: 20px;
-	width: 100%;
 	display: flex;
 	align-items: center;
-	margin: 0 1rem;
 
 	&,
 	.label {
@@ -18,12 +16,12 @@
 	.bar {
 		height: 2px;
 		width: 100%;
-		background-color: var(--bg-tertiary);
+		background-color: var(--text-tertiary);
 		display: flex;
 
 		.selected {
 			background-color: var(--accent);
-			height: 3px;
+			height: 2px;
 			align-self: center;
 		}
 	}
@@ -40,14 +38,14 @@
 			left: 50%;
 			transform: translateX(-50%);
 			color: var(--accent);
+			font-weight: bold;
 		}
 	}
 
 	.limit {
 		position: absolute;
 		height: 16px;
-		width: 2px;
-		background-color: var(--bg-tertiary);
+		background-color: var(--text-tertiary);
 
 		&.from {
 			left: -2px;
@@ -63,8 +61,7 @@
 		position: absolute;
 		bottom: -16px;
 		font-size: var(--text-mini);
-		color: var(--text-secondary);
-		font-weight: bold;
+		color: var(--text-primary);
 
 		&.min {
 			left: 0;

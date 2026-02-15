@@ -1,0 +1,38 @@
+.button {
+	height: 24px;
+	width: 60px;
+	border: none;
+	border-radius: 12px;
+	font-size: var(--text-small);
+
+	cursor: pointer;
+	border: 1px solid var(--text-secondary);
+	color: var(--text-primary);
+
+	&:disabled {
+		cursor: default;
+		border-color: var(--text-tertiary);
+		color: var(--text-tertiary);
+	}
+
+	background-color: var(--bg-secondary);
+	&:not(:disabled) {
+		&:hover {
+			background-color: var(--bg-tertiary);
+		}
+		&:active {
+			background-color: var(--text-tertiary);
+		}
+	}
+	:root:not([data-theme="zack"]) & {
+		background-color: var(--bg-tertiary);
+		&:not(:disabled) {
+			&:hover {
+				background-color: var(--text-tertiary);
+			}
+			&:active {
+				background-color: var(--text-secondary);
+			}
+		}
+	}
+}
