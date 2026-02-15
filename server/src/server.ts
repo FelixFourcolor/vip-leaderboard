@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { MikroORM, RequestContext, sql } from "@mikro-orm/mysql";
-import { mapValues } from "es-toolkit";
+import { groupBy, mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { Reaction } from "./modules/reaction.entity.js";
@@ -45,7 +45,7 @@ export async function startServer(port = 3001) {
 	});
 	app.get(
 		"/api/ranking",
-		rankingHandler(({ top, from, to }) => {
+		rankingHandler(async ({ top, from, to }) => {
 			const query = orm.em
 				.createQueryBuilder(Reaction, "r")
 				.select([
@@ -53,13 +53,13 @@ export async function startServer(port = 3001) {
 					"u.name",
 					"u.avatar_url AS avatarUrl",
 					"u.color",
-					sql`COUNT(r.ticket_id) AS tickets`,
+					sql`COUNT(r.ticket_id) AS count`,
 				])
 				.join("r.user", "u")
 				.join("r.ticket", "t")
 				.groupBy("u.id")
 				// biome-ignore lint/complexity/useLiteralKeys: sql raw string != literal key
-				.orderBy({ [sql`tickets`]: "DESC" });
+				.orderBy({ [sql`count`]: "DESC" });
 			if (top) {
 				query.limit(top);
 			}
@@ -70,7 +70,30 @@ export async function startServer(port = 3001) {
 				query.andWhere({ "t.timestamp": { $lt: to } });
 			}
 
-			return query.execute();
+			const rows: SqlResult = await query.execute();
+
+			return Object.fromEntries(
+				rows.map(({ id, ...data }, i) => [id, { ...data, rank: i + 1 }]),
+			) satisfies RankingData;
+
+			type SqlResult = Array<{
+				id: string;
+				name: string;
+				avatarUrl: string;
+				color: string | null;
+				count: number;
+			}>;
+
+			type RankingData = Record<
+				string,
+				{
+					name: string;
+					avatarUrl: string;
+					color: string | null;
+					rank: number;
+					count: number;
+				}
+			>;
 		}),
 	);
 
@@ -113,15 +136,7 @@ export async function startServer(port = 3001) {
 			const query = knex
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
-				.select(
-					"u.id",
-					"u.name",
-					"u.avatar_url as avatarUrl",
-					"u.color",
-					"um.month",
-					"um.count",
-					"tu.total",
-				)
+				.select("u.id", "um.month", "um.count")
 				.from("top_users as tu")
 				.join("user_month as um", "um.user_id", "tu.user_id")
 				.join("user as u", "u.id", "um.user_id")
@@ -131,35 +146,16 @@ export async function startServer(port = 3001) {
 				]);
 
 			const rows: SqlResult = await query;
+
 			return mapValues(
-				Object.groupBy(rows, ({ id }) => id),
-				(data) => {
-					const { name, avatarUrl, color } = data![0]!;
-					return {
-						name,
-						avatarUrl,
-						color,
-						tickets: data!.map(({ month, count }) => ({ month, count })),
-					};
-				},
+				groupBy(rows, ({ id }) => id),
+				(data) => data.map(({ id, ...tickets }) => tickets),
 			) satisfies MonthlyData;
 
-			type SqlResult = Array<{
-				id: string;
-				name: string;
-				avatarUrl: string;
-				color: string;
-				month: string;
-				count: number;
-			}>;
+			type SqlResult = Array<{ id: string; month: string; count: number }>;
 			type MonthlyData = Record<
 				string,
-				{
-					name: string;
-					avatarUrl: string;
-					color: string;
-					tickets: Array<{ month: string; count: number }>;
-				}
+				Array<{ month: string; count: number }>
 			>;
 		}),
 	);

@@ -20,7 +20,12 @@ export const ChartLine = ({
 }) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { queryData, colorById, highlightedUser, isolatedPoints } = useChart();
+	const {
+		monthlyData: queryData,
+		colorById,
+		highlightedUser,
+		isolatedPoints,
+	} = useChart();
 
 	const pointLabel = useCallback(
 		({
@@ -34,7 +39,7 @@ export const ChartLine = ({
 			}
 			const seriesLength = cumulative
 				? (data[seriesIndex]?.data.length ?? 0)
-				: (queryData[seriesId]?.tickets.length ?? 0);
+				: (queryData[seriesId]?.length ?? 0);
 			const labelInterval = Math.ceil(seriesLength / (cumulative ? 8 : 16));
 			if (
 				(seriesLength - 1 - indexInSeries) % labelInterval === 0 ||

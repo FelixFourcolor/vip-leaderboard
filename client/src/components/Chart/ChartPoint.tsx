@@ -18,16 +18,18 @@ export function ChartPoint({
 	const { hoveredPoint, idByColor, isolatedPoints } = useChart();
 	const date = x as any as Date; // nivo type is wrong
 
-	if (hoveredPoint?.x.getTime() === date.getTime() && hoveredPoint?.y === y) {
-		const seriesId = idByColor[color];
-		if (!seriesId) {
-			return <circle r={6} fill={color} />;
-		}
+	const seriesId = idByColor[color];
+	if (!seriesId) {
+		return null;
+	}
+	if (
+		hoveredPoint &&
+		hoveredPoint.x.getTime() === date.getTime() &&
+		hoveredPoint.y === y
+	) {
 		return <PointWithTooltip {...{ color, date, y, seriesId }} />;
 	}
-
-	const seriesId = idByColor[color];
-	if (seriesId && isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
+	if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 		return <circle r={3} fill={color} />;
 	}
 }
@@ -43,7 +45,7 @@ function PointWithTooltip({
 	y: number;
 	seriesId: string;
 }) {
-	const { queryData, colorById } = useChart();
+	const { userData, colorById } = useChart();
 	const { refs, floatingStyles } = useFloating({
 		placement: "top",
 		strategy: "fixed",
@@ -52,7 +54,7 @@ function PointWithTooltip({
 	});
 
 	const seriesColor = colorById[seriesId]!;
-	const { color: userColor, avatarUrl, name } = queryData[seriesId]!;
+	const { color: userColor, avatarUrl, name } = userData[seriesId]!;
 
 	return (
 		<>

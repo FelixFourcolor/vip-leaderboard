@@ -1,13 +1,14 @@
 import { createContext, useContext } from "react";
-import type { MonthlyData } from "@/api/types";
+import type { MonthlyData, RankingData } from "@/api/types";
 
 interface ChartContextValue {
-	hoveredPoint: { x: Date; y: number } | null;
-	idByColor: Record<string, string>;
+	monthlyData: MonthlyData;
+	userData: RankingData;
 	isolatedPoints: Record<string, Set<string>>;
 	colorById: Record<string, string>;
-	queryData: MonthlyData;
+	idByColor: Record<string, string>;
 	highlightedUser: string | null;
+	hoveredPoint: { x: Date; y: number } | null;
 }
 
 export const ChartContext = createContext<ChartContextValue | null>(null);

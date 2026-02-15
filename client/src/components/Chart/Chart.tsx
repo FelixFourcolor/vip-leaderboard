@@ -2,7 +2,7 @@ import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
-import { useGetMonthlyData } from "@/api/hooks";
+import { useGetMonthlyData, useGetRanking } from "@/api/hooks";
 import { useLastDefined } from "@/hooks/useLastDefined";
 import { slidingWindow } from "@/utils/iter";
 import { monthsInRange, offset } from "@/utils/time";
@@ -22,15 +22,12 @@ export type ChartSeries = {
 
 export function Chart({ height }: Props) {
 	const [{ to, from, cumulative, top }] = useChartControls();
-
-	const queryData =
+	const inclusiveTo = offset(to, { months: 1 });
+	const userData =
+		useLastDefined(useGetRanking({ top, from, to: inclusiveTo })) ?? {};
+	const monthlyData =
 		useLastDefined(
-			useGetMonthlyData({
-				cumulative,
-				top,
-				from,
-				to: offset(to, { months: 1 }), // make "to" inclusive
-			}),
+			useGetMonthlyData({ cumulative, top, from, to: inclusiveTo }),
 		) ?? {};
 
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
@@ -40,15 +37,12 @@ export function Chart({ height }: Props) {
 	} | null>(null);
 
 	const colorById = useMemo(() => {
-		return Object.fromEntries(
-			Object.keys(queryData).map((userId, i) => [
-				userId,
-				colorSchemes[i % colorSchemes.length]!,
-			]),
+		return mapValues(
+			userData,
+			({ rank }) => colorSchemes[(rank - 1) % colorSchemes.length]!,
 		);
-	}, [queryData]);
-
-	// workaround for nivo's bug for not exposing seriesId for each point
+	}, [userData]);
+	// workaround for nivo's bug of not exposing seriesId for each point
 	const idByColor = useMemo(
 		() =>
 			Object.fromEntries(
@@ -59,9 +53,9 @@ export function Chart({ height }: Props) {
 
 	const months = useMemo(() => monthsInRange(from, to), [from, to]);
 
-	const data = useMemo(
+	const normalizedData = useMemo(
 		() =>
-			mapValues(queryData, ({ tickets }) => {
+			mapValues(monthlyData, (tickets) => {
 				const ticketsByMonth = Object.fromEntries(
 					tickets.map(({ month, count }) => [month, count]),
 				);
@@ -79,16 +73,16 @@ export function Chart({ height }: Props) {
 				});
 				return Object.fromEntries(data);
 			}),
-		[queryData, cumulative, months],
+		[monthlyData, cumulative, months],
 	);
 
 	const chartData = useMemo<ChartSeries[]>(() => {
 		const orderedData = highlightedUser
 			? (() => {
-					const { [highlightedUser]: first, ...rest } = data;
-					return first ? { [highlightedUser]: first, ...rest } : data;
+					const { [highlightedUser]: first, ...rest } = normalizedData;
+					return first ? { [highlightedUser]: first, ...rest } : normalizedData;
 				})()
-			: data;
+			: normalizedData;
 
 		return Object.entries(orderedData).map(([id, ticketsByMonth]) => ({
 			id,
@@ -97,12 +91,12 @@ export function Chart({ height }: Props) {
 				y,
 			})),
 		}));
-	}, [data, highlightedUser]);
+	}, [normalizedData, highlightedUser]);
 
 	const isolatedPoints = useMemo(() => {
 		const windows = Array.from(slidingWindow(months, 3, true));
 		return mapValues(
-			data,
+			normalizedData,
 			(ticketsByMonth) =>
 				new Set(
 					windows
@@ -114,7 +108,7 @@ export function Chart({ height }: Props) {
 						.map(([, value]) => value),
 				),
 		);
-	}, [data, months]);
+	}, [normalizedData, months]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {
@@ -143,7 +137,8 @@ export function Chart({ height }: Props) {
 				idByColor,
 				isolatedPoints,
 				colorById,
-				queryData,
+				monthlyData,
+				userData,
 				highlightedUser,
 			}}
 		>
