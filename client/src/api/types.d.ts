@@ -2,7 +2,6 @@ export interface User {
 	name: string;
 	avatarUrl: string;
 	color: string | null;
-	rank: number;
 	count: number;
 }
 

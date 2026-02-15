@@ -1,11 +1,11 @@
+import { execSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { MikroORM } from "@mikro-orm/mysql";
-import { Reaction } from "../modules/reaction.entity.js";
-import { Ticket } from "../modules/ticket.entity.js";
-import { User } from "../modules/user.entity.js";
+import { getTableName } from "drizzle-orm";
+import { createConnection } from "../db.js";
+import { reaction, ticket, user } from "../schema.js";
 import type { Data, User as UserDTO } from "./type.js";
 
 const VIP_REACTIONS = [
@@ -16,33 +16,48 @@ const VIP_REACTIONS = [
 	"wastebasket",
 ];
 
-const orm = await MikroORM.init();
-await orm.schema.refreshDatabase();
-const db = orm.em.fork();
+type UserData = typeof user.$inferInsert;
+type TicketData = typeof ticket.$inferInsert;
+type ReactionData = typeof reaction.$inferInsert;
 
-const usersMap = new Map<User["id"], User>();
-const tickets: Ticket[] = [];
-const reactionsMap = new Map<`${Ticket["id"]}-${User["id"]}`, Reaction>();
+const usersMap = new Map<string, UserData>();
+const tickets: TicketData[] = [];
+const reactionsSet = new Set<string>();
+const reactions: ReactionData[] = [];
 
-function getOrCreateUser({ name, nickname, avatarUrl, color }: UserDTO): User {
+function getOrCreateUser({
+	name,
+	nickname,
+	avatarUrl,
+	color,
+}: UserDTO): string {
 	name = name.toLowerCase(); // sql primary key may be case-insensitive
-	let user = usersMap.get(name);
-	if (!user) {
-		user = new User(name, nickname, avatarUrl, color);
-		usersMap.set(name, user);
+	const existing = usersMap.get(name);
+	if (!existing) {
+		usersMap.set(name, {
+			id: name,
+			name: nickname,
+			avatarUrl: avatarUrl.substring(0, avatarUrl.indexOf("?")),
+			color,
+		});
 	} else if (color) {
 		// don't know why user color is unreliable
-		user.color = color;
+		existing.color = color;
 	}
-	return user;
+	return name;
 }
 
-async function load(file: string) {
+async function load_file(file: string) {
 	const content = await readFile(file);
 	const data: Data = JSON.parse(content.toString());
 
-	for (const { id, timestamp, author, reactions } of data.messages) {
-		const vipReactions = reactions.filter((r) =>
+	for (const {
+		id,
+		timestamp,
+		author,
+		reactions: msgReactions,
+	} of data.messages) {
+		const vipReactions = msgReactions.filter((r) =>
 			VIP_REACTIONS.includes(r.emoji.code),
 		);
 		if (vipReactions.length === 0) {
@@ -50,32 +65,58 @@ async function load(file: string) {
 		}
 
 		const ticketId = BigInt(id);
-		const ticket = new Ticket(
-			ticketId,
-			getOrCreateUser(author),
-			new Date(timestamp),
-		);
-		tickets.push(ticket);
+		const authorId = getOrCreateUser(author);
+		tickets.push({
+			id: ticketId,
+			authorId,
+			timestamp: new Date(timestamp),
+		});
 
-		for (const user of vipReactions.flatMap((r) => r.users)) {
-			const reactor = getOrCreateUser(user);
-			const reactionId = `${ticketId}-${reactor.id}` as const;
-			if (!reactionsMap.has(reactionId)) {
-				reactionsMap.set(reactionId, new Reaction(ticket, reactor));
+		for (const u of vipReactions.flatMap((r) => r.users)) {
+			const reactorId = getOrCreateUser(u);
+			const reactionKey = `${ticketId}-${reactorId}`;
+			if (!reactionsSet.has(reactionKey)) {
+				reactionsSet.add(reactionKey);
+				reactions.push({
+					ticketId,
+					userId: reactorId,
+				});
 			}
 		}
 	}
-
-	db.persist(usersMap.values());
-	db.persist(tickets);
-	db.persist(reactionsMap.values());
 }
 
-const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "data");
-await Promise.all(
-	readdirSync(dataDir)
-		.map((f) => resolve(dataDir, f))
-		.map(load),
-);
-await db.flush();
-await orm.close();
+function load_data() {
+	const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "data");
+	return Promise.all(
+		readdirSync(dataDir)
+			.map((f) => resolve(dataDir, f))
+			.map(load_file),
+	);
+}
+
+async function prepareDb() {
+	const { db, connection } = await createConnection();
+
+	const tables = [reaction, ticket, user];
+	await connection.query("SET FOREIGN_KEY_CHECKS = 0");
+	for (const table of tables) {
+		await connection.query(`DROP TABLE IF EXISTS \`${getTableName(table)}\``);
+	}
+	await connection.query("SET FOREIGN_KEY_CHECKS = 1");
+	execSync("npx drizzle-kit push --force", { stdio: "inherit" });
+
+	return { db, connection };
+}
+
+async function main() {
+	const [{ db, connection }] = await Promise.all([prepareDb(), load_data()]);
+
+	await db.insert(user).values(Array.from(usersMap.values()));
+	await db.insert(ticket).values(tickets);
+	await db.insert(reaction).values(reactions);
+
+	await connection.end();
+}
+
+main();
