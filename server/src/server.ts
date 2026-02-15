@@ -58,8 +58,11 @@ export async function startServer(port = 3001) {
 				.join("r.user", "u")
 				.join("r.ticket", "t")
 				.groupBy("u.id")
-				// biome-ignore lint/complexity/useLiteralKeys: sql raw string != literal key
-				.orderBy({ [sql`count`]: "DESC" });
+				.orderBy({
+					// biome-ignore lint/complexity/useLiteralKeys: sql raw string != literal key
+					[sql`count`]: "DESC",
+					"u.id": "ASC",
+				});
 			if (top) {
 				query.limit(top);
 			}
@@ -137,12 +140,13 @@ export async function startServer(port = 3001) {
 				.with("user_month", userMonthQuery)
 				.with("top_users", topUsersQuery)
 				.select("u.id", "um.month", "um.count")
-				.from("top_users as tu")
-				.join("user_month as um", "um.user_id", "tu.user_id")
-				.join("user as u", "u.id", "um.user_id")
+				.from("top_users AS tu")
+				.join("user_month AS um", "um.user_id", "tu.user_id")
+				.join("user AS u", "u.id", "um.user_id")
 				.orderBy([
-					{ column: "tu.total", order: "desc" },
-					{ column: "um.month", order: "asc" },
+					{ column: "tu.total", order: "DESC" },
+					{ column: "u.id", order: "ASC" },
+					{ column: "um.month", order: "ASC" },
 				]);
 
 			const rows: SqlResult = await query;

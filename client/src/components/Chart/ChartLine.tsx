@@ -54,7 +54,7 @@ export const ChartLine = ({
 
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
-			const color = colorById[id]!;
+			const color = colorById[id] ?? "var(--text-secondary)";
 			if (!highlightedUser || highlightedUser === id) {
 				return color;
 			}
