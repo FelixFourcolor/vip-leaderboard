@@ -37,14 +37,12 @@ export function ChartControls() {
 				selected={[from, to]}
 				onChange={[(from) => setParams({ from }), (to) => setParams({ to })]}
 			/>
-			{
-				<Button
-					onClick={() => setParams(defaultParams)}
-					disabled={isEqual(params, defaultParams)}
-				>
-					Reset
-				</Button>
-			}
+			<Button
+				onClick={() => setParams(defaultParams)}
+				disabled={isEqual(params, defaultParams)}
+			>
+				Reset
+			</Button>
 		</div>
 	);
 }

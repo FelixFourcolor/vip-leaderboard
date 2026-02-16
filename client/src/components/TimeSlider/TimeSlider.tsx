@@ -1,5 +1,13 @@
 import classNames from "classnames/bind";
-import { type ComponentProps, useCallback, useMemo } from "react";
+import {
+	type ComponentProps,
+	type Ref,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
 import { monthsInRange } from "@/utils/time";
@@ -39,6 +47,33 @@ export function TimeSlider({
 		}, [selectedFrom, selectedTo, months]),
 	);
 
+	const [labelsOverlap, setLabelsOverlap] = useState(false);
+	const fromLabelRef = useRef<HTMLSpanElement>(null);
+	const toLabelRef = useRef<HTMLSpanElement>(null);
+
+	const updateLabelOverlap = useCallback(() => {
+		const fromLabel = fromLabelRef.current;
+		const toLabel = toLabelRef.current;
+
+		if (!fromLabel || !toLabel) {
+			setLabelsOverlap(false);
+			return;
+		}
+
+		const fromRect = fromLabel.getBoundingClientRect();
+		const toRect = toLabel.getBoundingClientRect();
+		const overlap = fromRect.right > toRect.left;
+		setLabelsOverlap(overlap);
+	}, []);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: values change = thumbs move = re-check for overlap
+	useEffect(updateLabelOverlap, [updateLabelOverlap, values]);
+
+	useEffect(() => {
+		window.addEventListener("resize", updateLabelOverlap);
+		return () => window.removeEventListener("resize", updateLabelOverlap);
+	}, [updateLabelOverlap]);
+
 	const onChange = (values: [number, number]) => {
 		if (values[1] - values[0] >= 1) {
 			setValues(values);
@@ -75,10 +110,12 @@ export function TimeSlider({
 					<span className={cx("label", "max")}>{domainTo}</span>
 				</Track>
 			)}
-			renderThumb={({ props, isDragged, index }) => (
+			renderThumb={({ props, index }) => (
 				<Thumb
 					{...props}
-					popup={isDragged ? months[values[index]!] : undefined}
+					label={months[values[index]!]}
+					labelRef={[fromLabelRef, toLabelRef][index]}
+					hideLabel={index === 0 && labelsOverlap}
 				/>
 			)}
 		/>
@@ -119,11 +156,23 @@ const Track = ({
 };
 
 type ThumbProps = ComponentProps<"div"> & {
-	popup?: string;
+	label?: string;
+	hideLabel?: boolean;
+	labelRef?: Ref<HTMLSpanElement>;
 };
 
-const Thumb: React.FC<ThumbProps> = ({ className, popup, ...props }) => (
+const Thumb: React.FC<ThumbProps> = ({
+	className,
+	label,
+	hideLabel,
+	labelRef,
+	...props
+}) => (
 	<div {...props} className={cx("thumb", className)}>
-		{popup && <span className={cx("label", "popup")}>{popup}</span>}
+		{label && (
+			<span ref={labelRef} className={cx("label", hideLabel && "hidden")}>
+				{label}
+			</span>
+		)}
 	</div>
 );

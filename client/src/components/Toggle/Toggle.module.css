@@ -31,7 +31,7 @@
 		}
 
 		&.isOn {
-			background: var(--accent);
+			background: var(--accent-primary);
 
 			.dummy {
 				flex: 0.9;

@@ -2,6 +2,7 @@
 	.controls {
 		display: flex;
 		align-items: center;
+		margin-top: 24px;
 		gap: 60px;
 		justify-content: center;
 

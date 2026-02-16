@@ -146,7 +146,6 @@ export function Chart({ height }: Props) {
 				<div style={{ height }} onMouseLeave={onMouseLeave}>
 					<ChartLine data={chartData} onMouseMove={onMouseMove} />
 				</div>
-				<br />
 				<ChartControls />
 			</div>
 		</ChartContext.Provider>

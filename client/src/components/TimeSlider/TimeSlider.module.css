@@ -14,14 +14,14 @@
 	}
 
 	.bar {
-		height: 2px;
+		height: 3px;
 		width: 100%;
 		background-color: var(--text-tertiary);
 		display: flex;
 
 		.selected {
-			background-color: var(--accent);
-			height: 2px;
+			background-color: var(--accent-secondary);
+			height: 3px;
 			align-self: center;
 		}
 	}
@@ -30,15 +30,19 @@
 		position: relative;
 		height: 20px;
 		width: 3px;
-		background-color: var(--accent);
+		background-color: var(--accent-secondary);
 		outline: none;
 
-		.popup {
-			top: -16px;
+		.label {
+			top: 24px;
 			left: 50%;
 			transform: translateX(-50%);
-			color: var(--accent);
+			color: var(--accent-secondary);
 			font-weight: bold;
+
+			&.hidden {
+				visibility: hidden;
+			}
 		}
 	}
 
@@ -48,20 +52,20 @@
 		background-color: var(--text-tertiary);
 
 		&.from {
-			left: -2px;
+			left: -1.5px;
 		}
 
 		&.to {
-			right: -2px;
+			right: -1.5px;
 		}
 	}
 
 	.label {
 		cursor: default;
 		position: absolute;
-		bottom: -16px;
+		white-space: nowrap;
+		top: -16px;
 		font-size: var(--text-mini);
-		color: var(--text-primary);
 
 		&.min {
 			left: 0;

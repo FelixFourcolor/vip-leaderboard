@@ -6,18 +6,24 @@
 	--bg-primary: #191724;
 	--bg-secondary: #21202e;
 	--bg-tertiary: #26233a;
+
 	--text-primary: #e0def4;
 	--text-secondary: #908caa;
 	--text-tertiary: rgb(from var(--text-secondary) r g b / 0.5);
-	--accent: rgba(235, 111, 146, 0.85);
+
+	--accent-primary: #31748f;
+	--accent-secondary: #ebbcba;
 
 	&[data-theme="zack"] {
 		--bg-primary: #faf4ed;
 		--bg-secondary: #f2e9e1;
 		--bg-tertiary: #dfdad9;
+
 		--text-primary: #575279;
 		--text-secondary: #797593;
-		--accent: rgba(235, 111, 146);
+
+		--accent-primary: #3e8fb0;
+		--accent-secondary: #eb6f92;
 	}
 }
 
