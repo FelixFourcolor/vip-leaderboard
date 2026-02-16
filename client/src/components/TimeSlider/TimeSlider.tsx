@@ -28,13 +28,15 @@ export function TimeSlider({
 	);
 
 	const [values, setValues] = useControlled(
-		useCallback(
-			(): [number, number] => [
-				months.indexOf(selectedFrom),
-				months.indexOf(selectedTo),
-			],
-			[selectedFrom, selectedTo, months],
-		),
+		useCallback((): [number, number] => {
+			const fromIndex = months.indexOf(selectedFrom);
+			const toIndex = months.indexOf(selectedTo);
+
+			return [
+				fromIndex !== -1 ? fromIndex : 0,
+				toIndex !== -1 ? toIndex : months.length - 1,
+			];
+		}, [selectedFrom, selectedTo, months]),
 	);
 
 	const onChange = (values: [number, number]) => {
