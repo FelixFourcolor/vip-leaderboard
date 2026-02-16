@@ -122,7 +122,7 @@ export async function startServer(port = 3001) {
 						})
 						.from(userMonth)
 						.groupBy(userMonth.userId)
-						.orderBy(desc(sql`total`))
+						.orderBy(desc(sql`total`), asc(userMonth.userId))
 						.$dynamic();
 					if (userId) {
 						query.where(eq(userMonth.userId, userId));
@@ -142,7 +142,7 @@ export async function startServer(port = 3001) {
 					.from(topUsers)
 					.innerJoin(userMonth, eq(userMonth.userId, topUsers.userId))
 					.innerJoin(user, eq(user.id, userMonth.userId))
-					.orderBy(desc(topUsers.total), asc(user.id), asc(userMonth.month));
+					.orderBy(desc(topUsers.total), asc(userMonth.month));
 
 				return mapValues(
 					groupBy(rows, ({ id }) => id),
@@ -196,7 +196,7 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 
 	function wrapper(logic: (args: ValidatedArgs) => Promise<unknown>) {
 		return (request: any, reply: FastifyReply) => {
-			reply.header("Cache-Control", "public, max-age=86400");
+			// reply.header("Cache-Control", "public, max-age=86400");
 			try {
 				return logic(validate(request));
 			} catch (e) {
