@@ -2,6 +2,11 @@ export function toYyyyMm(date: Date): string {
 	return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+export function toDate(yyyyMm: string): Date {
+	const [year, month] = yyyyMm.split("-").map(Number);
+	return new Date(year!, month! - 1, 1);
+}
+
 export function monthsInRange(from: string, to: string): string[] {
 	const fromDate = new Date(from);
 	const fromYear = fromDate.getUTCFullYear();

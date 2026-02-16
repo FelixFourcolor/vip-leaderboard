@@ -138,6 +138,7 @@ export function Chart({ height }: Props) {
 				isolatedPoints,
 				colorById,
 				monthlyData,
+				months,
 				userData,
 				highlightedUser,
 			}}

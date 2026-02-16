@@ -3,6 +3,7 @@ import type { MonthlyData, RankingData } from "@/api/types";
 
 interface ChartContextValue {
 	monthlyData: MonthlyData;
+	months: string[];
 	userData: RankingData;
 	isolatedPoints: Record<string, Set<string>>;
 	colorById: Record<string, string>;
