@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
+import { useCursorDragged } from "@/hooks/useCursorDragged";
 import { monthsInRange } from "@/utils/time";
 import styles from "./TimeSlider.module.css";
 
@@ -138,12 +139,14 @@ const Track = ({
 	children,
 	...props
 }: TrackProps) => {
+	useCursorDragged(isDragged);
+
 	const total = Math.max(max - min, 1);
 	const pre = ((fromValue - min) / total) * 100;
 	const selected = ((toValue - fromValue) / total) * 100;
 
 	return (
-		<div {...props} className={cx("track", isDragged && "dragged", className)}>
+		<div {...props} className={cx("track", className)}>
 			<Thumb className={cx("limit", "from")} />
 			<div className={cx("bar")}>
 				<div style={{ width: `${pre}%` }} />

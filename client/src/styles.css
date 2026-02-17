@@ -3,27 +3,31 @@
 	--text-small: 14px;
 	--text-mini: 12px;
 
-	--bg-primary: #191724;
-	--bg-secondary: #21202e;
-	--bg-tertiary: #26233a;
+	--bg-primary: #1f1d2e;
+	--bg-secondary: #191724;
+	--bg-tertiary: #403d52;
 
 	--text-primary: #e0def4;
 	--text-secondary: #908caa;
-	--text-tertiary: rgb(from var(--text-secondary) r g b / 0.5);
+	--text-tertiary: rgb(from var(--text-secondary) r g b / 0.6);
 
-	--accent-primary: #31748f;
-	--accent-secondary: #ebbcba;
+	--accent: #ebbcba;
 
-	&[data-theme="zack"] {
+	&[data-zack-mode="true"] {
 		--bg-primary: #faf4ed;
 		--bg-secondary: #f2e9e1;
-		--bg-tertiary: #dfdad9;
+		--bg-tertiary: #cecacd;
 
 		--text-primary: #575279;
 		--text-secondary: #797593;
 
-		--accent-primary: #3e8fb0;
-		--accent-secondary: #eb6f92;
+		--accent: #eb6f92;
+	}
+
+	&[data-is-cursor-dragged="true"] {
+		* {
+			cursor: grabbing !important;
+		}
 	}
 }
 

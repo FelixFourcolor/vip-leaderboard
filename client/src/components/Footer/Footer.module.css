@@ -6,8 +6,7 @@ footer {
         margin-bottom: 1rem;
         border: none;
         height: 1px;
-        /* Set the hr color */
-        background-color: var(--text-secondary);
+        background-color: var(--text-tertiary);
     }
 
     .container {

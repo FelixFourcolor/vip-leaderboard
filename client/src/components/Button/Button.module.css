@@ -8,31 +8,21 @@
 	cursor: pointer;
 	border: 1px solid var(--text-secondary);
 	color: var(--text-primary);
+	background-color: var(--bg-secondary);
 
 	&:disabled {
 		cursor: default;
 		border-color: var(--text-tertiary);
 		color: var(--text-tertiary);
+		background-color: var(--bg-primary);
 	}
 
-	background-color: var(--bg-secondary);
 	&:not(:disabled) {
 		&:hover {
-			background-color: var(--bg-tertiary);
+			border-color: var(--accent);
 		}
 		&:active {
-			background-color: var(--text-tertiary);
-		}
-	}
-	:root:not([data-theme="zack"]) & {
-		background-color: var(--bg-tertiary);
-		&:not(:disabled) {
-			&:hover {
-				background-color: var(--text-tertiary);
-			}
-			&:active {
-				background-color: var(--text-secondary);
-			}
+			background-color: var(--bg-tertiary);
 		}
 	}
 }

@@ -32,13 +32,13 @@
 	.label {
 		margin-right: 4px;
 
-		:root:not([data-theme="zack"]) & {
+		[data-zack-mode="false"] & {
 			color: var(--text-secondary);
 		}
 	}
 
 	.data {
-		:root[data-theme="zack"] & {
+		[data-zack-mode="true"] & {
 			color: var(--text-secondary);
 			font-weight: bold;
 		}

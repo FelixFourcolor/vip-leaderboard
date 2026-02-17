@@ -8,7 +8,7 @@ export function useZackMode() {
 	);
 
 	useEffect(() => {
-		updateTheme(isZack);
+		updateMode(isZack);
 		setSessionStorage(isZack);
 	}, [isZack]);
 
@@ -24,8 +24,8 @@ function getBrowserPreference() {
 	return window.matchMedia("(prefers-color-scheme: light)").matches;
 }
 
-function updateTheme(isZack: boolean) {
-	document.documentElement.setAttribute("data-theme", isZack ? "zack" : "");
+function updateMode(isZack: boolean) {
+	document.documentElement.setAttribute("data-zack-mode", String(isZack));
 }
 
 function setSessionStorage(isZack: boolean) {

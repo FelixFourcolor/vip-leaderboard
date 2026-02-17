@@ -20,7 +20,7 @@
 			transition: background 0.4s ease;
 
 			background: var(--text-primary);
-			[data-theme="zack"] & {
+			[data-zack-mode="true"] & {
 				background: var(--bg-primary);
 			}
 		}
@@ -31,7 +31,10 @@
 		}
 
 		&.isOn {
-			background: var(--accent-primary);
+			background: #286983;
+			[data-zack-mode="true"] & {
+				background: #3e8fb0;
+			}
 
 			.dummy {
 				flex: 0.9;
