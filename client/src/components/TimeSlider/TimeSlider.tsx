@@ -35,18 +35,30 @@ export function TimeSlider({
 		() => monthsInRange(domainFrom, domainTo),
 		[domainFrom, domainTo],
 	);
+	const monthValues = useMemo(
+		() => Object.fromEntries(months.map((month, i) => [month, i])),
+		[months],
+	);
+	const max = months.length - 1;
 
 	const [values, setValues] = useControlled(
 		useCallback((): [number, number] => {
-			const fromIndex = months.indexOf(selectedFrom);
-			const toIndex = months.indexOf(selectedTo);
-
-			return [
-				fromIndex !== -1 ? fromIndex : 0,
-				toIndex !== -1 ? toIndex : months.length - 1,
-			];
-		}, [selectedFrom, selectedTo, months]),
+			const fromIndex = monthValues[selectedFrom] ?? 0;
+			const toIndex = monthValues[selectedTo] ?? max;
+			return [fromIndex, toIndex];
+		}, [selectedFrom, selectedTo, monthValues, max]),
 	);
+
+	const onChange = ([from, to]: [number, number]) => {
+		if (to - from >= 1) {
+			setValues([from, to]);
+		}
+	};
+
+	const onFinalChange = ([from, to]: [number, number]) => {
+		onChangeFrom(months[from]!);
+		onChangeTo(months[to]!);
+	};
 
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
@@ -74,19 +86,6 @@ export function TimeSlider({
 		window.addEventListener("resize", updateLabelOverlap);
 		return () => window.removeEventListener("resize", updateLabelOverlap);
 	}, [updateLabelOverlap]);
-
-	const onChange = (values: [number, number]) => {
-		if (values[1] - values[0] >= 1) {
-			setValues(values);
-		}
-	};
-
-	const onFinalChange = ([from, to]: [number, number]) => {
-		onChangeFrom(months[from]!);
-		onChangeTo(months[to]!);
-	};
-
-	const max = months.length - 1;
 
 	return (
 		<Range
