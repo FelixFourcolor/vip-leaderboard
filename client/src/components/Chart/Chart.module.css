@@ -1,4 +1,8 @@
 .container {
+	.chart {
+		height: 588px;
+	}
+
 	.controls {
 		display: flex;
 		align-items: center;

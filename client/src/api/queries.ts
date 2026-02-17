@@ -25,8 +25,9 @@ export async function getMonthlyData({
 		Array<{ month: string; count: number }>
 	> = await fetch(url).then((res) => res.json());
 
+	const months = monthsInRange(from, to).slice(0, -1); // api returns exclusive to
+
 	// fill in gaps, apply cumulative
-	const months = monthsInRange(from, to);
 	function* calculate(
 		data: Array<{ month: string; count: number }>,
 	): Generator<{ month: string; count: number | null }> {

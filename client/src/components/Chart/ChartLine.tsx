@@ -3,6 +3,7 @@ import {
 	type PointOrSliceMouseHandler,
 	ResponsiveLine,
 } from "@nivo/line";
+import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import {
 	type ComponentProps,
@@ -13,26 +14,35 @@ import {
 	useState,
 } from "react";
 import { useZackMode } from "@/hooks/useZackMode";
+import { getAnyValue } from "@/utils/object";
 import { toDate } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
+import styles from "./Chart.module.css";
 import { useChartControls } from "./ChartControls";
 import { ChartPoint } from "./ChartPoint";
 import { useChart } from "./context";
 
-export const ChartLine = ({
-	data,
-	onMouseMove,
-}: {
+const cx = classNames.bind(styles);
+
+type Props = {
 	data: ChartSeries[];
 	onMouseMove: PointOrSliceMouseHandler<ChartSeries>;
-}) => {
+	onMouseLeave: () => void;
+};
+
+export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { monthlyData, months, colorById, highlightedUser } = useChart();
+	const { monthlyData, colorById, highlightedUser } = useChart();
 
-	const containerRef = useRef<HTMLDivElement | null>(null);
-	const [containerWidth, setContainerWidth] = useState(0);
+	const chartRef = useRef<HTMLDivElement | null>(null);
+	const [chartWidth, setChartWidth] = useState(0);
 	const [animate, setAnimate] = useState(false);
+
+	const xLabels = useMemo(
+		() => getAnyValue(monthlyData)?.map(({ month }) => month) ?? [],
+		[monthlyData],
+	);
 
 	const pointsCount = useMemo(() => {
 		return mapValues(monthlyData, (monthlyCount) => {
@@ -41,19 +51,19 @@ export const ChartLine = ({
 	}, [monthlyData]);
 
 	useEffect(() => {
-		const container = containerRef.current;
-		if (!container) {
+		const chart = chartRef.current;
+		if (!chart) {
 			return;
 		}
 
 		// prevent animation of the grid and axis ticks on load
 		setTimeout(() => setAnimate(true), 400);
 
-		setContainerWidth(container.clientWidth);
+		setChartWidth(chart.clientWidth);
 		const observer = new ResizeObserver(
-			([entry]) => entry && setContainerWidth(entry.contentRect.width),
+			([entry]) => entry && setChartWidth(entry.contentRect.width),
 		);
-		observer.observe(container);
+		observer.observe(chart);
 		return () => observer.disconnect();
 	}, []);
 
@@ -62,14 +72,14 @@ export const ChartLine = ({
 			if (highlightedUser !== seriesId || y === null) {
 				return "";
 			}
-			const interval = Math.ceil(months.length / (cumulative ? 8 : 16));
-			const count = pointsCount[seriesId] ?? months.length;
+			const interval = Math.ceil(xLabels.length / (cumulative ? 8 : 16));
+			const count = pointsCount[seriesId] ?? xLabels.length;
 			if ((count - 1 - indexInSeries) % interval === 0) {
 				return String(y);
 			}
 			return "";
 		},
-		[highlightedUser, cumulative, pointsCount, months.length],
+		[highlightedUser, cumulative, pointsCount, xLabels.length],
 	);
 
 	const lineColor = useCallback(
@@ -84,9 +94,9 @@ export const ChartLine = ({
 	);
 
 	const [gridXValues, axisBottom] = useMemo(() => {
-		const count = months.length;
+		const count = xLabels.length;
 		const { left, right } = chartConfigs.margin;
-		const innerWidth = Math.max(0, containerWidth - left - right);
+		const innerWidth = Math.max(0, chartWidth - left - right);
 		const fontSize = 12;
 		const labelWidth = 7 * fontSize * 0.6;
 		const safetyGap = 12;
@@ -94,15 +104,15 @@ export const ChartLine = ({
 		const maxLabels = Math.max(2, Math.floor(innerWidth / minSpacing));
 		const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
 
-		const tickValues = months
+		const tickValues = xLabels
 			.filter((_, index) => (count - 1 - index) % interval === 0)
 			.map(toDate);
 		const axisBottom = { format: "%Y-%m", tickValues };
 		return [tickValues, axisBottom];
-	}, [months, containerWidth]);
+	}, [xLabels, chartWidth]);
 
 	return (
-		<div ref={containerRef} style={{ width: "100%", height: "100%" }}>
+		<div ref={chartRef} className={cx("chart")} onMouseLeave={onMouseLeave}>
 			<ResponsiveLine
 				data={data}
 				colors={lineColor}

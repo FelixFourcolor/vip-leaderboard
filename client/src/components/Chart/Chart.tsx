@@ -4,8 +4,7 @@ import { mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
 import { useGetMonthlyData, useGetRanking } from "@/api/hooks";
 import { useLastDefined } from "@/hooks/useLastDefined";
-import { slidingWindow } from "@/utils/iter";
-import { monthsInRange, offset } from "@/utils/time";
+import { offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLine } from "./ChartLine";
@@ -13,14 +12,12 @@ import { ChartContext } from "./context";
 
 const cx = classNames.bind(styles);
 
-type Props = { height: number };
-
 export type ChartSeries = {
 	id: string;
 	data: { x: Date; y: number | null }[];
 };
 
-export function Chart({ height }: Props) {
+export function Chart() {
 	const [{ to, from, cumulative, top }] = useChartControls();
 	const inclusiveTo = offset(to, { months: 1 });
 	const userData =
@@ -42,16 +39,6 @@ export function Chart({ height }: Props) {
 			({ rank }) => colorSchemes[(rank - 1) % colorSchemes.length]!,
 		);
 	}, [userData]);
-	// workaround for nivo's bug of not exposing seriesId for each point
-	const idByColor = useMemo(
-		() =>
-			Object.fromEntries(
-				Object.entries(colorById).map(([id, color]) => [color, id]),
-			),
-		[colorById],
-	);
-
-	const months = useMemo(() => monthsInRange(from, to), [from, to]);
 
 	const chartData = useMemo<ChartSeries[]>(() => {
 		const orderedData = (() => {
@@ -73,18 +60,6 @@ export function Chart({ height }: Props) {
 			})),
 		}));
 	}, [monthlyData, highlightedUser]);
-
-	const isolatedPoints = useMemo(() => {
-		return mapValues(monthlyData, (ticketsByMonth) => {
-			return new Set(
-				Array.from(slidingWindow(ticketsByMonth, 3))
-					.filter(
-						([prev, , next]) => prev?.count == null && next?.count == null,
-					)
-					.map(([, { month }]) => month),
-			);
-		});
-	}, [monthlyData]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {
@@ -110,19 +85,18 @@ export function Chart({ height }: Props) {
 		<ChartContext.Provider
 			value={{
 				hoveredPoint,
-				idByColor,
-				isolatedPoints,
 				colorById,
 				monthlyData,
-				months,
 				userData,
 				highlightedUser,
 			}}
 		>
 			<div className={cx("container")}>
-				<div style={{ height }} onMouseLeave={onMouseLeave}>
-					<ChartLine data={chartData} onMouseMove={onMouseMove} />
-				</div>
+				<ChartLine
+					data={chartData}
+					onMouseMove={onMouseMove}
+					onMouseLeave={onMouseLeave}
+				/>
 				<ChartControls />
 			</div>
 		</ChartContext.Provider>

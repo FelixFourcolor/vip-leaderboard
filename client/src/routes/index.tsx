@@ -47,5 +47,5 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-	return <Chart height={500} />;
+	return <Chart />;
 }
