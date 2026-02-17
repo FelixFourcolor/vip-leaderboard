@@ -3,21 +3,18 @@ import { env } from "node:process";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
-import { groupBy, mapValues, pick } from "es-toolkit";
+import { groupBy, mapValues } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { createPool } from "./db.js";
 import { reaction, ticket, user } from "./schema.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export async function startServer(port = 3001) {
 	const { db, pool } = createPool();
 	const app = fastify();
 
 	app.register(fastifyStatic, {
-		root: resolve(__dirname, "../../client/dist"),
+		root: resolve(dirname(fileURLToPath(import.meta.url)), "../../client/dist"),
 	});
 	app.addHook("onClose", () => pool.end());
 
@@ -54,7 +51,7 @@ export async function startServer(port = 3001) {
 		rankingHandler(async ({ top, from, to }) => {
 			const query = db
 				.select({
-					...pick(user, ["id", "name", "avatarUrl", "color"] as const),
+					...pick(user, ["id", "name", "avatarUrl", "color"]),
 					count: count(reaction.ticketId),
 				})
 				.from(reaction)
@@ -125,11 +122,7 @@ export async function startServer(port = 3001) {
 
 			const rows = await db
 				.with(userMonth, topUsers)
-				.select({
-					id: user.id,
-					month: userMonth.month,
-					count: userMonth.count,
-				})
+				.select({ id: user.id, ...pick(userMonth, ["month", "count"]) })
 				.from(topUsers)
 				.innerJoin(userMonth, eq(userMonth.userId, topUsers.userId))
 				.innerJoin(user, eq(user.id, userMonth.userId))
@@ -203,7 +196,7 @@ function createHandler<S extends Schema>(schema = {} as S) {
 			return logic(validated).catch(() =>
 				reply.code(500).send({
 					statusCode: 500,
-					error: "Internal server error",
+					error: "internal server error",
 					reason: "incompetence",
 				}),
 			);
@@ -211,4 +204,9 @@ function createHandler<S extends Schema>(schema = {} as S) {
 	}
 
 	return Object.assign(wrapper, { merge });
+}
+
+// reimplementation of es-toolkit's pick, the original doesn't work with drizzle
+function pick<T, const K extends keyof T>(obj: T, keys: readonly K[]) {
+	return Object.fromEntries(keys.map((key) => [key, obj[key]])) as Pick<T, K>;
 }
