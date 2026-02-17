@@ -130,7 +130,7 @@ const chartConfigs = {
 	enablePointLabel: true,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
-	margin: { top: 24, right: 32, bottom: 24, left: 64 },
+	margin: { top: 24, right: 28, bottom: 24, left: 64 },
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
 	theme: {
 		background: "var(--bg-secondary)",

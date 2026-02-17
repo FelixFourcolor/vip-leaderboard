@@ -1,9 +1,16 @@
-import { autoUpdate, flip, offset, useFloating } from "@floating-ui/react";
+import {
+	autoUpdate,
+	flip,
+	offset,
+	shift,
+	useFloating,
+} from "@floating-ui/react";
 import type { DotsItemSymbolProps } from "@nivo/core";
 import type { Point } from "@nivo/line";
 import classNames from "classnames/bind";
 import { createPortal } from "react-dom";
 import { UserHeader } from "@/components/UserHeader";
+import { useZackMode } from "@/hooks/useZackMode";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
@@ -49,16 +56,19 @@ function PointWithTooltip({
 	const { refs, floatingStyles } = useFloating({
 		placement: "top",
 		strategy: "fixed",
-		middleware: [offset(12), flip()],
+		middleware: [offset(4), flip({ padding: 8 }), shift({ padding: 8 })],
 		whileElementsMounted: autoUpdate,
 	});
 
 	const seriesColor = colorById[seriesId]!;
 	const { color: userColor, avatarUrl, name } = userData[seriesId]!;
+	const [isZack] = useZackMode();
+	const innerColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
 
 	return (
 		<>
-			<circle ref={refs.setReference} r={6} fill={color} />
+			<circle ref={refs.setReference} r={8} fill={color} />
+			<circle r={5} fill={innerColor} />
 			{createPortal(
 				<div ref={refs.setFloating} style={floatingStyles}>
 					<div
