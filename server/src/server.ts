@@ -1,8 +1,9 @@
 import { dirname, resolve } from "node:path";
+import { env } from "node:process";
 import { fileURLToPath } from "node:url";
 import fastifyStatic from "@fastify/static";
 import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
-import { groupBy, mapValues } from "es-toolkit";
+import { groupBy, mapValues, pick } from "es-toolkit";
 import { type FastifyReply, fastify } from "fastify";
 import { match } from "ts-pattern";
 import { createPool } from "./db.js";
@@ -23,13 +24,13 @@ export async function startServer(port = 3001) {
 	const lastUpdatedHandler = createHandler();
 	app.get(
 		"/api/last-updated",
-		lastUpdatedHandler((): Promise<Date | undefined> => {
+		lastUpdatedHandler((): Promise<Date> => {
 			return db
 				.select({ timestamp: ticket.timestamp })
 				.from(ticket)
 				.orderBy(desc(ticket.timestamp))
 				.limit(1)
-				.then((rows) => rows[0]?.timestamp);
+				.then((rows) => rows[0]!.timestamp);
 		}),
 	);
 
@@ -50,13 +51,10 @@ export async function startServer(port = 3001) {
 	>;
 	app.get(
 		"/api/ranking",
-		rankingHandler(async ({ top, from, to }): Promise<RankingData> => {
+		rankingHandler(async ({ top, from, to }) => {
 			const query = db
 				.select({
-					id: user.id,
-					name: user.name,
-					avatarUrl: user.avatarUrl,
-					color: user.color,
+					...pick(user, ["id", "name", "avatarUrl", "color"] as const),
 					count: count(reaction.ticketId),
 				})
 				.from(reaction)
@@ -79,94 +77,89 @@ export async function startServer(port = 3001) {
 
 			return Object.fromEntries(
 				rows.map(({ id, ...data }, i) => [id, { ...data, rank: i + 1 }]),
-			);
+			) satisfies RankingData;
 		}),
 	);
 
-	const monthlyHandler = createHandler({
-		from: "date",
-		to: "date",
-		user: "str",
-		top: "int",
-	});
+	const monthlyHandler = rankingHandler.merge({ user: "str" });
 	type MonthlyData = Record<string, Array<{ month: string; count: number }>>;
 	app.get(
 		"/api/monthly",
-		monthlyHandler(
-			async ({ top, from, to, user: userId }): Promise<MonthlyData> => {
-				const userMonth = db.$with("user_month").as(
-					db
-						.select({
-							userId: reaction.userId,
-							month: sql<string>`DATE_FORMAT(${ticket.timestamp}, '%Y-%m')`.as(
-								"month",
-							),
-							count: count().as("count"),
-						})
-						.from(reaction)
-						.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
-						.where(
-							and(
-								...(from ? [gte(ticket.timestamp, from)] : []),
-								...(to ? [lt(ticket.timestamp, to)] : []),
-							),
-						)
-						.groupBy(reaction.userId, sql`month`),
-				);
-
-				const topUsers = db.$with("top_users").as(() => {
-					const query = db
-						.select({
-							userId: userMonth.userId,
-							total: sql<number>`SUM(${userMonth.count})`.as("total"),
-						})
-						.from(userMonth)
-						.groupBy(userMonth.userId)
-						.orderBy(desc(sql`total`), asc(userMonth.userId))
-						.$dynamic();
-					if (userId) {
-						query.where(eq(userMonth.userId, userId));
-					} else if (top) {
-						query.limit(top);
-					}
-					return query;
-				});
-
-				const rows = await db
-					.with(userMonth, topUsers)
+		monthlyHandler(async ({ top, from, to, user: userId }) => {
+			const userMonth = db.$with("user_month").as(
+				db
 					.select({
-						id: user.id,
-						month: userMonth.month,
-						count: userMonth.count,
+						userId: reaction.userId,
+						// biome-ignore format: don't break the line
+						month: sql<string>`DATE_FORMAT(${ticket.timestamp}, '%Y-%m')`.as("month"),
+						count: count().as("count"),
 					})
-					.from(topUsers)
-					.innerJoin(userMonth, eq(userMonth.userId, topUsers.userId))
-					.innerJoin(user, eq(user.id, userMonth.userId))
-					.orderBy(desc(topUsers.total), asc(userMonth.month));
+					.from(reaction)
+					.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
+					.where(
+						and(
+							...(from ? [gte(ticket.timestamp, from)] : []),
+							...(to ? [lt(ticket.timestamp, to)] : []),
+						),
+					)
+					.groupBy(reaction.userId, sql`month`),
+			);
 
-				return mapValues(
-					groupBy(rows, ({ id }) => id),
-					(data) => data.map(({ id, ...tickets }) => tickets),
-				);
-			},
-		),
+			const topUsers = db.$with("top_users").as(() => {
+				const query = db
+					.select({
+						userId: userMonth.userId,
+						total: sql<number>`SUM(${userMonth.count})`.as("total"),
+					})
+					.from(userMonth)
+					.groupBy(userMonth.userId)
+					.orderBy(desc(sql`total`), asc(userMonth.userId))
+					.$dynamic();
+				if (userId) {
+					query.where(eq(userMonth.userId, userId));
+				} else if (top) {
+					query.limit(top);
+				}
+				return query;
+			});
+
+			const rows = await db
+				.with(userMonth, topUsers)
+				.select({
+					id: user.id,
+					month: userMonth.month,
+					count: userMonth.count,
+				})
+				.from(topUsers)
+				.innerJoin(userMonth, eq(userMonth.userId, topUsers.userId))
+				.innerJoin(user, eq(user.id, userMonth.userId))
+				.orderBy(desc(topUsers.total), asc(userMonth.month));
+
+			return mapValues(
+				groupBy(rows, (row) => row.id),
+				(rows) => rows.map((row) => pick(row, ["month", "count"])),
+			) satisfies MonthlyData;
+		}),
 	);
 
 	return app.listen({ port });
 }
 
-function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
-	schema: Schema = {} as Schema,
-) {
+type Schema = Record<string, "str" | "int" | "date">;
+function createHandler<S extends Schema>(schema = {} as S) {
 	type ValidatedArgs = {
-		[K in keyof Schema]?: Schema[K] extends "int"
+		[K in keyof S]?: S[K] extends "int"
 			? number
-			: Schema[K] extends "date"
+			: S[K] extends "date"
 				? Date
-				: Schema[K] extends "str"
+				: S[K] extends "str"
 					? string
 					: never;
 	};
+
+	function merge<T extends Schema>(other: T) {
+		return createHandler<S & T>({ ...schema, ...other });
+	}
 
 	function validate({ query }: { query: Record<string, string> }) {
 		return mapValues(query, (v, k) => {
@@ -195,15 +188,27 @@ function createHandler<Schema extends Record<string, "str" | "int" | "date">>(
 	}
 
 	function wrapper(logic: (args: ValidatedArgs) => Promise<unknown>) {
-		return (request: any, reply: FastifyReply) => {
-			// reply.header("Cache-Control", "public, max-age=86400");
+		return async (request: any, reply: FastifyReply) => {
+			if (env.NODE_ENV === "production") {
+				reply.header("Cache-Control", "public, max-age=86400");
+			}
+
+			let validated: ValidatedArgs;
 			try {
-				return logic(validate(request));
+				validated = validate(request);
 			} catch (e) {
 				return reply.code(400).send(e);
 			}
+
+			return logic(validated).catch(() =>
+				reply.code(500).send({
+					statusCode: 500,
+					error: "Internal server error",
+					reason: "incompetence",
+				}),
+			);
 		};
 	}
 
-	return wrapper;
+	return Object.assign(wrapper, { merge });
 }
