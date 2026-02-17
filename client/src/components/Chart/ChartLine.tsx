@@ -3,6 +3,7 @@ import {
 	type PointOrSliceMouseHandler,
 	ResponsiveLine,
 } from "@nivo/line";
+import { mapValues } from "es-toolkit";
 import {
 	type ComponentProps,
 	useCallback,
@@ -12,7 +13,7 @@ import {
 	useState,
 } from "react";
 import { useZackMode } from "@/hooks/useZackMode";
-import { toDate, toYyyyMm } from "@/utils/time";
+import { toDate } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import { useChartControls } from "./ChartControls";
 import { ChartPoint } from "./ChartPoint";
@@ -27,12 +28,17 @@ export const ChartLine = ({
 }) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { monthlyData, months, colorById, highlightedUser, isolatedPoints } =
-		useChart();
+	const { monthlyData, months, colorById, highlightedUser } = useChart();
 
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 	const [animate, setAnimate] = useState(false);
+
+	const pointsCount = useMemo(() => {
+		return mapValues(monthlyData, (monthlyCount) => {
+			return monthlyCount.filter(({ count }) => count !== null).length;
+		});
+	}, [monthlyData]);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -52,28 +58,18 @@ export const ChartLine = ({
 	}, []);
 
 	const pointLabel = useCallback(
-		({
-			seriesId,
-			seriesIndex,
-			indexInSeries,
-			data: { x: date, y },
-		}: Point<ChartSeries>) => {
+		({ seriesId, indexInSeries, data: { y } }: Point<ChartSeries>) => {
 			if (highlightedUser !== seriesId || y === null) {
 				return "";
 			}
-			const count = cumulative
-				? (data[seriesIndex]?.data.length ?? 0)
-				: (monthlyData[seriesId]?.length ?? 0);
-			const interval = Math.ceil(count / (cumulative ? 8 : 16));
-			if (
-				(count - 1 - indexInSeries) % interval === 0 ||
-				isolatedPoints[seriesId]?.has(toYyyyMm(date))
-			) {
+			const interval = Math.ceil(months.length / (cumulative ? 8 : 16));
+			const count = pointsCount[seriesId] ?? months.length;
+			if ((count - 1 - indexInSeries) % interval === 0) {
 				return String(y);
 			}
 			return "";
 		},
-		[highlightedUser, cumulative, data, monthlyData, isolatedPoints],
+		[highlightedUser, cumulative, pointsCount, months.length],
 	);
 
 	const lineColor = useCallback(
@@ -137,9 +133,6 @@ const chartConfigs = {
 		text: {
 			fill: "var(--text-primary)",
 			fontSize: "var(--text-mini)",
-		},
-		crosshair: {
-			line: { stroke: "var(--text-secondary)" },
 		},
 		axis: {
 			ticks: {

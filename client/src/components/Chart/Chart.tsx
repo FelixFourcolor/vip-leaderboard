@@ -53,62 +53,38 @@ export function Chart({ height }: Props) {
 
 	const months = useMemo(() => monthsInRange(from, to), [from, to]);
 
-	const normalizedData = useMemo(
-		() =>
-			mapValues(monthlyData, (tickets) => {
-				const ticketsByMonth = Object.fromEntries(
-					tickets.map(({ month, count }) => [month, count]),
-				);
-				let previous: number | null = null;
-				const data = months.map((month) => {
-					const tickets = ticketsByMonth[month];
-					if (tickets !== undefined) {
-						previous = tickets;
-						return [month, tickets] as const;
-					}
-					if (cumulative) {
-						return [month, previous ?? 0] as const;
-					}
-					return [month, null] as const;
-				});
-				return Object.fromEntries(data);
-			}),
-		[monthlyData, cumulative, months],
-	);
-
 	const chartData = useMemo<ChartSeries[]>(() => {
-		const orderedData = highlightedUser
-			? (() => {
-					const { [highlightedUser]: first, ...rest } = normalizedData;
-					return first ? { [highlightedUser]: first, ...rest } : normalizedData;
-				})()
-			: normalizedData;
+		const orderedData = (() => {
+			if (!highlightedUser) {
+				return monthlyData;
+			}
+			const { [highlightedUser]: first, ...rest } = monthlyData;
+			if (!first) {
+				return monthlyData;
+			}
+			return { [highlightedUser]: first, ...rest };
+		})();
 
-		return Object.entries(orderedData).map(([id, ticketsByMonth]) => ({
+		return Object.entries(orderedData).map(([id, monthlyCount]) => ({
 			id,
-			data: Object.entries(ticketsByMonth).map(([x, y]) => ({
-				x: new Date(x),
-				y,
+			data: monthlyCount.map(({ month, count }) => ({
+				x: new Date(month),
+				y: count,
 			})),
 		}));
-	}, [normalizedData, highlightedUser]);
+	}, [monthlyData, highlightedUser]);
 
 	const isolatedPoints = useMemo(() => {
-		const windows = Array.from(slidingWindow(months, 3, true));
-		return mapValues(
-			normalizedData,
-			(ticketsByMonth) =>
-				new Set(
-					windows
-						.filter(([prev, , next]) => {
-							const prevMissing = !prev || ticketsByMonth[prev] === null;
-							const nextMissing = !next || ticketsByMonth[next] === null;
-							return prevMissing && nextMissing;
-						})
-						.map(([, value]) => value),
-				),
-		);
-	}, [normalizedData, months]);
+		return mapValues(monthlyData, (ticketsByMonth) => {
+			return new Set(
+				Array.from(slidingWindow(ticketsByMonth, 3))
+					.filter(
+						([prev, , next]) => prev?.count == null && next?.count == null,
+					)
+					.map(([, { month }]) => month),
+			);
+		});
+	}, [monthlyData]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {

@@ -14,23 +14,11 @@ type WithBoundary<Arr extends unknown[]> = Arr extends [
 	? [First | undefined, ...Rest, Last | undefined]
 	: Arr;
 
-export function* slidingWindow<
-	Value,
-	Size extends number,
-	Boundary extends boolean = false,
-	__core extends unknown[] = ArrayOf<Size, Value>,
-	__eachitem = Boundary extends true ? WithBoundary<__core> : __core,
->(
+export function* slidingWindow<Value, Size extends number>(
 	arr: Value[],
 	size: Size,
-	includeBoundaries: Boundary = false as Boundary,
-): Generator<__eachitem> {
-	if (size <= 0) {
-		return;
-	}
-	if (includeBoundaries) {
-		arr = [undefined, ...arr, undefined] as any;
-	}
+): Generator<WithBoundary<ArrayOf<Size, Value>>> {
+	arr = [undefined, ...arr, undefined] as any;
 	for (let start = 0; start + size <= arr.length; start += 1) {
 		yield arr.slice(start, start + size) as any;
 	}

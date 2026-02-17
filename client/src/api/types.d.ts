@@ -10,18 +10,18 @@ export interface RankedUser extends User {
 }
 
 export interface RankingParams {
-	from?: string;
-	to?: string;
-	top?: number;
+	from: string;
+	to: string;
+	top: number;
 }
 
 export type RankingData = Record<string, RankedUser>;
 
 export interface MonthlyDataParams extends RankingParams {
-	cumulative?: boolean;
+	cumulative: boolean;
 }
 
 export type MonthlyData = Record<
 	string,
-	Array<{ month: string; count: number }>
+	Array<{ month: string; count: number | null }>
 >;
