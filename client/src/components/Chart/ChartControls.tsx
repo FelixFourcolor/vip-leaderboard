@@ -3,10 +3,10 @@ import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { useGetLastUpdated } from "@/api/hooks";
 import { Button } from "@/components/Button";
-import { TimeSlider } from "@/components/TimeSlider";
+import { RangeSlider } from "@/components/Slider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
-import { offset, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 
 const cx = classNames.bind(styles);
@@ -16,8 +16,24 @@ export function ChartControls() {
 	const [params, setParams] = useChartControls();
 	const { to, from, cumulative } = params;
 
+	// Earliest month with meaningful data.
+	// Kinda hard to define "meaningful",
+	// so just hardcode a value instead of querying it.
+	const domainFrom = "2020-01";
+	const domainTo = toYyyyMm(useGetLastUpdated());
+	const domain = useMemo(() => monthsInRange(domainFrom, domainTo), [domainTo]);
+
+	const onChangeFrom = useCallback(
+		(from: string) => setParams({ from }),
+		[setParams],
+	);
+	const onChangeTo = useCallback(
+		(to: string) => setParams({ to }),
+		[setParams],
+	);
+
 	return (
-		<div className={cx("controls")}>
+		<div className={cx("bottom-panel")}>
 			<Toggle
 				value={cumulative}
 				onChange={(cumulative) => setParams({ cumulative })}
@@ -25,17 +41,11 @@ export function ChartControls() {
 			>
 				Cumulative
 			</Toggle>
-			<TimeSlider
+			<RangeSlider
 				className={cx("slider")}
-				domain={[
-					// earliest month with meaningful data
-					// kinda hard to define "meaningful",
-					// so just hardcode a value instead of querying it
-					"2020-01",
-					toYyyyMm(useGetLastUpdated()),
-				]}
+				domain={domain}
 				selected={[from, to]}
-				onChange={[(from) => setParams({ from }), (to) => setParams({ to })]}
+				onChange={[onChangeFrom, onChangeTo]}
 			/>
 			<Button
 				onClick={() => setParams(defaultParams)}

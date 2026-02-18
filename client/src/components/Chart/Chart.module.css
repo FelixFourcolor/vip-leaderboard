@@ -22,7 +22,7 @@
 		overflow-x: hidden;
 	}
 
-	.controls {
+	.bottom-panel {
 		background-color: var(--bg-secondary);
 		display: flex;
 		padding: 16px;

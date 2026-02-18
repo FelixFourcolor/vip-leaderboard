@@ -9,56 +9,50 @@ import {
 	useState,
 } from "react";
 import { Range } from "react-range";
-import { useControlled } from "@/hooks/useControlled";
 import { useCursorDragged } from "@/hooks/useCursorDragged";
-import { monthsInRange } from "@/utils/time";
-import styles from "./TimeSlider.module.css";
+import styles from "./Slider.module.css";
 
 const cx = classNames.bind(styles);
 
-type MonthRange = [from: string, to: string];
-
-type Props = {
-	domain: MonthRange;
-	selected: MonthRange;
-	onChange: [from: (from: string) => void, to: (to: string) => void];
+type BaseProps = {
+	domain: readonly unknown[];
 	className?: string;
-};
+} & (
+	| {
+			value: number;
+			onChange: (value: number) => void;
+			onCommit: (value: number) => void;
+	  }
+	| {
+			value: [number, number];
+			onChange: (value: [number, number]) => void;
+			onCommit: (value: [number, number]) => void;
+	  }
+);
 
-export function TimeSlider({
-	domain: [domainFrom, domainTo],
-	selected: [selectedFrom, selectedTo],
-	onChange: [onChangeFrom, onChangeTo],
+export function BaseSlider({
+	domain,
 	className,
-}: Props) {
-	const months = useMemo(
-		() => monthsInRange(domainFrom, domainTo),
-		[domainFrom, domainTo],
-	);
-	const monthValues = useMemo(
-		() => Object.fromEntries(months.map((month, i) => [month, i])),
-		[months],
-	);
-	const max = months.length - 1;
+	value: valueProp,
+	onChange: onChangeProp,
+	onCommit: onCommitProp,
+}: BaseProps) {
+	const max = domain.length - 1;
 
-	const [values, setValues] = useControlled(
-		useCallback((): [number, number] => {
-			const fromIndex = monthValues[selectedFrom] ?? 0;
-			const toIndex = monthValues[selectedTo] ?? max;
-			return [fromIndex, toIndex];
-		}, [selectedFrom, selectedTo, monthValues, max]),
-	);
-
-	const onChange = ([from, to]: [number, number]) => {
-		if (to - from >= 1) {
-			setValues([from, to]);
+	const { values, onChange, onCommit } = useMemo(() => {
+		if (typeof valueProp === "number") {
+			return {
+				values: [valueProp],
+				onChange: ([value]: number[]) => onChangeProp(value as any),
+				onCommit: ([value]: number[]) => onCommitProp(value as any),
+			};
 		}
-	};
-
-	const onFinalChange = ([from, to]: [number, number]) => {
-		onChangeFrom(months[from]!);
-		onChangeTo(months[to]!);
-	};
+		return {
+			values: valueProp,
+			onChange: (values: number[]) => onChangeProp(values as any),
+			onCommit: (values: number[]) => onCommitProp(values as any),
+		};
+	}, [valueProp, onChangeProp, onCommitProp]);
 
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
@@ -89,10 +83,9 @@ export function TimeSlider({
 
 	return (
 		<Range
-			// screw react-range's bad types!
-			values={values as number[]}
-			onChange={onChange as (values: number[]) => void}
-			onFinalChange={onFinalChange as (values: number[]) => void}
+			values={values}
+			onChange={onChange}
+			onFinalChange={onCommit}
 			min={0}
 			step={1}
 			max={max}
@@ -100,20 +93,19 @@ export function TimeSlider({
 				<Track
 					{...props}
 					{...rest}
-					className={className}
 					min={0}
 					max={max}
-					values={values}
+					value={valueProp}
+					domain={domain}
+					className={className}
 				>
 					{children}
-					<span className={cx("label", "min")}>{domainFrom}</span>
-					<span className={cx("label", "max")}>{domainTo}</span>
 				</Track>
 			)}
 			renderThumb={({ props, index }) => (
 				<Thumb
 					{...props}
-					label={months[values[index]!]}
+					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
 					hideLabel={index === 0 && labelsOverlap}
 				/>
@@ -126,13 +118,15 @@ interface TrackProps extends ComponentProps<"div"> {
 	isDragged: boolean;
 	min: number;
 	max: number;
-	values: [number, number];
+	domain: readonly unknown[];
+	value: number | readonly [number, number];
 }
 
 const Track = ({
 	min,
 	max,
-	values: [fromValue, toValue],
+	domain,
+	value,
 	isDragged,
 	className,
 	children,
@@ -140,12 +134,13 @@ const Track = ({
 }: TrackProps) => {
 	useCursorDragged(isDragged);
 
+	const [from, to] = typeof value === "number" ? [0, value] : value;
 	const total = Math.max(max - min, 1);
-	const pre = ((fromValue - min) / total) * 100;
-	const selected = ((toValue - fromValue) / total) * 100;
+	const pre = ((from - min) / total) * 100;
+	const selected = ((to - from) / total) * 100;
 
 	return (
-		<div {...props} className={cx("track", className)}>
+		<div {...props} className={cx("track", isDragged && "dragged", className)}>
 			<Thumb className={cx("limit", "from")} />
 			<div className={cx("bar")}>
 				<div style={{ width: `${pre}%` }} />
@@ -153,12 +148,14 @@ const Track = ({
 			</div>
 			<Thumb className={cx("limit", "to")} />
 			{children}
+			<span className={cx("label", "min")}>{String(domain[min])}</span>
+			<span className={cx("label", "max")}>{String(domain[max])}</span>
 		</div>
 	);
 };
 
 type ThumbProps = ComponentProps<"div"> & {
-	label?: string;
+	label?: unknown;
 	hideLabel?: boolean;
 	labelRef?: Ref<HTMLSpanElement>;
 };
@@ -171,9 +168,9 @@ const Thumb: React.FC<ThumbProps> = ({
 	...props
 }) => (
 	<div {...props} className={cx("thumb", className)}>
-		{label && (
+		{label != null && (
 			<span ref={labelRef} className={cx("label", hideLabel && "hidden")}>
-				{label}
+				{String(label)}
 			</span>
 		)}
 	</div>
