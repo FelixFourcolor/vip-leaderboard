@@ -7,13 +7,14 @@ type RangeProps<Value> = {
 	selected: readonly [Value, Value];
 	onChange: readonly [Dispatch<Value>, Dispatch<Value>];
 	className?: string;
+	direction?: "horizontal" | "vertical";
 };
 
 export function RangeSlider<Value>({
 	domain,
 	selected: [selectedFrom, selectedTo],
 	onChange: [onChangeFrom, onChangeTo],
-	className,
+	...props
 }: RangeProps<Value>) {
 	const [values, setValues] = useControlled(
 		useCallback((): [number, number] => {
@@ -51,7 +52,7 @@ export function RangeSlider<Value>({
 			value={values}
 			onChange={onChange}
 			onCommit={onCommit}
-			className={className}
+			{...props}
 		/>
 	);
 }

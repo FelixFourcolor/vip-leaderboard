@@ -9,7 +9,7 @@
 
 	--text-primary: #e0def4;
 	--text-secondary: #908caa;
-	--text-tertiary: rgb(from var(--text-secondary) r g b / 0.6);
+	--text-tertiary: #605d74;
 
 	--accent: #ebbcba;
 
@@ -20,7 +20,7 @@
 
 		--text-primary: #575279;
 		--text-secondary: #797593;
-		--text-tertiary: rgb(from var(--text-secondary) r g b / 0.5);
+		--text-tertiary: #b5afba;
 
 		--accent: #eb6f92;
 	}

@@ -3,7 +3,7 @@ import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { useGetLastUpdated } from "@/api/hooks";
 import { Button } from "@/components/Button";
-import { RangeSlider } from "@/components/Slider";
+import { RangeSlider, Slider } from "@/components/Slider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
@@ -11,10 +11,12 @@ import styles from "./Chart.module.css";
 
 const cx = classNames.bind(styles);
 
+const topDomain = [...Array(10).keys()].map((i) => i + 1);
+
 export function ChartControls() {
 	const defaultParams = useDefaultParams();
 	const [params, setParams] = useChartControls();
-	const { to, from, cumulative } = params;
+	const { to, from, cumulative, top } = params;
 
 	// Earliest month with meaningful data.
 	// Kinda hard to define "meaningful",
@@ -31,29 +33,45 @@ export function ChartControls() {
 		(to: string) => setParams({ to }),
 		[setParams],
 	);
+	const onChangeTop = useCallback(
+		(top: number) => setParams({ top }),
+		[setParams],
+	);
 
 	return (
-		<div className={cx("bottom-panel")}>
-			<Toggle
-				value={cumulative}
-				onChange={(cumulative) => setParams({ cumulative })}
-				className={cx("toggle")}
-			>
-				Cumulative
-			</Toggle>
-			<RangeSlider
-				className={cx("slider")}
-				domain={domain}
-				selected={[from, to]}
-				onChange={[onChangeFrom, onChangeTo]}
-			/>
-			<Button
-				onClick={() => setParams(defaultParams)}
-				disabled={isEqual(params, defaultParams)}
-			>
-				Reset
-			</Button>
-		</div>
+		<>
+			<div className={cx("mid-panel")}>
+				Top
+				<Slider
+					className={cx("slider")}
+					domain={topDomain}
+					value={top}
+					onChange={onChangeTop}
+					direction="vertical"
+				/>
+			</div>
+			<div className={cx("bottom-panel")}>
+				<Toggle
+					value={cumulative}
+					onChange={(cumulative) => setParams({ cumulative })}
+					className={cx("toggle")}
+				>
+					Cumulative
+				</Toggle>
+				<RangeSlider
+					className={cx("slider")}
+					domain={domain}
+					selected={[from, to]}
+					onChange={[onChangeFrom, onChangeTo]}
+				/>
+				<Button
+					onClick={() => setParams(defaultParams)}
+					disabled={isEqual(params, defaultParams)}
+				>
+					Reset
+				</Button>
+			</div>
+		</>
 	);
 }
 

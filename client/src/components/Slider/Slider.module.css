@@ -1,5 +1,4 @@
 .track {
-	height: 20px;
 	display: flex;
 	align-items: center;
 
@@ -11,29 +10,21 @@
 	}
 
 	.bar {
-		height: 3px;
-		width: 100%;
 		background-color: var(--text-tertiary);
 		display: flex;
 
 		.selected {
 			background-color: var(--accent);
-			height: 3px;
 			align-self: center;
 		}
 	}
 
 	.thumb {
 		position: relative;
-		height: 20px;
-		width: 3px;
 		background-color: var(--accent);
 		outline: none;
 
 		.label {
-			top: 25px;
-			left: 50%;
-			transform: translateX(-50%);
 			color: var(--accent);
 			font-weight: bold;
 
@@ -45,33 +36,116 @@
 
 	.limit {
 		position: absolute;
-		height: 16px;
 		background-color: var(--text-tertiary);
-
-		&.from {
-			left: -1.5px;
-		}
-
-		&.to {
-			right: -1.5px;
-		}
+		z-index: -1;
 	}
 
 	.label {
 		cursor: default;
 		position: absolute;
 		white-space: nowrap;
-		top: -16px;
 		font-size: var(--text-mini);
+	}
+}
 
+.track.horizontal {
+	flex-direction: row;
+	height: 20px;
+
+	.bar {
+		height: 3px;
+		width: 100%;
+		flex-direction: row;
+
+		.pre {
+			width: var(--pre);
+		}
+		.selected {
+			height: 3px;
+			width: var(--selected);
+		}
+	}
+
+	.thumb {
+		width: 3px;
+		height: 19px;
+
+		.label {
+			top: 25px;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+	}
+
+	.limit {
+		height: 13px;
+		&.from {
+			left: -1.5px;
+		}
+		&.to {
+			right: -1.5px;
+		}
+	}
+
+	.label {
+		top: -16px;
 		&.min {
 			left: 0;
 			transform: translateX(-50%);
 		}
-
 		&.max {
 			right: 0;
 			transform: translateX(50%);
+		}
+	}
+}
+
+.track.vertical {
+	flex-direction: column;
+	width: 20px;
+
+	.bar {
+		width: 3px;
+		height: 100%;
+		flex-direction: column;
+
+		.pre {
+			height: var(--pre);
+		}
+		.selected {
+			width: 3px;
+			height: var(--selected);
+		}
+	}
+
+	.thumb {
+		height: 3px;
+		width: 19px;
+
+		.label {
+			top: 50%;
+			left: -16px;
+			transform: translateY(-50%);
+		}
+	}
+
+	.limit {
+		width: 13px;
+		&.from {
+			top: -1.5px;
+		}
+		&.to {
+			bottom: -1.5px;
+		}
+	}
+
+	.label {
+		right: -16px;
+		&.min {
+			top: -7.5px;
+		}
+		&.max {
+			bottom: -7.5px;
 		}
 	}
 }

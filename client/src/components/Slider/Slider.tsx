@@ -1,10 +1,12 @@
-import { type Dispatch, useCallback, useState } from "react";
+import { type Dispatch, useCallback } from "react";
+import { useControlled } from "@/hooks/useControlled";
 import { BaseSlider } from "./BaseSlider";
 
 type SliderProps<Value> = {
 	domain: readonly Value[];
 	value: Value;
 	onChange: Dispatch<Value>;
+	direction?: "horizontal" | "vertical";
 	className?: string;
 };
 
@@ -12,9 +14,11 @@ export function Slider<Value>({
 	domain,
 	value,
 	onChange,
-	className,
+	...props
 }: SliderProps<Value>) {
-	const [index, setIndex] = useState(() => domain.indexOf(value));
+	const [index, setIndex] = useControlled(
+		useCallback(() => domain.indexOf(value), [domain, value]),
+	);
 
 	const onCommit = useCallback(
 		(index: number) => {
@@ -30,7 +34,7 @@ export function Slider<Value>({
 			value={index}
 			onChange={setIndex}
 			onCommit={onCommit}
-			className={className}
+			{...props}
 		/>
 	);
 }

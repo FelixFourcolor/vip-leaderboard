@@ -8,7 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { Range } from "react-range";
+import { Direction, Range } from "react-range";
 import { useCursorDragged } from "@/hooks/useCursorDragged";
 import styles from "./Slider.module.css";
 
@@ -17,6 +17,7 @@ const cx = classNames.bind(styles);
 type BaseProps = {
 	domain: readonly unknown[];
 	className?: string;
+	direction?: "horizontal" | "vertical";
 } & (
 	| {
 			value: number;
@@ -33,26 +34,27 @@ type BaseProps = {
 export function BaseSlider({
 	domain,
 	className,
-	value: valueProp,
+	direction = "horizontal",
+	value,
 	onChange: onChangeProp,
 	onCommit: onCommitProp,
 }: BaseProps) {
 	const max = domain.length - 1;
 
 	const { values, onChange, onCommit } = useMemo(() => {
-		if (typeof valueProp === "number") {
+		if (typeof value === "number") {
 			return {
-				values: [valueProp],
+				values: [value],
 				onChange: ([value]: number[]) => onChangeProp(value as any),
 				onCommit: ([value]: number[]) => onCommitProp(value as any),
 			};
 		}
 		return {
-			values: valueProp,
+			values: value,
 			onChange: (values: number[]) => onChangeProp(values as any),
 			onCommit: (values: number[]) => onCommitProp(values as any),
 		};
-	}, [valueProp, onChangeProp, onCommitProp]);
+	}, [value, onChangeProp, onCommitProp]);
 
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
@@ -83,6 +85,7 @@ export function BaseSlider({
 
 	return (
 		<Range
+			direction={direction === "horizontal" ? Direction.Right : Direction.Down}
 			values={values}
 			onChange={onChange}
 			onFinalChange={onCommit}
@@ -95,9 +98,10 @@ export function BaseSlider({
 					{...rest}
 					min={0}
 					max={max}
-					value={valueProp}
+					value={value}
 					domain={domain}
 					className={className}
+					direction={direction}
 				>
 					{children}
 				</Track>
@@ -108,6 +112,7 @@ export function BaseSlider({
 					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
 					hideLabel={index === 0 && labelsOverlap}
+					kind={typeof value === "object" && index === 0 ? "from" : "to"}
 				/>
 			)}
 		/>
@@ -120,6 +125,7 @@ interface TrackProps extends ComponentProps<"div"> {
 	max: number;
 	domain: readonly unknown[];
 	value: number | readonly [number, number];
+	direction: "horizontal" | "vertical";
 }
 
 const Track = ({
@@ -128,6 +134,7 @@ const Track = ({
 	domain,
 	value,
 	isDragged,
+	direction,
 	className,
 	children,
 	...props
@@ -140,15 +147,29 @@ const Track = ({
 	const selected = ((to - from) / total) * 100;
 
 	return (
-		<div {...props} className={cx("track", isDragged && "dragged", className)}>
-			<Thumb className={cx("limit", "from")} />
-			<div className={cx("bar")}>
-				<div style={{ width: `${pre}%` }} />
-				<div className={cx("selected")} style={{ width: `${selected}%` }} />
-			</div>
-			<Thumb className={cx("limit", "to")} />
+		<div
+			{...props}
+			className={cx("track", isDragged && "dragged", className, direction)}
+		>
+			{typeof value === "object" && (
+				<>
+					<Thumb className={cx("limit")} kind="from" />
+					<span className={cx("label", "min")}>{String(domain[min])}</span>
+				</>
+			)}
+
 			{children}
-			<span className={cx("label", "min")}>{String(domain[min])}</span>
+			<div
+				className={cx("bar")}
+				style={{
+					["--pre" as string]: `${pre}%`,
+					["--selected" as string]: `${selected}%`,
+				}}
+			>
+				<div className={cx("pre")} />
+				<div className={cx("selected")} />
+			</div>
+			<Thumb className={cx("limit")} kind="to" />
 			<span className={cx("label", "max")}>{String(domain[max])}</span>
 		</div>
 	);
@@ -158,16 +179,18 @@ type ThumbProps = ComponentProps<"div"> & {
 	label?: unknown;
 	hideLabel?: boolean;
 	labelRef?: Ref<HTMLSpanElement>;
+	kind: "from" | "to";
 };
 
 const Thumb: React.FC<ThumbProps> = ({
-	className,
 	label,
 	hideLabel,
 	labelRef,
+	kind,
+	className,
 	...props
 }) => (
-	<div {...props} className={cx("thumb", className)}>
+	<div {...props} className={cx("thumb", kind, className)}>
 		{label != null && (
 			<span ref={labelRef} className={cx("label", hideLabel && "hidden")}>
 				{String(label)}
