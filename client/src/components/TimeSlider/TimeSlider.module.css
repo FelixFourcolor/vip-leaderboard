@@ -3,14 +3,11 @@
 	display: flex;
 	align-items: center;
 
-	&,
-	.label {
-		cursor: grab !important;
-	}
-
-	&.dragged,
-	&.dragged .label {
-		cursor: grabbing !important;
+	[data-is-cursor-dragged="false"] & {
+		&,
+		.label {
+			cursor: grab !important;
+		}
 	}
 
 	.bar {
