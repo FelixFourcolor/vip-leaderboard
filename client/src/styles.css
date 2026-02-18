@@ -20,6 +20,7 @@
 
 		--text-primary: #575279;
 		--text-secondary: #797593;
+		--text-tertiary: rgb(from var(--text-secondary) r g b / 0.5);
 
 		--accent: #eb6f92;
 	}
@@ -29,6 +30,13 @@
 			cursor: grabbing !important;
 		}
 	}
+
+	::-webkit-scrollbar {
+		width: 3px;
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--text-tertiary);
+	}
 }
 
 body {
@@ -36,6 +44,19 @@ body {
 	font-size: var(--text-normal);
 	background-color: var(--bg-primary);
 	color: var(--text-primary);
-	height: 100%;
 	margin: 0;
+	height: 100vh;
+
+	#root {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+
+		#main {
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			padding: 1rem;
+		}
+	}
 }

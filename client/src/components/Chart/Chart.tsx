@@ -7,6 +7,7 @@ import { useLastDefined } from "@/hooks/useLastDefined";
 import { offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
+import { ChartLegend } from "./ChartLegend";
 import { ChartLine } from "./ChartLine";
 import { ChartContext } from "./context";
 
@@ -97,6 +98,7 @@ export function Chart() {
 					onMouseMove={onMouseMove}
 					onMouseLeave={onMouseLeave}
 				/>
+				<ChartLegend />
 				<ChartControls />
 			</div>
 		</ChartContext.Provider>

@@ -1,14 +1,36 @@
 .container {
+	flex: 1;
+	display: grid;
+	grid-template-columns: 1fr auto;
+	grid-template-rows: 1fr auto;
+	gap: 16px;
+
 	.chart {
-		height: 588px;
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.legend {
+		display: flex;
+		flex-direction: column;
+		background-color: var(--bg-secondary);
+		padding: 16px;
+		gap: 16px;
+		grid-column: 2;
+		grid-row: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
 	}
 
 	.controls {
+		background-color: var(--bg-secondary);
 		display: flex;
+		padding: 16px;
 		align-items: center;
-		margin-top: 20px;
-		gap: 48px;
+		gap: 60px;
 		justify-content: center;
+		grid-column: 1 / -1;
+		grid-row: 2;
 
 		.toggle {
 			font-size: var(--text-small);
@@ -21,34 +43,46 @@
 	}
 }
 
-.tooltip {
-	padding: 8px;
-	background-color: rgb(from var(--bg-primary) r g b / 0.7);
+.info-box {
+	padding: 6px 6px 4px 6px;
 	border-radius: 4px;
-	border: 2px dashed var(--series-color);
+	border: 2px dashed;
 	width: fit-content;
 	white-space: nowrap;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 
-	.detail {
-		margin-top: 8px;
+	table {
 		font-size: var(--text-small);
-	}
+		border-spacing: 0;
 
-	.label {
-		margin-right: 4px;
-
-		[data-zack-mode="false"] & {
+		th,
+		td {
+			padding: 1px 2px;
+		}
+		th {
+			font-weight: normal;
 			color: var(--text-secondary);
+		}
+		td {
+			[data-zack-mode="true"] & {
+				color: var(--text-secondary);
+				font-weight: bold;
+			}
 		}
 	}
 
-	.data {
-		[data-zack-mode="true"] & {
-			color: var(--text-secondary);
-			font-weight: bold;
-		}
+	&.tooltip {
+		background-color: rgb(from var(--bg-primary) r g b / 0.7);
+		width: fit-content;
+		gap: 6px;
+	}
+
+	.legend & {
+		background-color: var(--bg-primary);
+		/* hardcoded "large enough" value for most usernames */
+		width: 132px;
+		gap: 4px;
 	}
 }

@@ -53,27 +53,24 @@ export function ChartPoint({
 		hoveredPoint.x.getTime() === date.getTime() &&
 		hoveredPoint.y === y
 	) {
-		return <HoveredPoint {...{ color, date, y, seriesId }} />;
+		return <HoveredPoint x={date} y={y} seriesId={seriesId} />;
 	}
 	if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 		return <circle r={3} fill={color} />;
 	}
 }
 
-function HoveredPoint({
-	color,
-	date,
-	y,
-	seriesId,
-}: {
-	color: string;
-	date: Date;
+type HoveredPointProps = {
+	x: Date;
 	y: number;
 	seriesId: string;
-}) {
+};
+
+function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 	const { userData, colorById } = useChart();
 	const seriesColor = colorById[seriesId]!;
 	const { color: userColor, avatarUrl, name } = userData[seriesId]!;
+
 	const [isZack] = useZackMode();
 	const innerColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
 
@@ -81,24 +78,29 @@ function HoveredPoint({
 		<Tooltip
 			element={({ ref }) => (
 				<>
-					<circle ref={ref} r={8} fill={color} />
+					<circle ref={ref} r={8} fill={seriesColor} />
 					<circle r={5} fill={innerColor} />
 				</>
 			)}
 			content={({ ref, style }) => (
 				<div
 					ref={ref}
-					style={{ ["--series-color" as string]: seriesColor, ...style }}
-					className={cx("tooltip")}
+					style={{ borderColor: seriesColor, ...style }}
+					className={cx("info-box", "tooltip")}
 				>
 					<UserHeader name={name} color={userColor} avatarUrl={avatarUrl} />
-					<div className={cx("detail")}>
-						<span className={cx("label")}>Month:</span>
-						<span className={cx("data")}>{toYyyyMm(date)}</span>
-						<br />
-						<span className={cx("label")}>Tickets:</span>
-						<span className={cx("data")}>{y}</span>
-					</div>
+					<table>
+						<tbody>
+							<tr>
+								<th>Month:</th>
+								<td>{toYyyyMm(x)}</td>
+							</tr>
+							<tr>
+								<th>Tickets:</th>
+								<td>{y}</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			)}
 		/>

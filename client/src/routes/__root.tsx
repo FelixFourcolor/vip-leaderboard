@@ -8,13 +8,11 @@ export const Route = createRootRoute({
 
 function RootComponent() {
 	return (
-		<div
-			style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-		>
-			<div style={{ flex: "1 0 auto", padding: "1rem" }}>
+		<>
+			<div id="main">
 				<Outlet />
 			</div>
 			<Footer />
-		</div>
+		</>
 	);
 }

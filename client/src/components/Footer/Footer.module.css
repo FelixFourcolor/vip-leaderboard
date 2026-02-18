@@ -1,18 +1,19 @@
 footer {
-    padding: 1rem;
-    font-size: var(--text-small);
+	padding: 1rem;
+	font-size: var(--text-small);
 
-    hr {
-        margin-bottom: 1rem;
-        border: none;
-        height: 1px;
-        background-color: var(--text-tertiary);
-    }
+	hr {
+		margin-top: -1rem;
+		margin-bottom: 1rem;
+		border: none;
+		height: 1px;
+		background-color: var(--text-tertiary);
+	}
 
-    .container {
-        display: flex;
-        align-items: center;
-        justify-content: space-evenly;
-        gap: 1rem;
-    }
+	.container {
+		display: flex;
+		align-items: center;
+		justify-content: space-evenly;
+		gap: 1rem;
+	}
 }

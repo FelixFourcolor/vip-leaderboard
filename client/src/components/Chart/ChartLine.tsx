@@ -84,7 +84,7 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
-			const color = colorById[id] ?? "var(--text-secondary)";
+			const color = colorById[id]!;
 			if (!highlightedUser || highlightedUser === id) {
 				return color;
 			}

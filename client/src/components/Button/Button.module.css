@@ -8,13 +8,13 @@
 	cursor: pointer;
 	border: 1px solid var(--text-secondary);
 	color: var(--text-primary);
-	background-color: var(--bg-secondary);
+	background-color: var(--bg-primary);
 
 	&:disabled {
 		cursor: default;
 		border-color: var(--text-tertiary);
 		color: var(--text-tertiary);
-		background-color: var(--bg-primary);
+		background-color: var(--bg-secondary);
 	}
 
 	&:not(:disabled) {
@@ -22,7 +22,7 @@
 			border-color: var(--accent);
 		}
 		&:active {
-			background-color: var(--bg-tertiary);
+			background-color: var(--bg-secondary);
 		}
 	}
 }

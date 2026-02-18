@@ -1,19 +1,20 @@
 .header {
 	display: flex;
 	align-items: center;
+	max-width: 100%;
+	overflow: hidden;
 
 	.avatar {
-		width: 24px;
-		height: 24px;
+		width: 20px;
+		height: 20px;
 		border-radius: 50%;
 		margin-right: 8px;
 	}
 
 	.name {
-		color: var(--user-color);
-
 		[data-zack-mode="true"] & {
 			font-weight: bold;
+			font-size: 15px; /* -1 from text-normal */
 		}
 	}
 }
