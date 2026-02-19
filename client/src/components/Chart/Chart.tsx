@@ -19,13 +19,26 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [{ to, from, cumulative, top }] = useChartControls();
-	const inclusiveTo = offset(to, { months: 1 });
+	const [{ until, since, cumulative, from, to }] = useChartControls();
+	const inclusiveUntil = offset(until, { months: 1 });
 	const userData =
-		useLastDefined(useGetRanking({ top, from, to: inclusiveTo })) ?? {};
+		useLastDefined(
+			useGetRanking({
+				from,
+				to,
+				since,
+				until: inclusiveUntil,
+			}),
+		) ?? {};
 	const monthlyData =
 		useLastDefined(
-			useGetMonthlyData({ cumulative, top, from, to: inclusiveTo }),
+			useGetMonthlyData({
+				cumulative,
+				from,
+				to,
+				since,
+				until: inclusiveUntil,
+			}),
 		) ?? {};
 
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);

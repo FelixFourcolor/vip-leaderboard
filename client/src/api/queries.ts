@@ -15,17 +15,17 @@ export function getRanking(params: RankingParams) {
 
 export async function getMonthlyData({
 	cumulative,
-	from,
-	to,
-	top,
+	since,
+	until,
+	...ranks
 }: MonthlyDataParams): Promise<MonthlyData> {
-	const url = `/api/monthly${createUrlParams({ from, to, top })}`;
+	const url = `/api/monthly${createUrlParams({ since, until, ...ranks })}`;
 	const rawData: Record<
 		string,
 		Array<{ month: string; count: number }>
 	> = await fetch(url).then((res) => res.json());
 
-	const months = monthsInRange(from, to).slice(0, -1); // api returns exclusive to
+	const months = monthsInRange(since, until).slice(0, -1); // api returns exclusive until
 
 	// fill in gaps, apply cumulative
 	function* calculate(

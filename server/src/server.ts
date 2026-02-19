@@ -32,9 +32,10 @@ export async function startServer(port = 3001) {
 	);
 
 	const rankingHandler = createHandler({
-		from: "date",
-		to: "date",
-		top: "int",
+		since: "date",
+		until: "date",
+		from: "int",
+		to: "int",
 	});
 	type RankingData = Record<
 		string,
@@ -48,7 +49,7 @@ export async function startServer(port = 3001) {
 	>;
 	app.get(
 		"/api/ranking",
-		rankingHandler(async ({ top, from, to }) => {
+		rankingHandler(async ({ from = 1, to, since, until }) => {
 			const query = db
 				.select({
 					...pick(user, ["id", "name", "avatarUrl", "color"]),
@@ -59,15 +60,20 @@ export async function startServer(port = 3001) {
 				.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
 				.where(
 					and(
-						...(from ? [gte(ticket.timestamp, from)] : []),
-						...(to ? [lt(ticket.timestamp, to)] : []),
+						...(since ? [gte(ticket.timestamp, since)] : []),
+						...(until ? [lt(ticket.timestamp, until)] : []),
 					),
 				)
 				.groupBy(user.id)
 				.orderBy(desc(count(reaction.ticketId)), asc(user.id))
 				.$dynamic();
-			if (top) {
-				query.limit(top);
+
+			const offset = from - 1;
+			if (to) {
+				query.limit(to - offset);
+			}
+			if (from) {
+				query.offset(offset);
 			}
 
 			const rows = await query;
@@ -82,7 +88,7 @@ export async function startServer(port = 3001) {
 	type MonthlyData = Record<string, Array<{ month: string; count: number }>>;
 	app.get(
 		"/api/monthly",
-		monthlyHandler(async ({ top, from, to, user: userId }) => {
+		monthlyHandler(async ({ from = 1, to, since, until, user: userId }) => {
 			const userMonth = db.$with("user_month").as(
 				db
 					.select({
@@ -95,8 +101,8 @@ export async function startServer(port = 3001) {
 					.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
 					.where(
 						and(
-							...(from ? [gte(ticket.timestamp, from)] : []),
-							...(to ? [lt(ticket.timestamp, to)] : []),
+							...(since ? [gte(ticket.timestamp, since)] : []),
+							...(until ? [lt(ticket.timestamp, until)] : []),
 						),
 					)
 					.groupBy(reaction.userId, sql`month`),
@@ -114,8 +120,14 @@ export async function startServer(port = 3001) {
 					.$dynamic();
 				if (userId) {
 					query.where(eq(userMonth.userId, userId));
-				} else if (top) {
-					query.limit(top);
+				} else {
+					const offset = from - 1;
+					if (to) {
+						query.limit(to - offset);
+					}
+					if (from) {
+						query.offset(offset);
+					}
 				}
 				return query;
 			});

@@ -7,19 +7,19 @@ export function toDate(yyyyMm: string): Date {
 	return new Date(year!, month! - 1, 1);
 }
 
-export function monthsInRange(from: string, to: string): string[] {
-	const fromDate = new Date(from);
-	const fromYear = fromDate.getUTCFullYear();
-	const fromMonth = fromDate.getUTCMonth();
+export function monthsInRange(since: string, until: string): string[] {
+	const sinceDate = new Date(since);
+	const sinceYear = sinceDate.getUTCFullYear();
+	const sinceMonth = sinceDate.getUTCMonth();
 
-	const toDate = new Date(to);
-	const toYear = toDate.getUTCFullYear();
-	const toMonth = toDate.getUTCMonth();
+	const untilDate = new Date(until);
+	const untilYear = untilDate.getUTCFullYear();
+	const untilMonth = untilDate.getUTCMonth();
 
 	return Array.from(
-		{ length: (toYear - fromYear) * 12 + (toMonth - fromMonth) + 1 },
+		{ length: (untilYear - sinceYear) * 12 + (untilMonth - sinceMonth) + 1 },
 		(_, i) => {
-			const date = new Date(Date.UTC(fromYear, fromMonth + i, 1));
+			const date = new Date(Date.UTC(sinceYear, sinceMonth + i, 1));
 			return toYyyyMm(date);
 		},
 	);

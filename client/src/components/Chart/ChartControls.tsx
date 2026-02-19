@@ -3,7 +3,7 @@ import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { useGetLastUpdated } from "@/api/hooks";
 import { Button } from "@/components/Button";
-import { RangeSlider, Slider } from "@/components/Slider";
+import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
@@ -11,43 +11,39 @@ import styles from "./Chart.module.css";
 
 const cx = classNames.bind(styles);
 
-const topDomain = [...Array(10).keys()].map((i) => i + 1);
+const supportedRanks: number[] = [...Array(25).keys()].map((i) => i + 1);
 
 export function ChartControls() {
 	const defaultParams = useDefaultParams();
 	const [params, setParams] = useChartControls();
-	const { to, from, cumulative, top } = params;
+	const { until, since, cumulative, from, to } = params;
 
 	// Earliest month with meaningful data.
 	// Kinda hard to define "meaningful",
-	// so just hardcode a value instead of querying it.
+	// so just hardcode a value instead of defining an api for it.
 	const domainFrom = "2020-01";
 	const domainTo = toYyyyMm(useGetLastUpdated());
 	const domain = useMemo(() => monthsInRange(domainFrom, domainTo), [domainTo]);
 
-	const onChangeFrom = useCallback(
-		(from: string) => setParams({ from }),
+	const onChangeRankRange = useCallback(
+		([from, to]: [number, number]) => setParams({ from, to }),
 		[setParams],
 	);
-	const onChangeTo = useCallback(
-		(to: string) => setParams({ to }),
+	const onChangeDateRange = useCallback(
+		([since, until]: [string, string]) => setParams({ since, until }),
 		[setParams],
 	);
-	const onChangeTop = useCallback(
-		(top: number) => setParams({ top }),
-		[setParams],
-	);
-
 	return (
 		<>
 			<div className={cx("mid-panel")}>
-				Top
-				<Slider
+				<span className={cx("label")}>Ranks</span>
+				<RangeSlider
 					className={cx("slider")}
-					domain={topDomain}
-					value={top}
-					onChange={onChangeTop}
+					domain={supportedRanks}
+					selected={[from, to]}
+					onChange={onChangeRankRange}
 					direction="vertical"
+					maxDistance={9}
 				/>
 			</div>
 			<div className={cx("bottom-panel")}>
@@ -61,8 +57,9 @@ export function ChartControls() {
 				<RangeSlider
 					className={cx("slider")}
 					domain={domain}
-					selected={[from, to]}
-					onChange={[onChangeFrom, onChangeTo]}
+					selected={[since, until]}
+					onChange={onChangeDateRange}
+					minDistance={1}
 				/>
 				<Button
 					onClick={() => setParams(defaultParams)}
@@ -97,10 +94,11 @@ function useDefaultParams() {
 	const lastUpdated = toYyyyMm(useGetLastUpdated());
 	return useMemo(
 		() => ({
-			to: lastUpdated,
-			from: offset(lastUpdated, { years: -2 }),
+			until: lastUpdated,
+			since: offset(lastUpdated, { years: -2 }),
 			cumulative: false,
-			top: 5,
+			from: 1,
+			to: 5,
 		}),
 		[lastUpdated],
 	);

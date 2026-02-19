@@ -10,9 +10,10 @@ export interface RankedUser extends User {
 }
 
 export interface RankingParams {
-	from: string;
-	to: string;
-	top: number;
+	since: string;
+	until: string;
+	from: number;
+	to: number;
 }
 
 export type RankingData = Record<string, RankedUser>;

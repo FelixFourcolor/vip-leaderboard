@@ -1,26 +1,34 @@
 import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { type } from "arktype";
+import { isEmptyObject } from "es-toolkit";
 import { Chart } from "@/components/Chart";
 
 const validate = type({
-	"to?": "string | undefined",
-	"from?": "string | undefined",
+	"until?": "string | undefined",
+	"since?": "string | undefined",
 	"cumulative?": "boolean | undefined",
-	"top?": "(1 <= number <= 10) | undefined",
-}).narrow(({ to, from }) => {
-	if (to) {
-		const toDate = new Date(to);
-		if (Number.isNaN(toDate.getTime())) {
+	"from?": "number >= 1 | undefined",
+	"to?": "number >= 1| undefined",
+}).narrow(({ until, since, from, to, cumulative, ...unknowns }) => {
+	if (!isEmptyObject(unknowns)) {
+		return false;
+	}
+	if (until) {
+		const untilDate = new Date(until);
+		if (Number.isNaN(untilDate.getTime())) {
 			return false;
 		}
 	}
-	if (from) {
-		const fromDate = new Date(from);
-		if (Number.isNaN(fromDate.getTime())) {
+	if (since) {
+		const sinceDate = new Date(since);
+		if (Number.isNaN(sinceDate.getTime())) {
 			return false;
 		}
 	}
-	if (from && to && new Date(from) > new Date(to)) {
+	if (since && until && new Date(since) > new Date(until)) {
+		return false;
+	}
+	if (from && to && (from > to || to - from >= 10)) {
 		return false;
 	}
 	return true;
@@ -33,10 +41,11 @@ export const Route = createFileRoute("/")({
 		if (out instanceof type.errors) {
 			console.log(out.summary);
 			return {
+				since: undefined,
+				until: undefined,
+				cumulative: undefined,
 				from: undefined,
 				to: undefined,
-				cumulative: undefined,
-				top: undefined,
 			};
 		}
 		return out;
