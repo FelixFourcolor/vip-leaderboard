@@ -8,6 +8,7 @@ import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
+import { COLORS } from "./colors";
 
 const cx = classNames.bind(styles);
 
@@ -43,7 +44,7 @@ export function ChartControls() {
 					selected={[from, to]}
 					onChange={onChangeRankRange}
 					direction="vertical"
-					maxDistance={9}
+					maxDistance={COLORS.length - 1}
 				/>
 			</div>
 			<div className={cx("bottom-panel")}>

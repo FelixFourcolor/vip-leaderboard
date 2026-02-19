@@ -2,6 +2,7 @@ import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { type } from "arktype";
 import { isEmptyObject } from "es-toolkit";
 import { Chart } from "@/components/Chart";
+import { COLORS } from "@/components/Chart/colors";
 
 const validate = type({
 	"until?": "string | undefined",
@@ -28,7 +29,7 @@ const validate = type({
 	if (since && until && new Date(since) > new Date(until)) {
 		return false;
 	}
-	if (from && to && (from > to || to - from >= 10)) {
+	if (from && to && (from > to || to - from >= COLORS.length)) {
 		return false;
 	}
 	return true;

@@ -9,6 +9,7 @@ import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLegend } from "./ChartLegend";
 import { ChartLine } from "./ChartLine";
+import { COLORS } from "./colors";
 import { ChartContext } from "./context";
 
 const cx = classNames.bind(styles);
@@ -50,7 +51,7 @@ export function Chart() {
 	const colorById = useMemo(() => {
 		return mapValues(
 			userData,
-			({ rank }) => colorSchemes[(rank - 1) % colorSchemes.length]!,
+			({ rank }) => COLORS[(rank - 1) % COLORS.length]!,
 		);
 	}, [userData]);
 
@@ -117,16 +118,3 @@ export function Chart() {
 		</ChartContext.Provider>
 	);
 }
-
-const colorSchemes = [
-	"#1f77b4",
-	"#ff7f0e",
-	"#2ca02c",
-	"#d62728",
-	"#9467bd",
-	"#8c564b",
-	"#e377c2",
-	"#7f7f7f",
-	"#bcbd22",
-	"#17becf",
-] as const;
