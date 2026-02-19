@@ -35,7 +35,8 @@
 		flex-direction: column;
 		background-color: var(--bg-secondary);
 		padding: 16px;
-		gap: 24px;
+		gap: 16px;
+		justify-content: space-evenly;
 		grid-column: 3;
 		grid-row: 1 / -1;
 		overflow-y: auto;
@@ -96,13 +97,13 @@
 	&.tooltip {
 		background-color: rgb(from var(--bg-primary) r g b / 0.7);
 		width: fit-content;
-		gap: 6px;
+		gap: 4px;
 	}
 
 	.legend & {
 		background-color: var(--bg-primary);
 		/* hardcoded "large enough" value for most usernames */
-		width: 132px;
-		gap: 4px;
+		width: 130px;
+		gap: 3px;
 	}
 }
