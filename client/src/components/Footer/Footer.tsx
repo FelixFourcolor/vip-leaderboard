@@ -1,5 +1,5 @@
 import classNames from "classnames/bind";
-import { useGetLastUpdated } from "@/api/hooks";
+import { lastUpdatedDate } from "@/api/lastUpdated";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/useZackMode";
@@ -8,14 +8,14 @@ import styles from "./Footer.module.css";
 const cx = classNames.bind(styles);
 
 export function Footer() {
-	const lastUpdated = useGetLastUpdated()?.toLocaleString(undefined, {
-		timeZone: "UTC",
-	});
 	return (
 		<footer>
 			<hr />
 			<div className={cx("container")}>
-				{lastUpdated && <span>Last updated: {lastUpdated}</span>}
+				<span>
+					Last updated:{" "}
+					{lastUpdatedDate.toLocaleString(undefined, { timeZone: "UTC" })}
+				</span>
 				<ZackModeToggle />
 			</div>
 		</footer>

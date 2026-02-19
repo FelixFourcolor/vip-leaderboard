@@ -14,7 +14,7 @@ type WithBoundary<Arr extends unknown[]> = Arr extends [
 	? [First | undefined, ...Rest, Last | undefined]
 	: Arr;
 
-export function* slidingWindow<Value, Size extends number>(
+export function* windows<Value, Size extends number>(
 	arr: Value[],
 	size: Size,
 ): Generator<WithBoundary<ArrayOf<Size, Value>>> {

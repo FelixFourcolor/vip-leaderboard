@@ -1,12 +1,12 @@
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
-import { useGetLastUpdated } from "@/api/hooks";
+import { lastUpdated } from "@/api/lastUpdated";
 import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
-import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { COLORS } from "./colors";
 
@@ -14,8 +14,15 @@ const cx = classNames.bind(styles);
 
 const supportedRanks: number[] = [...Array(25).keys()].map((i) => i + 1);
 
+const defaultParams = {
+	until: lastUpdated,
+	since: offset(lastUpdated, { years: -2 }),
+	cumulative: false,
+	from: 1,
+	to: 5,
+};
+
 export function ChartControls() {
-	const defaultParams = useDefaultParams();
 	const [params, setParams] = useChartControls();
 	const { until, since, cumulative, from, to } = params;
 
@@ -23,8 +30,8 @@ export function ChartControls() {
 	// Kinda hard to define "meaningful",
 	// so just hardcode a value instead of defining an api for it.
 	const domainFrom = "2020-01";
-	const domainTo = toYyyyMm(useGetLastUpdated());
-	const domain = useMemo(() => monthsInRange(domainFrom, domainTo), [domainTo]);
+	const domainTo = lastUpdated;
+	const domain = useMemo(() => monthsInRange(domainFrom, domainTo), []);
 
 	const onChangeRankRange = useCallback(
 		([from, to]: [number, number]) => setParams({ from, to }),
@@ -92,7 +99,6 @@ export function useChartControls() {
 }
 
 function useDefaultParams() {
-	const lastUpdated = toYyyyMm(useGetLastUpdated());
 	return useMemo(
 		() => ({
 			until: lastUpdated,
@@ -101,6 +107,6 @@ function useDefaultParams() {
 			from: 1,
 			to: 5,
 		}),
-		[lastUpdated],
+		[],
 	);
 }

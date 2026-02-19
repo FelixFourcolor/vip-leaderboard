@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { Tooltip } from "@/components/Tooltip";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/useZackMode";
-import { slidingWindow } from "@/utils/iter";
+import { windows } from "@/utils/iter";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
@@ -18,19 +18,19 @@ export function ChartPoint({
 	color,
 	datum: { x, y },
 }: DotsItemSymbolProps<Point<ChartSeries>>) {
-	const { monthlyData, hoveredPoint, colorById } = useChart();
+	const { data, hoveredPoint, colorById } = useChart();
 
 	const isolatedPoints = useMemo(() => {
-		return mapValues(monthlyData, (monthlyCount) => {
+		return mapValues(data, ({ monthlyCount }) => {
 			return new Set(
-				Array.from(slidingWindow(monthlyCount, 3))
+				Array.from(windows(monthlyCount, 3))
 					.filter(
 						([prev, , next]) => prev?.count == null && next?.count == null,
 					)
 					.map(([, current]) => current.month),
 			);
 		});
-	}, [monthlyData]);
+	}, [data]);
 
 	// workaround for nivo's bug of not exposing seriesId for each point
 	const idByColor = useMemo(
@@ -67,9 +67,9 @@ type HoveredPointProps = {
 };
 
 function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
-	const { userData, colorById } = useChart();
+	const { data, colorById } = useChart();
 	const seriesColor = colorById[seriesId]!;
-	const { color: userColor, avatarUrl, name } = userData[seriesId]!;
+	const { color: userColor, avatarUrl, name } = data[seriesId]!;
 
 	const [isZack] = useZackMode();
 	const innerColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";

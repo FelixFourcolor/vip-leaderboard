@@ -1,5 +1,5 @@
+import type { RankingData, UserData } from "@server/api";
 import classNames from "classnames/bind";
-import type { RankedUser } from "@/api/types";
 import { UserHeader } from "@/components/UserHeader";
 import styles from "./Chart.module.css";
 import { useChart } from "./context";
@@ -7,20 +7,18 @@ import { useChart } from "./context";
 const cx = classNames.bind(styles);
 
 export function ChartLegend() {
-	const { userData } = useChart();
+	const { data } = useChart();
 
 	return (
 		<div className={cx("legend")}>
-			{Object.entries(userData).map(([id, user]) => (
+			{Object.entries(data).map(([id, user]) => (
 				<LegendEntry key={id} userId={id} {...user} />
 			))}
 		</div>
 	);
 }
 
-interface EntryProps extends RankedUser {
-	userId: string;
-}
+type EntryProps = UserData & RankingData[string] & { userId: string };
 
 function LegendEntry({ userId, name, color, avatarUrl, count }: EntryProps) {
 	const { colorById } = useChart();

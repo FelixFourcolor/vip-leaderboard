@@ -1,9 +1,7 @@
 import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
-import { mapValues } from "es-toolkit";
-import { useCallback, useMemo, useState } from "react";
-import { useGetMonthlyData, useGetRanking } from "@/api/hooks";
-import { useLastDefined } from "@/hooks/useLastDefined";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getMonthlyRanking, type MonthlyRanking } from "@/api/monthlyRanking";
 import { offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
@@ -22,25 +20,17 @@ export type ChartSeries = {
 export function Chart() {
 	const [{ until, since, cumulative, from, to }] = useChartControls();
 	const inclusiveUntil = offset(until, { months: 1 });
-	const userData =
-		useLastDefined(
-			useGetRanking({
-				from,
-				to,
-				since,
-				until: inclusiveUntil,
-			}),
-		) ?? {};
-	const monthlyData =
-		useLastDefined(
-			useGetMonthlyData({
-				cumulative,
-				from,
-				to,
-				since,
-				until: inclusiveUntil,
-			}),
-		) ?? {};
+
+	const [data = {}, setData] = useState<MonthlyRanking>();
+	useEffect(() => {
+		getMonthlyRanking({
+			from,
+			to,
+			since,
+			until: inclusiveUntil,
+			cumulative,
+		}).then(setData);
+	}, [from, to, since, inclusiveUntil, cumulative]);
 
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [hoveredPoint, setHoveredPoint] = useState<{
@@ -49,32 +39,31 @@ export function Chart() {
 	} | null>(null);
 
 	const colorById = useMemo(() => {
-		return mapValues(
-			userData,
-			({ rank }) => COLORS[(rank - 1) % COLORS.length]!,
+		return Object.fromEntries(
+			Object.keys(data).map((k, i) => [k, COLORS[i % COLORS.length]!]),
 		);
-	}, [userData]);
+	}, [data]);
 
 	const chartData = useMemo<ChartSeries[]>(() => {
 		const orderedData = (() => {
 			if (!highlightedUser) {
-				return monthlyData;
+				return data;
 			}
-			const { [highlightedUser]: first, ...rest } = monthlyData;
+			const { [highlightedUser]: first, ...rest } = data;
 			if (!first) {
-				return monthlyData;
+				return data;
 			}
 			return { [highlightedUser]: first, ...rest };
 		})();
 
-		return Object.entries(orderedData).map(([id, monthlyCount]) => ({
+		return Object.entries(orderedData).map(([id, { monthlyCount }]) => ({
 			id,
 			data: monthlyCount.map(({ month, count }) => ({
 				x: new Date(month),
 				y: count,
 			})),
 		}));
-	}, [monthlyData, highlightedUser]);
+	}, [data, highlightedUser]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {
@@ -98,17 +87,11 @@ export function Chart() {
 
 	return (
 		<ChartContext.Provider
-			value={{
-				hoveredPoint,
-				colorById,
-				monthlyData,
-				userData,
-				highlightedUser,
-			}}
+			value={{ data, hoveredPoint, colorById, highlightedUser }}
 		>
 			<div className={cx("container")}>
 				<ChartLine
-					data={chartData}
+					chartData={chartData}
 					onMouseMove={onMouseMove}
 					onMouseLeave={onMouseLeave}
 				/>
