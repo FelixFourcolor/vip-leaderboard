@@ -1,5 +1,6 @@
 .container {
 	flex: 1;
+	min-height: 0;
 	display: grid;
 	grid-template-columns: 1fr auto auto;
 	grid-template-rows: 1fr auto;
