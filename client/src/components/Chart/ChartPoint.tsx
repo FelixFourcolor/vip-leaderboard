@@ -92,11 +92,7 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 					<table>
 						<tbody>
 							<tr>
-								<th>Month:</th>
-								<td>{toYyyyMm(x)}</td>
-							</tr>
-							<tr>
-								<th>Tickets:</th>
+								<th>{toYyyyMm(x)}</th>
 								<td>{y}</td>
 							</tr>
 						</tbody>

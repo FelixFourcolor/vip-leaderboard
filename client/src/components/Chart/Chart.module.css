@@ -78,9 +78,10 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	gap: 4px;
 
 	table {
-		font-size: var(--text-small);
+		font-size: 15px;
 		border-spacing: 0;
 
 		th,
@@ -90,6 +91,9 @@
 		th {
 			font-weight: normal;
 			color: var(--text-secondary);
+			&::after {
+				content: " |";
+			}
 		}
 		td {
 			[data-zack-mode="true"] & {
@@ -102,13 +106,11 @@
 	&.tooltip {
 		background-color: rgb(from var(--bg-primary) r g b / 0.7);
 		width: fit-content;
-		gap: 4px;
 	}
 
 	.legend & {
 		background-color: var(--bg-primary);
 		/* hardcoded "large enough" value for most usernames */
-		width: 130px;
-		gap: 3px;
+		width: 122px;
 	}
 }

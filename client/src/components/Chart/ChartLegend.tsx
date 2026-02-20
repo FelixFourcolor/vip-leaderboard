@@ -20,17 +20,15 @@ export function ChartLegend() {
 
 type EntryProps = UserData & RankingData[string] & { userId: string };
 
-function LegendEntry({ userId, name, color, avatarUrl, count }: EntryProps) {
+function LegendEntry({ userId, count, rank, ...userData }: EntryProps) {
 	const { colorById } = useChart();
-	const seriesColor = colorById[userId];
-
 	return (
-		<div style={{ borderColor: seriesColor }} className={cx("info-box")}>
-			<UserHeader name={name} color={color} avatarUrl={avatarUrl} />
+		<div style={{ borderColor: colorById[userId] }} className={cx("info-box")}>
+			<UserHeader {...userData} />
 			<table>
 				<tbody>
 					<tr>
-						<th>Total:</th>
+						<th>#{rank}</th>
 						<td>{count}</td>
 					</tr>
 				</tbody>

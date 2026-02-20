@@ -12,14 +12,13 @@ import { COLORS } from "./colors";
 
 const cx = classNames.bind(styles);
 
-const supportedRanks: number[] = [...Array(25).keys()].map((i) => i + 1);
-
+const availableRanks: number[] = [...Array(50).keys()].map((i) => i + 1);
 const defaultParams = {
 	until: lastUpdated,
-	since: offset(lastUpdated, { years: -2 }),
+	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	from: 1,
-	to: 5,
+	to: 10,
 };
 
 export function ChartControls() {
@@ -47,7 +46,7 @@ export function ChartControls() {
 				<span className={cx("label")}>Ranks</span>
 				<RangeSlider
 					className={cx("slider")}
-					domain={supportedRanks}
+					domain={availableRanks}
 					selected={[from, to]}
 					onChange={onChangeRankRange}
 					direction="vertical"
@@ -81,32 +80,18 @@ export function ChartControls() {
 }
 
 export function useChartControls() {
-	const defaults = useDefaultParams();
-	const params = { ...defaults, ...Route.useSearch() };
+	const params = { ...defaultParams, ...Route.useSearch() };
 	const navigate = Route.useNavigate();
 
 	const setParams = useCallback(
-		(params: Partial<typeof defaults>) => {
-			const search = mapValues(params, (v, k) =>
-				v !== defaults[k] ? v : undefined,
-			) as typeof params;
+		(update: Partial<typeof params>) => {
+			const search = mapValues(update, (v, k) =>
+				v !== defaultParams[k] ? v : undefined,
+			) as typeof update;
 			navigate({ search });
 		},
-		[navigate, defaults],
+		[navigate],
 	);
 
 	return [params, setParams] as const;
-}
-
-function useDefaultParams() {
-	return useMemo(
-		() => ({
-			until: lastUpdated,
-			since: offset(lastUpdated, { years: -2 }),
-			cumulative: false,
-			from: 1,
-			to: 5,
-		}),
-		[],
-	);
 }
