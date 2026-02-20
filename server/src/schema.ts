@@ -11,16 +11,13 @@ export const user = mysqlTable("user", {
 	id: varchar("id", { length: 255 }).primaryKey(),
 	name: varchar("name", { length: 255 }).notNull(),
 	avatarUrl: varchar("avatar_url", { length: 255 }).notNull(),
-	color: varchar("color", { length: 255 }),
+	color: varchar("color", { length: 255 }).notNull(),
 });
 
 export const ticket = mysqlTable(
 	"ticket",
 	{
 		id: bigint("id", { mode: "bigint" }).primaryKey(),
-		authorId: varchar("author_id", { length: 255 })
-			.notNull()
-			.references(() => user.id),
 		timestamp: datetime("timestamp", { mode: "date" }).notNull(),
 	},
 	(t) => [index("timestamp_idx").on(t.timestamp)],

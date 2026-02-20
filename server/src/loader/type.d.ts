@@ -2,13 +2,12 @@ export type User = {
 	name: string;
 	nickname: string;
 	avatarUrl: string;
-	color: string | null;
+	color: string;
 };
 
 type Message = {
 	id: string;
 	timestamp: string;
-	author: User;
 	reactions: {
 		emoji: { code: string };
 		users: User[];

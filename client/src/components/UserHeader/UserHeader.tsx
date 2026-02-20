@@ -14,7 +14,7 @@ export function UserHeader({
 			{avatarUrl && (
 				<img src={`${avatarUrl}?size=24`} className={cx("avatar")} />
 			)}
-			<div style={{ color: color ?? undefined }} className={cx("name")}>
+			<div style={{ color }} className={cx("name")}>
 				{name}
 			</div>
 		</div>

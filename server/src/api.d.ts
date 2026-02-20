@@ -8,7 +8,7 @@ export type UserDataParams = typeof basicHandler.inferIn;
 export type UserData = {
 	name: string;
 	avatarUrl: string;
-	color: string | null;
+	color: string;
 } | null;
 
 export type MonthlyCountParams = typeof timeHandler.inferIn;

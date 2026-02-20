@@ -1,9 +1,8 @@
-import { execSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getTableName } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { createConnection } from "../db.js";
 import { reaction, ticket, user } from "../schema.js";
 import type { Data, User as UserDTO } from "./type.js";
@@ -14,6 +13,7 @@ const VIP_REACTIONS = [
 	"hammer",
 	"warning",
 	"wastebasket",
+	"lock",
 ];
 
 type UserData = typeof user.$inferInsert;
@@ -30,7 +30,10 @@ function getOrCreateUser({
 	nickname,
 	avatarUrl,
 	color,
-}: UserDTO): string {
+}: UserDTO): string | undefined {
+	if (!color) {
+		return;
+	}
 	name = name.toLowerCase(); // sql primary key may be case-insensitive
 	const existing = usersMap.get(name);
 	if (!existing) {
@@ -40,9 +43,6 @@ function getOrCreateUser({
 			avatarUrl: avatarUrl.substring(0, avatarUrl.indexOf("?")),
 			color,
 		});
-	} else if (color) {
-		// don't know why user color is unreliable
-		existing.color = color;
 	}
 	return name;
 }
@@ -51,12 +51,7 @@ async function load_file(file: string) {
 	const content = await readFile(file);
 	const data: Data = JSON.parse(content.toString());
 
-	for (const {
-		id,
-		timestamp,
-		author,
-		reactions: msgReactions,
-	} of data.messages) {
+	for (const { id, timestamp, reactions: msgReactions } of data.messages) {
 		const vipReactions = msgReactions.filter((r) =>
 			VIP_REACTIONS.includes(r.emoji.code),
 		);
@@ -65,15 +60,16 @@ async function load_file(file: string) {
 		}
 
 		const ticketId = BigInt(id);
-		const authorId = getOrCreateUser(author);
 		tickets.push({
 			id: ticketId,
-			authorId,
 			timestamp: new Date(timestamp),
 		});
 
 		for (const u of vipReactions.flatMap((r) => r.users)) {
 			const reactorId = getOrCreateUser(u);
+			if (!reactorId) {
+				continue;
+			}
 			const reactionKey = `${ticketId}-${reactorId}`;
 			if (!reactionsSet.has(reactionKey)) {
 				reactionsSet.add(reactionKey);
@@ -95,26 +91,34 @@ function load_data() {
 	);
 }
 
-async function prepareDb() {
-	const { db, connection } = await createConnection();
-
-	const tables = [reaction, ticket, user];
-	await connection.query("SET FOREIGN_KEY_CHECKS = 0");
-	for (const table of tables) {
-		await connection.query(`DROP TABLE IF EXISTS \`${getTableName(table)}\``);
-	}
-	await connection.query("SET FOREIGN_KEY_CHECKS = 1");
-	execSync("npx drizzle-kit push --force", { stdio: "inherit" });
-
-	return { db, connection };
-}
-
 async function main() {
-	const [{ db, connection }] = await Promise.all([prepareDb(), load_data()]);
+	const [{ db, connection }] = await Promise.all([
+		createConnection(),
+		load_data(),
+	]);
 
-	await db.insert(user).values(Array.from(usersMap.values()));
-	await db.insert(ticket).values(tickets);
-	await db.insert(reaction).values(reactions);
+	await db
+		.insert(user)
+		.values(Array.from(usersMap.values()))
+		.onDuplicateKeyUpdate({
+			set: {
+				name: sql`VALUES(name)`,
+				avatarUrl: sql`VALUES(avatar_url)`,
+				color: sql`VALUES(color)`,
+			},
+		});
+	await db
+		.insert(ticket)
+		.values(tickets)
+		.onDuplicateKeyUpdate({
+			set: { id: sql`VALUES(id)` },
+		});
+	await db
+		.insert(reaction)
+		.values(reactions)
+		.onDuplicateKeyUpdate({
+			set: { ticketId: sql`VALUES(ticket_id)` },
+		});
 
 	await connection.end();
 }
