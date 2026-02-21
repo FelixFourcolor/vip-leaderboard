@@ -2,8 +2,10 @@ import { createContext, useContext } from "react";
 import type { MonthlyRanking } from "@/api/monthlyRanking";
 
 interface ChartContextValue {
-	data: MonthlyRanking;
+	queryData: MonthlyRanking;
 	colorById: Record<string, string>;
+	isolatedPoints: Record<string, Set<string>>;
+	idByColor: Record<string, string>;
 	highlightedUser: string | null;
 	hoveredPoint: { x: Date; y: number } | null;
 }

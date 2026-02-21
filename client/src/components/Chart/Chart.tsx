@@ -1,8 +1,9 @@
 import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
-import { mapValues } from "es-toolkit/compat";
+import { mapValues } from "es-toolkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMonthlyRanking, type MonthlyRanking } from "@/api/monthlyRanking";
+import { windows } from "@/utils/iter";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLegend } from "./ChartLegend";
@@ -19,9 +20,9 @@ export type ChartSeries = {
 
 export function Chart() {
 	const [params] = useChartControls();
-	const [data = {}, setData] = useState<MonthlyRanking>();
+	const [queryData = {}, setQueryData] = useState<MonthlyRanking>();
 	useEffect(() => {
-		getMonthlyRanking(params).then(setData);
+		getMonthlyRanking(params).then(setQueryData);
 	}, [params]);
 
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
@@ -30,31 +31,58 @@ export function Chart() {
 		y: number;
 	} | null>(null);
 
-	const colorById = useMemo(
-		() => mapValues(data, ({ rank }) => COLORS[(rank - 1) % COLORS.length]!),
-		[data],
+	const colorById = useMemo(() => {
+		return mapValues(
+			queryData,
+			({ rank }) => COLORS[(rank - 1) % COLORS.length]!,
+		);
+	}, [queryData]);
+
+	const isolatedPoints = useMemo(() => {
+		return mapValues(queryData, ({ monthlyCount }) => {
+			return new Set(
+				Array.from(windows(monthlyCount, 3))
+					.filter(
+						([prev, , next]) => prev?.count == null && next?.count == null,
+					)
+					.map(([, current]) => current.month),
+			);
+		});
+	}, [queryData]);
+
+	// workaround for nivo's bug of not exposing seriesId for each point
+	const idByColor = useMemo(
+		() =>
+			// requires number of users <= 10 = number of colors
+			Object.fromEntries(
+				Object.entries(colorById).map(([id, color]) => [color, id]),
+			),
+		[colorById],
 	);
 
-	const chartData = useMemo<ChartSeries[]>(() => {
-		const orderedData = (() => {
+	const chartData = useMemo(() => {
+		return mapValues(queryData, ({ monthlyCount }) => {
+			return monthlyCount.map(({ month, count }) => ({
+				x: new Date(month),
+				y: count,
+			}));
+		});
+	}, [queryData]);
+
+	const sortedChartData = useMemo<ChartSeries[]>(() => {
+		const sortedData = (() => {
 			if (!highlightedUser) {
-				return data;
+				return chartData;
 			}
-			const { [highlightedUser]: first, ...rest } = data;
+			const { [highlightedUser]: first, ...rest } = chartData;
 			if (!first) {
-				return data;
+				return chartData;
 			}
 			return { [highlightedUser]: first, ...rest };
 		})();
 
-		return Object.entries(orderedData).map(([id, { monthlyCount }]) => ({
-			id,
-			data: monthlyCount.map(({ month, count }) => ({
-				x: new Date(month),
-				y: count,
-			})),
-		}));
-	}, [data, highlightedUser]);
+		return Object.entries(sortedData).map(([id, data]) => ({ id, data }));
+	}, [chartData, highlightedUser]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {
@@ -78,11 +106,18 @@ export function Chart() {
 
 	return (
 		<ChartContext.Provider
-			value={{ data, hoveredPoint, colorById, highlightedUser }}
+			value={{
+				queryData,
+				hoveredPoint,
+				colorById,
+				isolatedPoints,
+				idByColor,
+				highlightedUser,
+			}}
 		>
 			<div className={cx("container")}>
 				<ChartLine
-					chartData={chartData}
+					data={sortedChartData}
 					onMouseMove={onMouseMove}
 					onMouseLeave={onMouseLeave}
 				/>

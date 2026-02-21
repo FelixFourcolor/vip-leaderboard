@@ -1,12 +1,9 @@
 import type { DotsItemSymbolProps } from "@nivo/core";
 import type { Point } from "@nivo/line";
 import classNames from "classnames/bind";
-import { mapValues } from "es-toolkit";
-import { useMemo } from "react";
 import { Tooltip } from "@/components/Tooltip";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/useZackMode";
-import { windows } from "@/utils/iter";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
@@ -18,29 +15,7 @@ export function ChartPoint({
 	color,
 	datum: { x, y },
 }: DotsItemSymbolProps<Point<ChartSeries>>) {
-	const { data, hoveredPoint, colorById } = useChart();
-
-	const isolatedPoints = useMemo(() => {
-		return mapValues(data, ({ monthlyCount }) => {
-			return new Set(
-				Array.from(windows(monthlyCount, 3))
-					.filter(
-						([prev, , next]) => prev?.count == null && next?.count == null,
-					)
-					.map(([, current]) => current.month),
-			);
-		});
-	}, [data]);
-
-	// workaround for nivo's bug of not exposing seriesId for each point
-	const idByColor = useMemo(
-		() =>
-			// requires number of users <= 10 = number of colors
-			Object.fromEntries(
-				Object.entries(colorById).map(([id, color]) => [color, id]),
-			),
-		[colorById],
-	);
+	const { hoveredPoint, isolatedPoints, idByColor } = useChart();
 
 	const seriesId = idByColor[color];
 	if (!seriesId) {
@@ -67,9 +42,9 @@ type HoveredPointProps = {
 };
 
 function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
-	const { data, colorById } = useChart();
+	const { queryData, colorById } = useChart();
 	const seriesColor = colorById[seriesId]!;
-	const { color: userColor, avatarUrl, name } = data[seriesId]!;
+	const { color: userColor, avatarUrl, name } = queryData[seriesId]!;
 
 	const [isZack] = useZackMode();
 	const innerColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";

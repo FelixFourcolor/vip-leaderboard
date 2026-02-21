@@ -7,11 +7,10 @@ import { useChart } from "./context";
 const cx = classNames.bind(styles);
 
 export function ChartLegend() {
-	const { data } = useChart();
-
+	const { queryData } = useChart();
 	return (
 		<div className={cx("legend")}>
-			{Object.entries(data).map(([id, user]) => (
+			{Object.entries(queryData).map(([id, user]) => (
 				<LegendEntry key={id} userId={id} {...user} />
 			))}
 		</div>

@@ -25,30 +25,30 @@ import { useChart } from "./context";
 const cx = classNames.bind(styles);
 
 type Props = {
-	chartData: ChartSeries[];
+	data: ChartSeries[];
 	onMouseMove: PointOrSliceMouseHandler<ChartSeries>;
 	onMouseLeave: () => void;
 };
 
-export const ChartLine = ({ chartData, onMouseMove, onMouseLeave }: Props) => {
+export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { data, colorById, highlightedUser } = useChart();
+	const { queryData, colorById, highlightedUser } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
 	const [chartWidth, setChartWidth] = useState(0);
 	const [animate, setAnimate] = useState(false);
 
 	const xLabels = useMemo(
-		() => getAnyValue(data)?.monthlyCount.map(({ month }) => month) ?? [],
-		[data],
+		() => getAnyValue(queryData)?.monthlyCount.map(({ month }) => month) ?? [],
+		[queryData],
 	);
 
 	const pointsCount = useMemo(() => {
-		return mapValues(data, ({ monthlyCount }) => {
+		return mapValues(queryData, ({ monthlyCount }) => {
 			return monthlyCount.filter(({ count }) => count !== null).length;
 		});
-	}, [data]);
+	}, [queryData]);
 
 	useEffect(() => {
 		const chart = chartRef.current;
@@ -114,7 +114,7 @@ export const ChartLine = ({ chartData, onMouseMove, onMouseLeave }: Props) => {
 	return (
 		<div ref={chartRef} className={cx("chart")} onMouseLeave={onMouseLeave}>
 			<ResponsiveLine
-				data={chartData}
+				data={data}
 				colors={lineColor}
 				pointLabel={pointLabel}
 				pointSymbol={ChartPoint}
