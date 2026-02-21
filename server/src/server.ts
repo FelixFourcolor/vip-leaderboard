@@ -66,39 +66,38 @@ export async function startServer(port = 3001) {
 
 	app.get(
 		"/api/ranking",
-		rankingHandler(({ from = 1, to, since, until }) => {
-			const query = db
-				.select({
-					id: user.id,
-					count: count(reaction.ticketId),
-				})
-				.from(reaction)
-				.innerJoin(user, eq(user.id, reaction.userId))
-				.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
-				.where(
-					and(
-						...(since ? [gte(ticket.timestamp, since)] : []),
-						...(until ? [lt(ticket.timestamp, until)] : []),
-					),
-				)
-				.groupBy(user.id)
-				.orderBy(desc(count(reaction.ticketId)), asc(user.id))
-				.$dynamic();
+		rankingHandler(
+			async ({ from = 1, to = 1000, since, until }): Promise<RankingData> => {
+				const offset = from - 1;
+				const limit = to - offset;
 
-			const offset = from - 1;
-			if (to) {
-				query.limit(to - offset);
-			}
-			if (from) {
-				query.offset(offset);
-			}
+				const rows = await db
+					.select({
+						userId: user.id,
+						count: count(reaction.ticketId),
+					})
+					.from(reaction)
+					.innerJoin(user, eq(user.id, reaction.userId))
+					.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
+					.where(
+						and(
+							...(since ? [gte(ticket.timestamp, since)] : []),
+							...(until ? [lt(ticket.timestamp, until)] : []),
+						),
+					)
+					.groupBy(user.id)
+					.orderBy(desc(count(reaction.ticketId)), asc(user.id))
+					.limit(limit)
+					.offset(offset);
 
-			return query.then((rows): RankingData => {
 				return Object.fromEntries(
-					rows.map(({ id, count }, i) => [id, { count, rank: i + from }]),
+					rows.map(({ userId, count }, i) => [
+						userId,
+						{ count, rank: i + from },
+					]),
 				);
-			});
-		}),
+			},
+		),
 	);
 
 	return app.listen({ port });

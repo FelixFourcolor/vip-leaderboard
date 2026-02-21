@@ -60,9 +60,7 @@ function createHandler<S extends Schema>(schema: S) {
 		) => Promise<unknown>,
 	) {
 		return async (request: any, reply: FastifyReply) => {
-			if (env.NODE_ENV === "production") {
-				reply.header("Cache-Control", "public, max-age=86400");
-			}
+			reply.header("Cache-Control", "public, max-age=86400");
 
 			let validatedQuery: ValidatedQuery;
 			try {
@@ -71,11 +69,11 @@ function createHandler<S extends Schema>(schema: S) {
 				return reply.code(400).send(e);
 			}
 
-			return logic(validatedQuery, request.params).catch(() =>
+			return logic(validatedQuery, request.params).catch((e) =>
 				reply.code(500).send({
 					statusCode: 500,
 					error: "internal server error",
-					diagnosis: "incompetence",
+					diagnosis: env.NODE_ENV === "production" ? "incompetence" : e.message,
 				}),
 			);
 		};
