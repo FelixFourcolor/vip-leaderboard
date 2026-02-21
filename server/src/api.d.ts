@@ -15,4 +15,4 @@ export type MonthlyCountParams = typeof timeHandler.inferIn;
 export type MonthlyCount = { month: string; count: number }[];
 
 export type RankingParams = typeof rankingHandler.inferIn;
-export type RankingData = Record<string, { rank: number; count: number }>;
+export type RankingData = { userId: string; rank: number; count: number }[];

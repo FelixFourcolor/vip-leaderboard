@@ -2,17 +2,18 @@ import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { lastUpdated } from "@/api/lastUpdated";
+import { VALID_MONTHS } from "@/api/monthlyCount";
+import { VALID_RANKS } from "@/api/ranking";
 import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
-import { monthsInRange, offset } from "@/utils/time";
+import { offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { COLORS } from "./colors";
 
 const cx = classNames.bind(styles);
 
-const availableRanks: number[] = [...Array(50).keys()].map((i) => i + 1);
 const defaultParams = {
 	until: lastUpdated,
 	since: offset(lastUpdated, { years: -2, months: 1 }),
@@ -24,13 +25,6 @@ const defaultParams = {
 export function ChartControls() {
 	const [params, setParams] = useChartControls();
 	const { until, since, cumulative, from, to } = params;
-
-	// Earliest month with meaningful data.
-	// Kinda hard to define "meaningful",
-	// so just hardcode a value instead of defining an api for it.
-	const domainFrom = "2020-01";
-	const domainTo = lastUpdated;
-	const domain = useMemo(() => monthsInRange(domainFrom, domainTo), []);
 
 	const onChangeRankRange = useCallback(
 		([from, to]: [number, number]) => setParams({ from, to }),
@@ -46,7 +40,7 @@ export function ChartControls() {
 				<span className={cx("label")}>Ranks</span>
 				<RangeSlider
 					className={cx("slider")}
-					domain={availableRanks}
+					domain={VALID_RANKS}
 					selected={[from, to]}
 					onChange={onChangeRankRange}
 					direction="vertical"
@@ -63,7 +57,7 @@ export function ChartControls() {
 				</Toggle>
 				<RangeSlider
 					className={cx("slider")}
-					domain={domain}
+					domain={VALID_MONTHS.slice(0, -1)}
 					selected={[since, until]}
 					onChange={onChangeDateRange}
 					minDistance={1}
@@ -80,7 +74,9 @@ export function ChartControls() {
 }
 
 export function useChartControls() {
-	const params = { ...defaultParams, ...Route.useSearch() };
+	const search = Route.useSearch();
+	const params = useMemo(() => ({ ...defaultParams, ...search }), [search]);
+
 	const navigate = Route.useNavigate();
 
 	const setParams = useCallback(

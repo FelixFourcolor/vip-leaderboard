@@ -2,7 +2,6 @@ import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMonthlyRanking, type MonthlyRanking } from "@/api/monthlyRanking";
-import { offset } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLegend } from "./ChartLegend";
@@ -18,19 +17,11 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [{ until, since, cumulative, from, to }] = useChartControls();
-	const inclusiveUntil = offset(until, { months: 1 });
-
+	const [params] = useChartControls();
 	const [data = {}, setData] = useState<MonthlyRanking>();
 	useEffect(() => {
-		getMonthlyRanking({
-			from,
-			to,
-			since,
-			until: inclusiveUntil,
-			cumulative,
-		}).then(setData);
-	}, [from, to, since, inclusiveUntil, cumulative]);
+		getMonthlyRanking(params).then(setData);
+	}, [params]);
 
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [hoveredPoint, setHoveredPoint] = useState<{

@@ -90,12 +90,7 @@ export async function startServer(port = 3001) {
 					.limit(limit)
 					.offset(offset);
 
-				return Object.fromEntries(
-					rows.map(({ userId, count }, i) => [
-						userId,
-						{ count, rank: i + from },
-					]),
-				);
+				return rows.map((value, index) => ({ ...value, rank: index + from }));
 			},
 		),
 	);

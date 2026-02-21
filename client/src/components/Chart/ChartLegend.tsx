@@ -18,7 +18,7 @@ export function ChartLegend() {
 	);
 }
 
-type EntryProps = UserData & RankingData[string] & { userId: string };
+type EntryProps = UserData & RankingData[number];
 
 function LegendEntry({ userId, count, rank, ...userData }: EntryProps) {
 	const { colorById } = useChart();
