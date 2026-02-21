@@ -84,7 +84,7 @@ export function useChartControls() {
 			const search = mapValues(update, (v, k) =>
 				v !== defaultParams[k] ? v : undefined,
 			) as typeof update;
-			navigate({ search });
+			navigate({ search, replace: true });
 		},
 		[navigate],
 	);
