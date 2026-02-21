@@ -1,5 +1,6 @@
 import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
+import { mapValues } from "es-toolkit/compat";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMonthlyRanking, type MonthlyRanking } from "@/api/monthlyRanking";
 import styles from "./Chart.module.css";
@@ -29,11 +30,10 @@ export function Chart() {
 		y: number;
 	} | null>(null);
 
-	const colorById = useMemo(() => {
-		return Object.fromEntries(
-			Object.keys(data).map((k, i) => [k, COLORS[i % COLORS.length]!]),
-		);
-	}, [data]);
+	const colorById = useMemo(
+		() => mapValues(data, ({ rank }) => COLORS[(rank - 1) % COLORS.length]!),
+		[data],
+	);
 
 	const chartData = useMemo<ChartSeries[]>(() => {
 		const orderedData = (() => {
