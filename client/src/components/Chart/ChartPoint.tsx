@@ -7,6 +7,7 @@ import { useZackMode } from "@/hooks/useZackMode";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
+import { getSeriesColor } from "./colors";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
@@ -42,19 +43,19 @@ type HoveredPointProps = {
 };
 
 function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
-	const { queryData, colorById } = useChart();
-	const seriesColor = colorById[seriesId]!;
-	const { color: userColor, avatarUrl, name } = queryData[seriesId]!;
+	const { queryData } = useChart();
+	const { color: userColor, rank, avatarUrl, name } = queryData[seriesId]!;
+	const seriesColor = getSeriesColor({ rank });
 
 	const [isZack] = useZackMode();
-	const innerColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
+	const pointColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
 
 	return (
 		<Tooltip
 			element={({ ref }) => (
 				<>
 					<circle ref={ref} r={8} fill={seriesColor} />
-					<circle r={5} fill={innerColor} />
+					<circle r={5} fill={pointColor} />
 				</>
 			)}
 			content={({ ref, style }) => (

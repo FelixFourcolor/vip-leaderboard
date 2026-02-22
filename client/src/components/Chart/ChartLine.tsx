@@ -20,6 +20,7 @@ import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
 import { useChartControls } from "./ChartControls";
 import { ChartPoint } from "./ChartPoint";
+import { getSeriesColor } from "./colors.ts";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
@@ -33,7 +34,7 @@ type Props = {
 export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { queryData, colorById, highlightedUser } = useChart();
+	const { queryData, highlightedUser } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
 	const [chartWidth, setChartWidth] = useState(0);
@@ -84,13 +85,13 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
-			const color = colorById[id]!;
+			const color = getSeriesColor(queryData[id]!);
 			if (!highlightedUser || highlightedUser === id) {
 				return color;
 			}
 			return `rgb(from ${color} r g b / ${isZack ? 0.2 : 0.1})`;
 		},
-		[colorById, highlightedUser, isZack],
+		[queryData, highlightedUser, isZack],
 	);
 
 	const [gridXValues, axisBottom] = useMemo(() => {

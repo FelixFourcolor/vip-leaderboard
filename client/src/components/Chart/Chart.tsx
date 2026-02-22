@@ -8,7 +8,7 @@ import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLegend } from "./ChartLegend";
 import { ChartLine } from "./ChartLine";
-import { COLORS } from "./colors";
+import { getSeriesColor } from "./colors";
 import { ChartContext } from "./context";
 
 const cx = classNames.bind(styles);
@@ -31,13 +31,6 @@ export function Chart() {
 		y: number;
 	} | null>(null);
 
-	const colorById = useMemo(() => {
-		return mapValues(
-			queryData,
-			({ rank }) => COLORS[(rank - 1) % COLORS.length]!,
-		);
-	}, [queryData]);
-
 	const isolatedPoints = useMemo(() => {
 		return mapValues(queryData, ({ monthlyCount }) => {
 			return new Set(
@@ -51,14 +44,15 @@ export function Chart() {
 	}, [queryData]);
 
 	// workaround for nivo's bug of not exposing seriesId for each point
-	const idByColor = useMemo(
-		() =>
-			// requires number of users <= 10 = number of colors
-			Object.fromEntries(
-				Object.entries(colorById).map(([id, color]) => [color, id]),
-			),
-		[colorById],
-	);
+	const idByColor = useMemo(() => {
+		// requires number of users <= 10 = number of colors
+		return Object.fromEntries(
+			Object.entries(queryData).map(([userId, userData]) => [
+				getSeriesColor(userData),
+				userId,
+			]),
+		);
+	}, [queryData]);
 
 	const chartData = useMemo(() => {
 		return mapValues(queryData, ({ monthlyCount }) => {
@@ -109,7 +103,6 @@ export function Chart() {
 			value={{
 				queryData,
 				hoveredPoint,
-				colorById,
 				isolatedPoints,
 				idByColor,
 				highlightedUser,

@@ -3,7 +3,6 @@ import type { MonthlyRanking } from "@/api/monthlyRanking";
 
 interface ChartContextValue {
 	queryData: MonthlyRanking;
-	colorById: Record<string, string>;
 	isolatedPoints: Record<string, Set<string>>;
 	idByColor: Record<string, string>;
 	highlightedUser: string | null;

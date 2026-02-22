@@ -10,3 +10,7 @@ export const COLORS = [
 	"#bcbd22",
 	"#8c564b",
 ] as const;
+
+export function getSeriesColor({ rank }: { rank: number }) {
+	return COLORS[(rank - 1) % COLORS.length]!;
+}

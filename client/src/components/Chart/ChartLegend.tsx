@@ -2,6 +2,7 @@ import type { RankingData, UserData } from "@server/api";
 import classNames from "classnames/bind";
 import { UserHeader } from "@/components/UserHeader";
 import styles from "./Chart.module.css";
+import { getSeriesColor } from "./colors";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
@@ -20,9 +21,9 @@ export function ChartLegend() {
 type EntryProps = UserData & RankingData[number];
 
 function LegendEntry({ userId, count, rank, ...userData }: EntryProps) {
-	const { colorById } = useChart();
+	const seriesColor = getSeriesColor({ rank });
 	return (
-		<div style={{ borderColor: colorById[userId] }} className={cx("info-box")}>
+		<div style={{ borderColor: seriesColor }} className={cx("info-box")}>
 			<UserHeader {...userData} />
 			<table>
 				<tbody>
