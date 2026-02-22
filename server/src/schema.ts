@@ -1,35 +1,34 @@
 import {
-	bigint,
-	datetime,
 	index,
-	mysqlTable,
+	integer,
 	primaryKey,
-	varchar,
-} from "drizzle-orm/mysql-core";
+	sqliteTable,
+	text,
+} from "drizzle-orm/sqlite-core";
 
-export const user = mysqlTable("user", {
-	id: varchar("id", { length: 255 }).primaryKey(),
-	name: varchar("name", { length: 255 }).notNull(),
-	avatarUrl: varchar("avatar_url", { length: 255 }).notNull(),
-	color: varchar("color", { length: 255 }).notNull(),
+export const user = sqliteTable("user", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	avatarUrl: text("avatar_url").notNull(),
+	color: text("color").notNull(),
 });
 
-export const ticket = mysqlTable(
+export const ticket = sqliteTable(
 	"ticket",
 	{
-		id: bigint("id", { mode: "bigint" }).primaryKey(),
-		timestamp: datetime("timestamp", { mode: "date" }).notNull(),
+		id: text("id").primaryKey(),
+		timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
 	},
 	(t) => [index("timestamp_idx").on(t.timestamp)],
 );
 
-export const reaction = mysqlTable(
+export const reaction = sqliteTable(
 	"reaction",
 	{
-		ticketId: bigint("ticket_id", { mode: "bigint" })
+		ticketId: text("ticket_id")
 			.notNull()
 			.references(() => ticket.id),
-		userId: varchar("user_id", { length: 255 })
+		userId: text("user_id")
 			.notNull()
 			.references(() => user.id),
 	},

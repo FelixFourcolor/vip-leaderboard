@@ -5,18 +5,19 @@ import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { pick } from "es-toolkit";
 import { fastify } from "fastify";
 import type { MonthlyCount, RankingData, UserData } from "./api.js";
-import { createPool } from "./db.js";
+import { createDatabase } from "./db.js";
 import { basicHandler, rankingHandler, timeHandler } from "./queryHandler.js";
 import { reaction, ticket, user } from "./schema.js";
 
 export async function startServer(port = 3001) {
-	const { db, pool } = createPool();
+	const { db, sqlite } = createDatabase();
 	const app = fastify();
 
 	app.register(fastifyStatic, {
 		root: resolve(dirname(fileURLToPath(import.meta.url)), "../../client/dist"),
 	});
-	app.addHook("onClose", () => pool.end());
+
+	app.addHook("onClose", sqlite.close);
 
 	app.get(
 		"/api/last-updated",
@@ -47,7 +48,7 @@ export async function startServer(port = 3001) {
 			return db
 				.select({
 					// biome-ignore format: one line
-					month: sql<string>`DATE_FORMAT(${ticket.timestamp}, '%Y-%m')`.as("month"),
+					month: sql<string>`strftime('%Y-%m', ${ticket.timestamp}, 'unixepoch')`.as("month"),
 					count: count().as("count"),
 				})
 				.from(reaction)

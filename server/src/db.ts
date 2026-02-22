@@ -1,21 +1,9 @@
-import { drizzle } from "drizzle-orm/mysql2";
-import mysql from "mysql2/promise";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 
-const connectionConfig = {
-	host: "localhost",
-	port: 3306,
-	user: "felix",
-	password: "",
-	database: "leaderboard",
-	timezone: "+00:00",
-} as const;
+const DB_PATH = "leaderboard.db";
 
-export function createPool() {
-	const pool = mysql.createPool(connectionConfig);
-	return { db: drizzle(pool), pool };
-}
-
-export async function createConnection() {
-	const connection = await mysql.createConnection(connectionConfig);
-	return { db: drizzle(connection), connection };
+export function createDatabase() {
+	const sqlite = new Database(DB_PATH);
+	return { db: drizzle(sqlite), sqlite };
 }

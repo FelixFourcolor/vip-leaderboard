@@ -44,8 +44,8 @@ type HoveredPointProps = {
 
 function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 	const { queryData } = useChart();
-	const { color: userColor, rank, avatarUrl, name } = queryData[seriesId]!;
-	const seriesColor = getSeriesColor({ rank });
+	const userData = queryData[seriesId]!;
+	const seriesColor = getSeriesColor(userData);
 
 	const [isZack] = useZackMode();
 	const pointColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
@@ -64,7 +64,7 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 					style={{ borderColor: seriesColor, ...style }}
 					className={cx("info-box", "tooltip")}
 				>
-					<UserHeader name={name} color={userColor} avatarUrl={avatarUrl} />
+					<UserHeader {...userData} />
 					<table>
 						<tbody>
 							<tr>

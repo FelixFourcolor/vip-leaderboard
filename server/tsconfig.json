@@ -10,10 +10,8 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
         "verbatimModuleSyntax": true,
-        "isolatedModules": true,
         "skipLibCheck": true,
-        "outDir": "dist",
-        "declaration": true
+        "outDir": "dist"
     },
     "include": ["./src/**/*.ts"]
 }
