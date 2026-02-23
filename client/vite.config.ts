@@ -14,6 +14,12 @@ export default defineConfig({
 		},
 	},
 	resolve: {
-		alias: { "@": resolve(__dirname, "./src") },
+		alias: {
+			"@": resolve(__dirname, "src"),
+			"/sql-wasm-browser.wasm": resolve(
+				__dirname,
+				"node_modules/sql.js/dist/sql-wasm.wasm",
+			),
+		},
 	},
 });

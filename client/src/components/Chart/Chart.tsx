@@ -2,7 +2,7 @@ import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getMonthlyRanking, type MonthlyRanking } from "@/api/monthlyRanking";
+import { getMonthlyRanking, type MonthlyRanking } from "@/db/monthlyRanking";
 import { windows } from "@/utils/iter";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";

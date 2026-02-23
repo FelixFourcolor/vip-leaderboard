@@ -1,10 +1,10 @@
 import type { UserData } from "@server/api";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
-import { lastUpdatedDate } from "@/api/lastUpdated";
-import { getUser } from "@/api/user";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
+import { lastUpdatedDate } from "@/db/lastUpdated";
+import { getUser } from "@/db/user";
 import { useZackMode } from "@/hooks/useZackMode";
 import styles from "./Footer.module.css";
 

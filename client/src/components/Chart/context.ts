@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { MonthlyRanking } from "@/api/monthlyRanking";
+import type { MonthlyRanking } from "@/db/monthlyRanking";
 
 interface ChartContextValue {
 	queryData: MonthlyRanking;

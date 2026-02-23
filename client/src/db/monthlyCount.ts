@@ -2,11 +2,10 @@ import type {
 	MonthlyCount as ServerMonthlyCount,
 	MonthlyCountParams as ServerMonthlyCountParams,
 } from "@server/api";
-import { lastUpdated } from "@/api/lastUpdated";
+import { lastUpdated } from "@/db/lastUpdated";
 import { windows } from "@/utils/iter";
 import { monthsInRange, offset } from "@/utils/time";
-import { createUrlParams } from "@/utils/url";
-import { withCache } from "./cache";
+import { getMonthlyCount as getMonthlyCountEndpoint } from "./endpoints";
 
 export type MonthlyCountParams = Required<ServerMonthlyCountParams> & {
 	userId: string;
@@ -23,24 +22,18 @@ export const VALID_MONTHS = monthsInRange(
 	offset(lastUpdated, { months: 1 }),
 );
 
-function getFn(
+async function getFn(
 	params: Omit<MonthlyCountParams, "cumulative">,
 ): Promise<ServerMonthlyCount> {
 	const { userId, since, until } = params;
 	const exclusiveUntil = offset(until, { months: 1 });
-	const urlParams = createUrlParams({ since, until: exclusiveUntil });
 
-	const url = `/api/monthly-count/${userId}${urlParams}`;
-	return fetch(url).then((res) => res.json());
+	return getMonthlyCountEndpoint(
+		userId,
+		since ? new Date(since) : undefined,
+		exclusiveUntil ? new Date(exclusiveUntil) : undefined,
+	);
 }
-
-const fetchWithCache = withCache({
-	getFn,
-	paramsChunkBy: ["since", "until"],
-	returnChunkBy: "month",
-	domain: VALID_MONTHS,
-	chunkSize: 25,
-});
 
 export async function getMonthlyCount({
 	userId,
@@ -48,7 +41,7 @@ export async function getMonthlyCount({
 	since,
 	until,
 }: MonthlyCountParams): Promise<MonthlyCount> {
-	const data = await fetchWithCache({ userId, since, until });
+	const data = await getFn({ userId, since, until });
 
 	const months = monthsInRange(since, until);
 	const countByMonth = Object.fromEntries(

@@ -65,7 +65,6 @@ export function RangeSlider<Value>({
 	const onCommit = useCallback(
 		(values: number[]) => {
 			const [from, to] = values as [number, number];
-			console.log("commit", { from, to });
 			const fromDomainValue = domain[from!];
 			const toDomainValue = domain[to!];
 			if (fromDomainValue !== undefined && toDomainValue !== undefined) {
