@@ -39,7 +39,7 @@ const fetchWithCache = withCache({
 	paramsChunkBy: ["since", "until"],
 	returnChunkBy: "month",
 	domain: VALID_MONTHS,
-	chunkSize: 24,
+	chunkSize: 25,
 });
 
 export async function getMonthlyCount({

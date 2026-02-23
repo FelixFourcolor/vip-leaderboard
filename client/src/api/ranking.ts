@@ -2,22 +2,26 @@ import type {
 	RankingParams,
 	RankingData as ServerRankingData,
 } from "@server/api";
+import { offset } from "@/utils/time";
 import { createUrlParams } from "@/utils/url";
 import { withCache } from "./cache";
 
 function getFn(params: RankingParams): Promise<ServerRankingData> {
-	const url = `/api/ranking${createUrlParams(params)}`;
+	const { until, ...otherParams } = params;
+	const exclusiveUntil = until ? offset(until, { months: 1 }) : undefined;
+	const urlParams = createUrlParams({ ...otherParams, until: exclusiveUntil });
+	const url = `/api/ranking${urlParams}`;
 	return fetch(url).then((res) => res.json());
 }
 
-export const VALID_RANKS = Array.from({ length: 50 }, (_, i) => i + 1);
+export const VALID_RANKS = Array.from({ length: 100 }, (_, i) => i + 1);
 
 const fetchWithCache = withCache({
-	getFn: getFn,
+	getFn,
 	paramsChunkBy: ["from", "to"],
 	returnChunkBy: "rank",
 	domain: VALID_RANKS,
-	chunkSize: 10,
+	chunkSize: 50,
 });
 
 export type RankingData = Record<string, { rank: number; count: number }>;
