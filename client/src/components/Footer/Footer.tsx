@@ -1,5 +1,8 @@
+import type { UserData } from "@server/api";
 import classNames from "classnames/bind";
+import { useEffect, useState } from "react";
 import { lastUpdatedDate } from "@/api/lastUpdated";
+import { getUser } from "@/api/user";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import { useZackMode } from "@/hooks/useZackMode";
@@ -24,21 +27,30 @@ export function Footer() {
 
 function ZackModeToggle() {
 	const [isZack, setIsZack] = useZackMode();
-	const color = isZack ? "#68D5F8" : undefined;
-	const avatarUrl =
-		"https://cdn.discordapp.com/avatars/1000499951597523125/54c74dd3bf04d27bd73479a1f9935a52.png?size=16";
+	const [zackData, setZackData] = useState<UserData>();
+	useEffect(() => {
+		getUser("zackwb").then(setZackData);
+	}, []);
+
+	const avatarUrl = zackData ? `${zackData.avatarUrl}?size=16` : undefined;
+	// prefetch avatar to avoid delay when toggling
+	useEffect(() => {
+		if (avatarUrl) {
+			const img = new Image();
+			img.src = avatarUrl;
+		}
+	}, [avatarUrl]);
+
+	const color = isZack ? zackData?.color : undefined;
+	const image = isZack && avatarUrl ? `url("${avatarUrl}")` : undefined;
 
 	return (
 		<Toggle
 			value={isZack}
 			onChange={setIsZack}
 			customStyles={{
-				container: {
-					backgroundColor: color,
-				},
-				slider: {
-					backgroundImage: isZack ? `url("${avatarUrl}")` : undefined,
-				},
+				container: { backgroundColor: color },
+				slider: { backgroundImage: image },
 			}}
 		>
 			<UserHeader name="Light mode" color={color} />
