@@ -1,21 +1,21 @@
+import { lastUpdated } from "virtual:db/last-updated";
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
-import { lastUpdated } from "@/db/lastUpdated";
 import { VALID_MONTHS } from "@/db/monthlyCount";
 import { VALID_RANKS } from "@/db/ranking";
 import { Route } from "@/routes/index";
-import { offset } from "@/utils/time";
+import { offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { COLORS } from "./colors";
 
 const cx = classNames.bind(styles);
 
 const defaultParams = {
-	until: lastUpdated,
+	until: toYyyyMm(lastUpdated),
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	from: 1,

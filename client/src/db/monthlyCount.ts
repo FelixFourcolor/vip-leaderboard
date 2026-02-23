@@ -1,8 +1,8 @@
+import { lastUpdated } from "virtual:db/last-updated";
 import type {
 	MonthlyCount as ServerMonthlyCount,
 	MonthlyCountParams as ServerMonthlyCountParams,
 } from "@server/api";
-import { lastUpdated } from "@/db/lastUpdated";
 import { windows } from "@/utils/iter";
 import { monthsInRange, offset } from "@/utils/time";
 import { getMonthlyCount as getMonthlyCountEndpoint } from "./endpoints";

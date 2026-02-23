@@ -4,16 +4,6 @@ import { pick } from "es-toolkit";
 import { db } from "./db";
 import { reaction, ticket, user } from "./schema";
 
-export async function getLastUpdated(): Promise<Date> {
-	const rows = (await db)
-		.select({ timestamp: ticket.timestamp })
-		.from(ticket)
-		.orderBy(desc(ticket.timestamp))
-		.limit(1)
-		.all();
-	return rows[0]!.timestamp;
-}
-
 export async function getUser(userId: string): Promise<UserData> {
 	const rows = (await db)
 		.select({ ...pick(user, ["name", "avatarUrl", "color"] as const) })

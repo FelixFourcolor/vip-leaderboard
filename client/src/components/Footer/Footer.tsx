@@ -1,9 +1,9 @@
+import { lastUpdated } from "virtual:db/last-updated";
 import type { UserData } from "@server/api";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
-import { lastUpdatedDate } from "@/db/lastUpdated";
 import { getUser } from "@/db/user";
 import { useZackMode } from "@/hooks/useZackMode";
 import styles from "./Footer.module.css";
@@ -11,14 +11,14 @@ import styles from "./Footer.module.css";
 const cx = classNames.bind(styles);
 
 export function Footer() {
+	const lastUpdatedStr = lastUpdated.toLocaleString(undefined, {
+		timeZone: "UTC",
+	});
 	return (
 		<footer>
 			<hr />
 			<div className={cx("container")}>
-				<span>
-					Last updated:{" "}
-					{lastUpdatedDate.toLocaleString(undefined, { timeZone: "UTC" })}
-				</span>
+				<span>Last update: {lastUpdatedStr} (UTC)</span>
 				<ZackModeToggle />
 			</div>
 		</footer>

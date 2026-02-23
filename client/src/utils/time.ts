@@ -26,10 +26,10 @@ export function monthsInRange(since: string, until: string): string[] {
 }
 
 export function offset(
-	yyymm: string,
+	date: string | Date,
 	offset: Partial<Record<"days" | "months" | "years", number>>,
 ): string {
-	const date = new Date(yyymm);
+	date = new Date(date);
 	if (offset.days) {
 		date.setUTCDate(date.getUTCDate() + offset.days);
 	}
