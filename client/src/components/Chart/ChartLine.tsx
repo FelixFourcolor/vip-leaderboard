@@ -20,7 +20,7 @@ import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
 import { useChartControls } from "./ChartControls";
 import { ChartPoint } from "./ChartPoint";
-import { getSeriesColor } from "./colors.ts";
+import { getSeriesColor } from "./colors";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);

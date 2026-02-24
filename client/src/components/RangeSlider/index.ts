@@ -1,1 +1,1 @@
-export { RangeSlider } from "./RangeSlider.tsx";
+export { RangeSlider } from "./RangeSlider";

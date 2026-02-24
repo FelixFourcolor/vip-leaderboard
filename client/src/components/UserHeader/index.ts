@@ -1,1 +1,1 @@
-export { UserHeader } from "./UserHeader.tsx";
+export { UserHeader } from "./UserHeader";

@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "ESNext",
+		"moduleResolution": "bundler",
+		"verbatimModuleSyntax": true,
+		"allowSyntheticDefaultImports": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"paths": { "@/*": ["./src/*"] },
+
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"noUncheckedSideEffectImports": true
+	},
+	"include": ["*.config.ts", "loader"]
+}
