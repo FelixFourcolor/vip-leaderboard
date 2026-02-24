@@ -26,10 +26,7 @@ const VALID_RANKS = Array.from({ length: 50 }, (_, i) => i + 1);
 // Kinda hard to define "meaningful",
 // so just hardcode a value instead of defining an api for it.
 const startDate = "2020-01";
-const VALID_MONTHS = monthsInRange(
-	startDate,
-	offset(lastUpdated, { months: 1 }),
-);
+const VALID_MONTHS = monthsInRange(startDate, lastUpdated);
 
 export function ChartControls() {
 	const [params, setParams] = useChartControls();
@@ -43,6 +40,7 @@ export function ChartControls() {
 		([since, until]: [string, string]) => setParams({ since, until }),
 		[setParams],
 	);
+
 	return (
 		<>
 			<div className={cx("mid-panel")}>
@@ -66,7 +64,7 @@ export function ChartControls() {
 				</Toggle>
 				<RangeSlider
 					className={cx("slider")}
-					domain={VALID_MONTHS.slice(0, -1)}
+					domain={VALID_MONTHS}
 					selected={[since, until]}
 					onChange={onChangeDateRange}
 					minDistance={1}
