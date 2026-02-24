@@ -5,10 +5,8 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
-import { VALID_MONTHS } from "@/db/monthlyCount";
-import { VALID_RANKS } from "@/db/ranking";
 import { Route } from "@/routes/index";
-import { offset, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { COLORS } from "./colors";
 
@@ -21,6 +19,17 @@ const defaultParams = {
 	from: 1,
 	to: 10,
 };
+
+const VALID_RANKS = Array.from({ length: 50 }, (_, i) => i + 1);
+
+// Earliest month with meaningful data.
+// Kinda hard to define "meaningful",
+// so just hardcode a value instead of defining an api for it.
+const startDate = "2020-01";
+const VALID_MONTHS = monthsInRange(
+	startDate,
+	offset(lastUpdated, { months: 1 }),
+);
 
 export function ChartControls() {
 	const [params, setParams] = useChartControls();

@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
-import type { UserData } from "@/db/endpoints";
+import type { UserData } from "@/db/user";
 import { getUser } from "@/db/user";
 import { useZackMode } from "@/hooks/useZackMode";
 import styles from "./Footer.module.css";
@@ -27,7 +27,7 @@ export function Footer() {
 
 function ZackModeToggle() {
 	const [isZack, setIsZack] = useZackMode();
-	const [zackData, setZackData] = useState<UserData>();
+	const [zackData, setZackData] = useState<UserData | undefined>();
 	useEffect(() => {
 		getUser("zackwb").then(setZackData);
 	}, []);

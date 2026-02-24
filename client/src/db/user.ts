@@ -1,7 +1,20 @@
-import { memoize } from "es-toolkit";
-import { getUser as getUserEndpoint } from "./endpoints";
+import { eq } from "drizzle-orm";
+import { pick } from "@/utils/object";
+import { db } from "./db";
+import { user } from "./schema";
 
-export const getUser = memoize(
-	async (userId: string) => getUserEndpoint(userId),
-	{ getCacheKey: JSON.stringify },
-);
+export type UserData = {
+	name: string;
+	avatarUrl: string;
+	color: string;
+};
+
+export async function getUser(userId: string): Promise<UserData | undefined> {
+	const rows = (await db)
+		.select({ ...pick(user, ["name", "avatarUrl", "color"] as const) })
+		.from(user)
+		.where(eq(user.id, userId))
+		.all();
+
+	return rows[0];
+}

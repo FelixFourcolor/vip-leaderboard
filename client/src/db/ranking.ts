@@ -1,5 +1,9 @@
+import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
+import { pick } from "@/utils/object";
 import { offset } from "@/utils/time";
-import { getRanking as getRankingEndpoint } from "./endpoints";
+import { db } from "./db";
+import { reaction, ticket, user } from "./schema";
+import type { UserData } from "./user";
 
 export type RankingParams = {
 	since?: string;
@@ -8,25 +12,49 @@ export type RankingParams = {
 	to?: number;
 };
 
-async function getFn(params: RankingParams) {
-	const { until, since, from, to } = params;
-	const exclusiveUntil = until ? offset(until, { months: 1 }) : undefined;
+export type RankingData = Record<
+	string,
+	{ rank: number; count: number } & UserData
+>;
 
-	return getRankingEndpoint(
-		from,
-		to,
-		since ? new Date(since) : undefined,
-		exclusiveUntil ? new Date(exclusiveUntil) : undefined,
-	);
-}
+export async function getRanking({
+	from = 1,
+	to = 1000,
+	since,
+	until,
+}: RankingParams): Promise<RankingData> {
+	// make "until" include the last month
+	until = until ? offset(until, { months: 1 }) : undefined;
 
-export const VALID_RANKS = Array.from({ length: 50 }, (_, i) => i + 1);
+	const rows = (await db)
+		.select({
+			...pick(user, ["color", "name", "avatarUrl"] as const),
+			userId: user.id,
+			count: count(reaction.ticketId),
+		})
+		.from(reaction)
+		.innerJoin(user, eq(user.id, reaction.userId))
+		.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
+		.where(
+			and(
+				...(since ? [gte(ticket.timestamp, new Date(since))] : []),
+				...(until ? [lt(ticket.timestamp, new Date(until))] : []),
+			),
+		)
+		.groupBy(user.id)
+		.orderBy(desc(count(reaction.ticketId)), asc(user.id))
+		.limit(to - from + 1)
+		.offset(from - 1)
+		.all();
 
-export type RankingData = Record<string, { rank: number; count: number }>;
-
-export async function getRanking(params: RankingParams): Promise<RankingData> {
-	const ranking = await getFn(params);
 	return Object.fromEntries(
-		ranking.map(({ userId, count, rank }) => [userId, { count, rank }]),
+		rows.map(({ userId, count, ...userData }, index) => [
+			userId,
+			{
+				rank: index + from,
+				count,
+				...userData,
+			},
+		]),
 	);
 }

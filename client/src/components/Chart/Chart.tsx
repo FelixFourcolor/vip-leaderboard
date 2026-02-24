@@ -2,8 +2,9 @@ import type { PointOrSliceMouseHandler } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getMonthlyRanking, type MonthlyRanking } from "@/db/monthlyRanking";
+import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
 import { windows } from "@/utils/iter";
+import { monthsInRange } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
 import { ChartLegend } from "./ChartLegend";
@@ -19,17 +20,46 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [params] = useChartControls();
-	const [queryData = {}, setQueryData] = useState<MonthlyRanking>();
-	useEffect(() => {
-		getMonthlyRanking(params).then(setQueryData);
-	}, [params]);
-
 	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
 	const [hoveredPoint, setHoveredPoint] = useState<{
 		x: Date;
 		y: number;
 	} | null>(null);
+
+	const [params] = useChartControls();
+	const months = useMemo(
+		() => monthsInRange(params.since, params.until),
+		[params.since, params.until],
+	);
+	const [queryData = {}, setQueryData] = useState<MonthlyRanking>();
+
+	useEffect(() => {
+		getMonthlyData(params).then((data) => {
+			const { cumulative } = params;
+			setQueryData(
+				mapValues(data, ({ monthlyCount, ...userData }) => {
+					const countByMonth = Object.fromEntries(
+						monthlyCount.map(({ month, count }) => [month, count]),
+					);
+
+					if (!cumulative) {
+						return {
+							...userData,
+							monthlyCount: months.map((month) => ({
+								month,
+								count: countByMonth[month] ?? null,
+							})),
+						};
+					}
+
+					return {
+						...userData,
+						monthlyCount: Array.from(accumulate(months, countByMonth)),
+					};
+				}),
+			);
+		});
+	}, [params, months]);
 
 	const isolatedPoints = useMemo(() => {
 		return mapValues(queryData, ({ monthlyCount }) => {
@@ -119,4 +149,27 @@ export function Chart() {
 			</div>
 		</ChartContext.Provider>
 	);
+}
+
+function* accumulate(
+	months: string[],
+	countByMonth: Record<string, number | null>,
+) {
+	let accumulator = 0;
+	for (const [month, nextMonth] of windows(months, 2)) {
+		if (!month) {
+			continue;
+		}
+		const count = countByMonth[month];
+		if (count != null) {
+			accumulator += count;
+			yield { month, count: accumulator };
+			continue;
+		}
+		if (!nextMonth) {
+			yield { month, count: accumulator };
+			continue;
+		}
+		yield { month, count: null };
+	}
 }

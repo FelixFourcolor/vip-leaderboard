@@ -1,14 +1,10 @@
 import classNames from "classnames/bind";
-import type { UserData } from "@/db/endpoints";
+import type { UserData } from "@/db/user";
 import styles from "./UserHeader.module.css";
 
 const cx = classNames.bind(styles);
 
-export function UserHeader({
-	name,
-	avatarUrl,
-	color,
-}: Partial<NonNullable<UserData>>) {
+export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
 	return (
 		<div className={cx("header")}>
 			{avatarUrl && (

@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import { UserHeader } from "@/components/UserHeader";
-import type { RankingData, UserData } from "@/db/endpoints";
+import type { RankingData } from "@/db/ranking";
 import styles from "./Chart.module.css";
 import { getSeriesColor } from "./colors";
 import { useChart } from "./context";
@@ -11,16 +11,16 @@ export function ChartLegend() {
 	const { queryData } = useChart();
 	return (
 		<div className={cx("legend")}>
-			{Object.entries(queryData).map(([id, user]) => (
-				<LegendEntry key={id} userId={id} {...user} />
+			{Object.entries(queryData).map(([userId, userData]) => (
+				<LegendEntry key={userId} {...userData} />
 			))}
 		</div>
 	);
 }
 
-type EntryProps = UserData & RankingData[number];
+type EntryProps = RankingData[string];
 
-function LegendEntry({ userId, count, rank, ...userData }: EntryProps) {
+function LegendEntry({ count, rank, ...userData }: EntryProps) {
 	const seriesColor = getSeriesColor({ rank });
 	return (
 		<div style={{ borderColor: seriesColor }} className={cx("info-box")}>
