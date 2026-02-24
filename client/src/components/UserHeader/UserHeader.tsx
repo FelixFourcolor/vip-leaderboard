@@ -1,5 +1,5 @@
-import type { UserData } from "@server/api";
 import classNames from "classnames/bind";
+import type { UserData } from "@/db/endpoints";
 import styles from "./UserHeader.module.css";
 
 const cx = classNames.bind(styles);

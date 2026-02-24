@@ -1,16 +1,15 @@
 import { lastUpdated } from "virtual:db/last-updated";
-import type {
-	MonthlyCount as ServerMonthlyCount,
-	MonthlyCountParams as ServerMonthlyCountParams,
-} from "@server/api";
 import { windows } from "@/utils/iter";
 import { monthsInRange, offset } from "@/utils/time";
 import { getMonthlyCount as getMonthlyCountEndpoint } from "./endpoints";
 
-export type MonthlyCountParams = Required<ServerMonthlyCountParams> & {
+export type MonthlyCountParams = {
+	since: string;
+	until: string;
 	userId: string;
 	cumulative: boolean;
 };
+
 export type MonthlyCount = { month: string; count: number | null }[];
 
 // Earliest month with meaningful data.
@@ -22,9 +21,7 @@ export const VALID_MONTHS = monthsInRange(
 	offset(lastUpdated, { months: 1 }),
 );
 
-async function getFn(
-	params: Omit<MonthlyCountParams, "cumulative">,
-): Promise<ServerMonthlyCount> {
+async function getFn(params: Omit<MonthlyCountParams, "cumulative">) {
 	const { userId, since, until } = params;
 	const exclusiveUntil = offset(until, { months: 1 });
 

@@ -1,11 +1,14 @@
-import type {
-	RankingParams,
-	RankingData as ServerRankingData,
-} from "@server/api";
 import { offset } from "@/utils/time";
 import { getRanking as getRankingEndpoint } from "./endpoints";
 
-async function getFn(params: RankingParams): Promise<ServerRankingData> {
+export type RankingParams = {
+	since?: string;
+	until?: string;
+	from?: number;
+	to?: number;
+};
+
+async function getFn(params: RankingParams) {
 	const { until, since, from, to } = params;
 	const exclusiveUntil = until ? offset(until, { months: 1 }) : undefined;
 

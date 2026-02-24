@@ -1,6 +1,6 @@
-import type { RankingData, UserData } from "@server/api";
 import classNames from "classnames/bind";
 import { UserHeader } from "@/components/UserHeader";
+import type { RankingData, UserData } from "@/db/endpoints";
 import styles from "./Chart.module.css";
 import { getSeriesColor } from "./colors";
 import { useChart } from "./context";

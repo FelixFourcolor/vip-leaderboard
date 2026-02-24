@@ -1,8 +1,13 @@
-import type { MonthlyCount, RankingData, UserData } from "@server/api";
 import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { pick } from "es-toolkit";
 import { db } from "./db";
 import { reaction, ticket, user } from "./schema";
+
+export type UserData = {
+	name: string;
+	avatarUrl: string;
+	color: string;
+} | null;
 
 export async function getUser(userId: string): Promise<UserData> {
 	const rows = (await db)
@@ -12,6 +17,8 @@ export async function getUser(userId: string): Promise<UserData> {
 		.all();
 	return rows[0] ?? null;
 }
+
+type MonthlyCount = { month: string; count: number }[];
 
 export async function getMonthlyCount(
 	userId: string,
@@ -37,6 +44,8 @@ export async function getMonthlyCount(
 		.orderBy(asc(sql`month`))
 		.all();
 }
+
+export type RankingData = { userId: string; rank: number; count: number }[];
 
 export async function getRanking(
 	from = 1,

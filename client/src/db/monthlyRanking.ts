@@ -1,15 +1,15 @@
-import type { RankingParams, UserData } from "@server/api";
+import type { UserData } from "./endpoints";
 import {
 	getMonthlyCount,
 	type MonthlyCount,
 	type MonthlyCountParams,
 } from "./monthlyCount";
-import { getRanking, type RankingData } from "./ranking";
+import { getRanking, type RankingData, type RankingParams } from "./ranking";
 import { getUser } from "./user";
 
-export type MonthlyRankingParams = Required<
-	RankingParams & Omit<MonthlyCountParams, "userId">
->;
+export type MonthlyRankingParams = Required<RankingParams> &
+	Omit<MonthlyCountParams, "userId">;
+
 export type MonthlyRanking = RankingData &
 	Record<string, UserData & { monthlyCount: MonthlyCount }>;
 
