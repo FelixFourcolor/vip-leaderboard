@@ -30,12 +30,12 @@ function lastUpdated(): Plugin {
 			if (id !== `\0virtual:db/last-updated`) {
 				return;
 			}
-			const db = new DatabaseSync(res("public/leaderboard.db"));
-			const { timestamp } = db
-				.prepare("SELECT timestamp FROM ticket ORDER BY timestamp DESC LIMIT 1")
-				.get() as { timestamp: number };
+			const db = new DatabaseSync(res("public/data.db"));
+			const { date } = db
+				.prepare("SELECT date FROM activity ORDER BY date DESC LIMIT 1")
+				.get() as { date: number };
 			db.close();
-			return `export const lastUpdated = new Date(${timestamp * 1000});`;
+			return `export const lastUpdated = new Date(${date * 1000});`;
 		},
 	};
 }

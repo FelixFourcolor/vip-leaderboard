@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { reaction, ticket, user } from "@/db/schema";
+import { activity, user } from "@/db/schema";
 import type { Data, User } from "./type.js";
 
 const VIP_REACTIONS = new Set([
@@ -18,12 +18,10 @@ const VIP_REACTIONS = new Set([
 ]);
 
 type UserData = typeof user.$inferInsert;
-type TicketData = typeof ticket.$inferInsert;
-type ReactionData = typeof reaction.$inferInsert;
+type ReactionData = typeof activity.$inferInsert;
 
 async function load_data() {
 	const usersMap = new Map<string, UserData>();
-	const tickets: TicketData[] = [];
 	const reactionsMap = new Map<string, ReactionData>();
 
 	function getOrCreateUser({
@@ -52,21 +50,21 @@ async function load_data() {
 		const content = await readFile(path);
 		const data: Data = JSON.parse(content.toString());
 
-		data.messages.forEach(({ id: ticketId, timestamp, reactions }) => {
+		data.messages.forEach(({ timestamp, reactions }) => {
 			const vipReactions = reactions.filter((r) =>
 				VIP_REACTIONS.has(r.emoji.code),
 			);
 			if (vipReactions.length === 0) {
 				return;
 			}
-			tickets.push({ id: ticketId, timestamp: new Date(timestamp) });
+			const date = new Date(timestamp);
 			vipReactions
 				.flatMap((r) => r.users)
 				.map(getOrCreateUser)
 				.filter((userId) => userId !== undefined)
 				.forEach((userId) => {
-					const key = `${ticketId}-${userId}`;
-					reactionsMap.set(key, { ticketId, userId });
+					const key = `${timestamp}-${userId}`;
+					reactionsMap.set(key, { date, userId });
 				});
 		});
 	}
@@ -80,17 +78,15 @@ async function load_data() {
 
 	return {
 		users: Array.from(usersMap.values()),
-		tickets,
 		reactions: Array.from(reactionsMap.values()),
 	};
 }
 
 async function main() {
 	const data = load_data();
-	const sqlite = new Database("public/leaderboard.db");
+	const sqlite = new Database("public/data.db");
 	const db = drizzle(sqlite);
-	const { users, tickets, reactions } = await data;
-
+	const { users, reactions } = await data;
 	await db
 		.insert(user)
 		.values(users)
@@ -102,9 +98,7 @@ async function main() {
 				color: sql`excluded.color`,
 			},
 		});
-	await db.insert(ticket).values(tickets).onConflictDoNothing();
-	await db.insert(reaction).values(reactions).onConflictDoNothing();
-
+	await db.insert(activity).values(reactions).onConflictDoNothing();
 	sqlite.close();
 }
 

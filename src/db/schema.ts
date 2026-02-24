@@ -1,5 +1,4 @@
 import {
-	index,
 	integer,
 	primaryKey,
 	sqliteTable,
@@ -13,24 +12,11 @@ export const user = sqliteTable("user", {
 	color: text("color").notNull(),
 });
 
-export const ticket = sqliteTable(
-	"ticket",
+export const activity = sqliteTable(
+	"activity",
 	{
-		id: text("id").primaryKey(),
-		timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+		date: integer("date", { mode: "timestamp" }).notNull(),
+		userId: text("user_id").references(() => user.id),
 	},
-	(t) => [index("timestamp_idx").on(t.timestamp)],
-);
-
-export const reaction = sqliteTable(
-	"reaction",
-	{
-		ticketId: text("ticket_id")
-			.notNull()
-			.references(() => ticket.id),
-		userId: text("user_id")
-			.notNull()
-			.references(() => user.id),
-	},
-	(t) => [primaryKey({ columns: [t.ticketId, t.userId] })],
+	(t) => [primaryKey({ columns: [t.date, t.userId] })],
 );

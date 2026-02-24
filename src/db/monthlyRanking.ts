@@ -4,7 +4,7 @@ import { pick } from "@/utils/object";
 import { offset } from "@/utils/time";
 import { db } from "./db";
 import type { RankingData, RankingParams } from "./ranking";
-import { reaction, ticket, user } from "./schema";
+import { activity, user } from "./schema";
 
 type MonthlyCount = { month: string; count: number | null }[];
 
@@ -22,49 +22,48 @@ export async function getMonthlyData({
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 
-	const userMonth = (await db).$with("user_month").as(
+	const monthCount = (await db).$with("month_count").as(
 		(await db)
 			.select({
-				userId: reaction.userId,
+				id: activity.userId,
 				// biome-ignore format: one line
-				month: sql<string>`strftime('%Y-%m', ${ticket.timestamp}, 'unixepoch')`.as("month"),
+				month: sql<string>`strftime('%Y-%m', ${activity.date}, 'unixepoch')`.as("month"),
 				count: count().as("count"),
 			})
-			.from(reaction)
-			.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
+			.from(activity)
 			.where(
 				and(
-					...(since ? [gte(ticket.timestamp, new Date(since))] : []),
-					...(until ? [lt(ticket.timestamp, new Date(until))] : []),
+					...(since ? [gte(activity.date, new Date(since))] : []),
+					...(until ? [lt(activity.date, new Date(until))] : []),
 				),
 			)
-			.groupBy(reaction.userId, sql`month`),
+			.groupBy(activity.userId, sql`month`),
 	);
 
 	const topUsers = (await db).$with("top_users").as(
 		(await db)
 			.select({
-				userId: userMonth.userId,
-				total: sql<number>`SUM(${userMonth.count})`.as("total"),
+				id: monthCount.id,
+				total: sql<number>`SUM(${monthCount.count})`.as("total"),
 			})
-			.from(userMonth)
-			.groupBy(userMonth.userId)
-			.orderBy(desc(sql`total`), asc(userMonth.userId))
+			.from(monthCount)
+			.groupBy(monthCount.id)
+			.orderBy(desc(sql`total`), asc(monthCount.id))
 			.limit(to - from + 1)
 			.offset(from - 1),
 	);
 
 	const rows = (await db)
-		.with(userMonth, topUsers)
+		.with(monthCount, topUsers)
 		.select({
 			...pick(user, ["id", "name", "color", "avatarUrl"]),
-			...pick(userMonth, ["month", "count"]),
+			...pick(monthCount, ["month", "count"]),
 			total: topUsers.total,
 		})
 		.from(topUsers)
-		.innerJoin(userMonth, eq(userMonth.userId, topUsers.userId))
-		.innerJoin(user, eq(user.id, userMonth.userId))
-		.orderBy(desc(topUsers.total), asc(userMonth.month))
+		.innerJoin(monthCount, eq(monthCount.id, topUsers.id))
+		.innerJoin(user, eq(user.id, monthCount.id))
+		.orderBy(desc(topUsers.total), asc(monthCount.month))
 		.all();
 
 	if (rows.length === 0) {

@@ -3,7 +3,7 @@ import initSqlJs from "sql.js";
 
 export const db = Promise.all([
 	initSqlJs(),
-	fetch("/leaderboard.db")
+	fetch("/data.db")
 		.then((res) => res.arrayBuffer())
 		.then((buffer) => new Uint8Array(buffer)),
 ])

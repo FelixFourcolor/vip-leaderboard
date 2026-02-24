@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
 import { pick } from "@/utils/object";
 import { offset } from "@/utils/time";
 import { db } from "./db";
-import { reaction, ticket, user } from "./schema";
+import { activity, user } from "./schema";
 import type { UserData } from "./user";
 
 export type RankingParams = {
@@ -28,33 +28,25 @@ export async function getRanking({
 
 	const rows = (await db)
 		.select({
-			...pick(user, ["color", "name", "avatarUrl"] as const),
-			userId: user.id,
-			count: count(reaction.ticketId),
+			...pick(user, ["color", "name", "avatarUrl"]),
+			id: user.id,
+			count: count(activity.date),
 		})
-		.from(reaction)
-		.innerJoin(user, eq(user.id, reaction.userId))
-		.innerJoin(ticket, eq(ticket.id, reaction.ticketId))
+		.from(activity)
+		.innerJoin(user, eq(user.id, activity.userId))
 		.where(
 			and(
-				...(since ? [gte(ticket.timestamp, new Date(since))] : []),
-				...(until ? [lt(ticket.timestamp, new Date(until))] : []),
+				...(since ? [gte(activity.date, new Date(since))] : []),
+				...(until ? [lt(activity.date, new Date(until))] : []),
 			),
 		)
 		.groupBy(user.id)
-		.orderBy(desc(count(reaction.ticketId)), asc(user.id))
+		.orderBy(desc(count(activity.date)), asc(user.id))
 		.limit(to - from + 1)
 		.offset(from - 1)
 		.all();
 
 	return Object.fromEntries(
-		rows.map(({ userId, count, ...userData }, index) => [
-			userId,
-			{
-				rank: index + from,
-				count,
-				...userData,
-			},
-		]),
+		rows.map(({ id, ...data }, index) => [id, { ...data, rank: index + from }]),
 	);
 }
