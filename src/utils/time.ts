@@ -7,7 +7,10 @@ export function toDate(yyyyMm: string): Date {
 	return new Date(year!, month! - 1, 1);
 }
 
-export function monthsInRange(since: string, until: string): string[] {
+export function monthsInRange(
+	since: string | Date,
+	until: string | Date,
+): string[] {
 	const sinceDate = new Date(since);
 	const sinceYear = sinceDate.getUTCFullYear();
 	const sinceMonth = sinceDate.getUTCMonth();

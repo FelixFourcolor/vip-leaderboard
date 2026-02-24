@@ -1,3 +1,4 @@
+import { useThrottledValue } from "@tanstack/react-pacer";
 import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
 import { Direction, Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
@@ -62,17 +63,39 @@ export function RangeSlider<Value>({
 		[setValues, minDistance, maxDistance, domain.length],
 	);
 
-	const onCommit = useCallback(
-		(values: number[]) => {
-			const [from, to] = values as [number, number];
-			const fromDomainValue = domain[from!];
-			const toDomainValue = domain[to!];
-			if (fromDomainValue !== undefined && toDomainValue !== undefined) {
-				onChange([fromDomainValue, toDomainValue]);
+	const onShift = useCallback(
+		(dist: number) => {
+			setValues(([currentFrom, currentTo]) => {
+				const currentDistance = currentTo - currentFrom;
+				let from = currentFrom + dist;
+				let to = currentTo + dist;
+				if (from < 0) {
+					from = 0;
+					to = currentDistance;
+				} else if (to >= domain.length) {
+					to = domain.length - 1;
+					from = to - currentDistance;
+				}
+				return [from, to];
+			});
+		},
+		[setValues, domain.length],
+	);
+
+	const [throttledValues] = useThrottledValue(values, { wait: 300 });
+	const callback = useCallback(
+		(values: [number, number]) => {
+			const fromValue = domain[values[0]!];
+			const toValue = domain[values[1]!];
+			if (fromValue !== undefined && toValue !== undefined) {
+				onChange([fromValue, toValue]);
 			}
 		},
-		[domain, onChange],
+		[onChange, domain],
 	);
+	useEffect(() => {
+		callback(throttledValues);
+	}, [throttledValues, callback]);
 
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
@@ -109,7 +132,7 @@ export function RangeSlider<Value>({
 			direction={direction === "horizontal" ? Direction.Right : Direction.Down}
 			values={values}
 			onChange={onValueChange}
-			onFinalChange={onCommit}
+			onFinalChange={() => callback(values)}
 			min={0}
 			step={1}
 			max={max}
@@ -120,6 +143,10 @@ export function RangeSlider<Value>({
 					min={0}
 					max={max}
 					value={values}
+					onWheel={(e) => {
+						const delta = Math.sign(e.deltaY || e.deltaX);
+						onShift(delta);
+					}}
 					domain={domain}
 					className={className}
 					direction={direction}
@@ -130,6 +157,7 @@ export function RangeSlider<Value>({
 			renderThumb={({ props: thumbProps, index }) => (
 				<Thumb
 					{...thumbProps}
+					key={index}
 					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
 					hideLabel={index === 0 && labelsOverlap}

@@ -38,11 +38,8 @@ export function Track({
 			{...props}
 			className={cx("track", isDragged && "dragged", className, direction)}
 		>
-			<>
-				<Thumb className={cx("limit")} kind="from" />
-				<span className={cx("label", "min")}>{String(domain[min])}</span>
-			</>
-
+			<Thumb className={cx("limit")} kind="from" />
+			<span className={cx("label", "min")}>{String(domain[min])}</span>
 			{children}
 			<div
 				className={cx("bar")}
