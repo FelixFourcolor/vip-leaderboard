@@ -35,7 +35,12 @@ async function load_data() {
 
 		if (!existing) {
 			const name = nickname;
-			avatarUrl = avatarUrl.substring(0, avatarUrl.indexOf("?"));
+
+			const avatarParamIndex = avatarUrl.lastIndexOf("?");
+			avatarUrl = avatarUrl.substring(
+				"https://cdn.discordapp.com/".length,
+				avatarParamIndex === -1 ? undefined : avatarParamIndex,
+			);
 			usersMap.set(id, { id, name, avatarUrl, color });
 		} else if (color) {
 			// idk why color is sometimes null, so update it when it's available

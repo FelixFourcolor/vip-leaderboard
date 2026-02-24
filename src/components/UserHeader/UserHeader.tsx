@@ -8,7 +8,10 @@ export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
 	return (
 		<div className={cx("header")}>
 			{avatarUrl && (
-				<img src={`${avatarUrl}?size=24`} className={cx("avatar")} />
+				<img
+					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}
+					className={cx("avatar")}
+				/>
 			)}
 			<div style={{ color: color ?? undefined }} className={cx("name")}>
 				{name}

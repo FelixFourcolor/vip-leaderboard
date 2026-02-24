@@ -32,7 +32,9 @@ function ZackModeToggle() {
 		getUser("zackwb").then(setZackData);
 	}, []);
 
-	const avatarUrl = zackData ? `${zackData.avatarUrl}?size=16` : undefined;
+	const avatarUrl = zackData
+		? `https://cdn.discordapp.com/${zackData.avatarUrl}?size=16`
+		: undefined;
 	// prefetch avatar to avoid delay when toggling
 	useEffect(() => {
 		if (avatarUrl) {
