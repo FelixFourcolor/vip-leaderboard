@@ -2,7 +2,7 @@ export type User = {
 	name: string;
 	nickname: string;
 	avatarUrl: string;
-	color: string;
+	color: string | null;
 };
 
 type Message = {

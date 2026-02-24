@@ -10,7 +10,7 @@ export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
 			{avatarUrl && (
 				<img src={`${avatarUrl}?size=24`} className={cx("avatar")} />
 			)}
-			<div style={{ color }} className={cx("name")}>
+			<div style={{ color: color ?? undefined }} className={cx("name")}>
 				{name}
 			</div>
 		</div>

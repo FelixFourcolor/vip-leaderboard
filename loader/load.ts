@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
-import { sql } from "drizzle-orm";
+import { isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { activity, user } from "@/db/schema";
 import type { Data, User } from "./type.js";
@@ -30,10 +30,6 @@ async function load_data() {
 		avatarUrl,
 		color,
 	}: User): string | undefined {
-		if (!color) {
-			return; // VIPs only
-		}
-
 		const id = name.toLowerCase(); // sql primary key may be case-insensitive
 		const existing = usersMap.get(id);
 
@@ -41,6 +37,9 @@ async function load_data() {
 			const name = nickname;
 			avatarUrl = avatarUrl.substring(0, avatarUrl.indexOf("?"));
 			usersMap.set(id, { id, name, avatarUrl, color });
+		} else if (color) {
+			// idk why color is sometimes null, so update it when it's available
+			existing.color = color;
 		}
 
 		return id;
@@ -99,6 +98,7 @@ async function main() {
 			},
 		});
 	await db.insert(activity).values(reactions).onConflictDoNothing();
+	await db.delete(user).where(isNull(user.color));
 	sqlite.close();
 }
 

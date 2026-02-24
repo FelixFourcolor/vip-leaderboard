@@ -41,7 +41,7 @@ function ZackModeToggle() {
 		}
 	}, [avatarUrl]);
 
-	const color = isZack ? zackData?.color : undefined;
+	const color = isZack ? (zackData?.color ?? undefined) : undefined;
 	const image = isZack && avatarUrl ? `url("${avatarUrl}")` : undefined;
 
 	return (

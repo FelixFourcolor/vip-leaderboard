@@ -9,14 +9,14 @@ export const user = sqliteTable("user", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	avatarUrl: text("avatar_url").notNull(),
-	color: text("color").notNull(),
+	color: text("color"),
 });
 
 export const activity = sqliteTable(
 	"activity",
 	{
 		date: integer("date", { mode: "timestamp" }).notNull(),
-		userId: text("user_id").references(() => user.id),
+		userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
 	},
 	(t) => [primaryKey({ columns: [t.date, t.userId] })],
 );
