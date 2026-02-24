@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
-import { windows } from "@/utils/iter";
+import { windows3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
@@ -52,9 +52,17 @@ export function Chart() {
 						};
 					}
 
+					let accumulator = 0;
 					return {
 						...userData,
-						monthlyCount: Array.from(accumulate(months, countByMonth)),
+						monthlyCount: months.map((month) => {
+							const count = countByMonth[month];
+							if (count != null) {
+								accumulator += count;
+								return { month, count: accumulator };
+							}
+							return { month, count: null };
+						}),
 					};
 				}),
 			);
@@ -64,11 +72,9 @@ export function Chart() {
 	const isolatedPoints = useMemo(() => {
 		return mapValues(queryData, ({ monthlyCount }) => {
 			return new Set(
-				Array.from(windows(monthlyCount, 3))
-					.filter(
-						([prev, , next]) => prev?.count == null && next?.count == null,
-					)
-					.map(([, current]) => current.month),
+				windows3(monthlyCount)
+					.filter(([pre, cur, nex]) => !pre?.count && cur.count && !nex?.count)
+					.map(([, cur]) => cur.month),
 			);
 		});
 	}, [queryData]);
@@ -149,27 +155,4 @@ export function Chart() {
 			</div>
 		</ChartContext.Provider>
 	);
-}
-
-function* accumulate(
-	months: string[],
-	countByMonth: Record<string, number | null>,
-) {
-	let accumulator = 0;
-	for (const [month, nextMonth] of windows(months, 2)) {
-		if (!month) {
-			continue;
-		}
-		const count = countByMonth[month];
-		if (count != null) {
-			accumulator += count;
-			yield { month, count: accumulator };
-			continue;
-		}
-		if (!nextMonth) {
-			yield { month, count: accumulator };
-			continue;
-		}
-		yield { month, count: null };
-	}
 }
