@@ -5,9 +5,9 @@ interface ChartContextValue {
 	queryData: MonthlyRanking;
 	isolatedPoints: Record<string, Set<string>>;
 	idByColor: Record<string, string>;
-	highlightedUser: string | null;
-	setHighlightedUser: (user: string | null) => void;
-	hoveredPoint: { x: Date; y: number } | null;
+	highlightedUser: string | undefined;
+	setHighlightedUser: (user: string | undefined) => void;
+	hoveredPoint: { x: Date; y: number } | undefined;
 }
 
 export const ChartContext = createContext<ChartContextValue | null>(null);

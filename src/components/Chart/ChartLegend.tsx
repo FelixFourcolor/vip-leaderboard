@@ -27,7 +27,7 @@ function LegendEntry({ id, count, rank, ...userData }: EntryProps) {
 			style={{ ["--series-color" as string]: getSeriesColor({ rank }) }}
 			className={cx("info-box", { highlighted: highlightedUser === id })}
 			onMouseEnter={() => setHighlightedUser(id)}
-			onMouseLeave={() => setHighlightedUser(null)}
+			onMouseLeave={() => setHighlightedUser(undefined)}
 		>
 			<UserHeader {...userData} />
 			<table>

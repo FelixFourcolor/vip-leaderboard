@@ -20,11 +20,8 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [highlightedUser, setHighlightedUser] = useState<string | null>(null);
-	const [hoveredPoint, setHoveredPoint] = useState<{
-		x: Date;
-		y: number;
-	} | null>(null);
+	const [highlightedUser, setHighlightedUser] = useState<string>();
+	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
 
 	const [params] = useChartControls();
 	const months = useMemo(
@@ -130,12 +127,12 @@ export function Chart() {
 	);
 
 	const onMouseLeave = useCallback(() => {
-		setHighlightedUser(null);
-		setHoveredPoint(null);
+		setHighlightedUser(undefined);
+		setHoveredPoint(undefined);
 	}, []);
 
 	return (
-		<ChartContext.Provider
+		<ChartContext
 			value={{
 				queryData,
 				hoveredPoint,
@@ -154,6 +151,6 @@ export function Chart() {
 				<ChartLegend />
 				<ChartControls />
 			</div>
-		</ChartContext.Provider>
+		</ChartContext>
 	);
 }
