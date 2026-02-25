@@ -6,6 +6,7 @@ interface ChartContextValue {
 	isolatedPoints: Record<string, Set<string>>;
 	idByColor: Record<string, string>;
 	highlightedUser: string | null;
+	setHighlightedUser: (user: string | null) => void;
 	hoveredPoint: { x: Date; y: number } | null;
 }
 

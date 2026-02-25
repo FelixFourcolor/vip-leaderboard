@@ -54,14 +54,14 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 		<Tooltip
 			element={({ ref }) => (
 				<>
-					<circle ref={ref} r={8} fill={seriesColor} />
-					<circle r={5} fill={pointColor} />
+					<circle ref={ref} r={7} fill={seriesColor} />
+					<circle r={4} fill={pointColor} />
 				</>
 			)}
 			content={({ ref, style }) => (
 				<div
 					ref={ref}
-					style={{ borderColor: seriesColor, ...style }}
+					style={{ ["--series-color" as string]: seriesColor, ...style }}
 					className={cx("info-box", "tooltip")}
 				>
 					<UserHeader {...userData} />

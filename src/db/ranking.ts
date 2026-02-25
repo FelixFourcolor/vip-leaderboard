@@ -1,9 +1,8 @@
 import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
-import { pick } from "@/utils/object";
 import { offset } from "@/utils/time";
 import { db } from "./db";
 import { activity, user } from "./schema";
-import type { UserData } from "./user";
+import { type UserData, userFields } from "./user";
 
 export type RankingParams = {
 	since?: string;
@@ -27,11 +26,7 @@ export async function getRanking({
 	until = until ? offset(until, { months: 1 }) : undefined;
 
 	const rows = (await db)
-		.select({
-			...pick(user, ["color", "name", "avatarUrl"]),
-			id: user.id,
-			count: count(activity.date),
-		})
+		.select({ ...userFields, count: count(activity.date) })
 		.from(activity)
 		.innerJoin(user, eq(user.id, activity.userId))
 		.where(
@@ -47,6 +42,6 @@ export async function getRanking({
 		.all();
 
 	return Object.fromEntries(
-		rows.map(({ id, ...data }, index) => [id, { ...data, rank: index + from }]),
+		rows.map((row, index) => [row.id, { ...row, rank: index + from }]),
 	);
 }

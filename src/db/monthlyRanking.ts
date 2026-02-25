@@ -5,6 +5,7 @@ import { offset } from "@/utils/time";
 import { db } from "./db";
 import type { RankingData, RankingParams } from "./ranking";
 import { activity, user } from "./schema";
+import { userFields } from "./user";
 
 type MonthlyCount = { month: string; count: number | null }[];
 
@@ -56,7 +57,7 @@ export async function getMonthlyData({
 	const rows = (await db)
 		.with(monthCount, topUsers)
 		.select({
-			...pick(user, ["id", "name", "color", "avatarUrl"]),
+			...userFields,
 			...pick(monthCount, ["month", "count"]),
 			total: topUsers.total,
 		})
@@ -71,22 +72,21 @@ export async function getMonthlyData({
 	}
 
 	return Object.fromEntries(
-		Object.entries(groupBy(rows, (row) => row.id)).map(
-			([userId, rows], index) => {
-				const { name, color, avatarUrl, total: count } = rows[0]!;
-				const monthlyCount = rows.map(({ month, count }) => ({ month, count }));
-				return [
-					userId,
-					{
-						name,
-						color,
-						avatarUrl,
-						count,
-						rank: from + index,
-						monthlyCount,
-					},
-				];
-			},
-		),
+		Object.entries(groupBy(rows, (row) => row.id)).map(([id, rows], index) => {
+			const { name, color, avatarUrl, total: count } = rows[0]!;
+			const monthlyCount = rows.map(({ month, count }) => ({ month, count }));
+			return [
+				id,
+				{
+					id,
+					name,
+					color,
+					avatarUrl,
+					count,
+					rank: from + index,
+					monthlyCount,
+				},
+			];
+		}),
 	);
 }

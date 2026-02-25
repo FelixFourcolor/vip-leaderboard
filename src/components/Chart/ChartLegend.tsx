@@ -11,8 +11,8 @@ export function ChartLegend() {
 	const { queryData } = useChart();
 	return (
 		<div className={cx("legend")}>
-			{Object.entries(queryData).map(([userId, userData]) => (
-				<LegendEntry key={userId} {...userData} />
+			{Object.values(queryData).map((user) => (
+				<LegendEntry key={user.id} {...user} />
 			))}
 		</div>
 	);
@@ -20,10 +20,15 @@ export function ChartLegend() {
 
 type EntryProps = RankingData[string];
 
-function LegendEntry({ count, rank, ...userData }: EntryProps) {
-	const seriesColor = getSeriesColor({ rank });
+function LegendEntry({ id, count, rank, ...userData }: EntryProps) {
+	const { highlightedUser, setHighlightedUser } = useChart();
 	return (
-		<div style={{ borderColor: seriesColor }} className={cx("info-box")}>
+		<div
+			style={{ ["--series-color" as string]: getSeriesColor({ rank }) }}
+			className={cx("info-box", { highlighted: highlightedUser === id })}
+			onMouseEnter={() => setHighlightedUser(id)}
+			onMouseLeave={() => setHighlightedUser(null)}
+		>
 			<UserHeader {...userData} />
 			<table>
 				<tbody>

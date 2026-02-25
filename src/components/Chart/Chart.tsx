@@ -142,6 +142,7 @@ export function Chart() {
 				isolatedPoints,
 				idByColor,
 				highlightedUser,
+				setHighlightedUser,
 			}}
 		>
 			<div className={cx("container")}>

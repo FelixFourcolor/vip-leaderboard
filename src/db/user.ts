@@ -3,17 +3,16 @@ import { pick } from "@/utils/object";
 import { db } from "./db";
 import { user } from "./schema";
 
-export type UserData = Pick<
-	typeof user.$inferInsert,
-	"name" | "avatarUrl" | "color"
->;
+export type UserData = typeof user.$inferInsert;
 
 export async function getUser(userId: string): Promise<UserData | undefined> {
 	const rows = (await db)
-		.select({ ...pick(user, ["name", "avatarUrl", "color"]) })
+		.select(userFields)
 		.from(user)
 		.where(eq(user.id, userId))
 		.all();
 
 	return rows[0];
 }
+
+export const userFields = pick(user, ["id", "name", "avatarUrl", "color"]);
