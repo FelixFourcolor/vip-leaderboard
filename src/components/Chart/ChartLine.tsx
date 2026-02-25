@@ -86,10 +86,10 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
 			const color = getSeriesColor(queryData[id]!);
-			if (!highlightedUser || highlightedUser === id) {
+			if (highlightedUser === id || !highlightedUser) {
 				return color;
 			}
-			return `rgb(from ${color} r g b / ${isZack ? 0.2 : 0.1})`;
+			return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.15})`;
 		},
 		[queryData, highlightedUser, isZack],
 	);

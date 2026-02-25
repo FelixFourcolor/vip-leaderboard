@@ -9,6 +9,10 @@
 	.chart {
 		grid-column: 1;
 		grid-row: 1;
+
+		path {
+			transition: stroke 0.2s ease;
+		}
 	}
 
 	.slider {
