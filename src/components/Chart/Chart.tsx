@@ -101,11 +101,11 @@ export function Chart() {
 			if (!highlightedUser) {
 				return chartData;
 			}
-			const { [highlightedUser]: first, ...rest } = chartData;
-			if (!first) {
+			const { [highlightedUser]: highlighted, ...rest } = chartData;
+			if (!highlighted) {
 				return chartData;
 			}
-			return { [highlightedUser]: first, ...rest };
+			return { ...rest, [highlightedUser]: highlighted };
 		})();
 
 		return Object.entries(sortedData).map(([id, data]) => ({ id, data }));

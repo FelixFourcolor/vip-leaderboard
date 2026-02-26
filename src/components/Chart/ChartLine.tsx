@@ -1,8 +1,11 @@
+import { useAnimatedPath } from "@nivo/core";
 import {
+	type LineCustomSvgLayerProps,
 	type Point,
 	type PointOrSliceMouseHandler,
 	ResponsiveLine,
 } from "@nivo/line";
+import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import {
@@ -86,10 +89,13 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
 			const color = getSeriesColor(queryData[id]!);
-			if (highlightedUser === id || !highlightedUser) {
+			if (highlightedUser === id) {
 				return color;
 			}
-			return `rgb(from ${color} r g b / ${isZack ? 0.25 : 0.15})`;
+			if (!highlightedUser) {
+				return `rgb(from ${color} r g b / 0.8)`;
+			}
+			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;
 		},
 		[queryData, highlightedUser, isZack],
 	);
@@ -118,7 +124,6 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 				data={data}
 				colors={lineColor}
 				pointLabel={pointLabel}
-				pointSymbol={ChartPoint}
 				onMouseMove={onMouseMove}
 				gridXValues={gridXValues}
 				axisBottom={axisBottom}
@@ -128,6 +133,61 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 		</div>
 	);
 };
+
+function CustomLinesLayer({
+	series,
+	lineGenerator,
+}: LineCustomSvgLayerProps<ChartSeries>) {
+	return (
+		<g>
+			{series.map(({ id, data, color }) => (
+				<Line
+					key={id}
+					id={id}
+					path={lineGenerator(data.map((d) => d.position)) ?? ""}
+					color={color}
+				/>
+			))}
+		</g>
+	);
+}
+
+function Line({
+	id,
+	path,
+	color,
+}: {
+	id: string;
+	path: string;
+	color: string;
+}) {
+	const animatedPath = useAnimatedPath(path);
+
+	const { highlightedUser } = useChart();
+	const highlighted = highlightedUser === id;
+	const dimmed = highlightedUser && !highlighted;
+
+	return (
+		<g>
+			{highlighted && (
+				<animated.path
+					d={animatedPath}
+					fill="none"
+					stroke={color}
+					strokeWidth={6}
+					strokeOpacity={0.25}
+					style={{ filter: "blur(3px)" }}
+				/>
+			)}
+			<animated.path
+				d={animatedPath}
+				fill="none"
+				stroke={color}
+				strokeWidth={dimmed ? 1 : 2}
+			/>
+		</g>
+	);
+}
 
 const chartConfigs = {
 	tooltip: () => null,
@@ -139,6 +199,8 @@ const chartConfigs = {
 	xScale: { type: "time", useUTC: false },
 	margin: { top: 24, right: 28, bottom: 24, left: 64 },
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
+	pointSymbol: ChartPoint,
+	layers: ["grid", "axes", "areas", CustomLinesLayer, "points", "mesh"],
 	theme: {
 		background: "var(--bg-secondary)",
 		text: {

@@ -11,7 +11,10 @@
 		grid-row: 1;
 
 		path {
-			transition: stroke 0.2s ease;
+			transition:
+				stroke 0.2s ease,
+				stroke-width 0.2s ease,
+				stroke-opacity 0.2s ease;
 		}
 	}
 
@@ -122,7 +125,6 @@
 		width: 122px;
 
 		&.highlighted {
-			border-style: solid;
 			box-shadow: 0 0 10px var(--series-color);
 		}
 	}
