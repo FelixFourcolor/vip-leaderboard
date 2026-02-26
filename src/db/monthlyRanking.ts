@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
 import { pick } from "@/utils/object";
 import { offset } from "@/utils/time";
-import { db } from "./db";
+import { loadDb } from "./db";
 import type { RankingData, RankingParams } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
@@ -22,9 +22,10 @@ export async function getMonthlyData({
 }: RankingParams): Promise<MonthlyRanking> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
+	const db = await loadDb();
 
-	const monthCount = (await db).$with("month_count").as(
-		(await db)
+	const monthCount = db.$with("month_count").as(
+		db
 			.select({
 				id: activity.userId,
 				// biome-ignore format: one line

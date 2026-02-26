@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
 import { offset } from "@/utils/time";
-import { db } from "./db";
+import { loadDb } from "./db";
 import { activity, user } from "./schema";
 import { type UserData, userFields } from "./user";
 
@@ -24,8 +24,9 @@ export async function getRanking({
 }: RankingParams): Promise<RankingData> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
+	const db = await loadDb();
 
-	const rows = (await db)
+	const rows = db
 		.select({ ...userFields, count: count(activity.date) })
 		.from(activity)
 		.innerJoin(user, eq(user.id, activity.userId))
