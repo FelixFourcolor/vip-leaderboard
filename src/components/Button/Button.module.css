@@ -20,9 +20,10 @@
 	&:not(:disabled) {
 		&:hover {
 			border-color: var(--accent);
+			background-color: var(--bg-secondary);
 		}
 		&:active {
-			background-color: var(--bg-secondary);
+			background-color: rgb(from var(--text-primary) r g b / 0.1);
 		}
 	}
 }
