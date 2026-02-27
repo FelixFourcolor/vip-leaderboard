@@ -43,8 +43,8 @@ type HoveredPointProps = {
 };
 
 function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
-	const { queryData } = useChart();
-	const userData = queryData[seriesId]!;
+	const { chartData } = useChart();
+	const userData = chartData[seriesId]!;
 	const seriesColor = getSeriesColor(userData);
 
 	const [isZack] = useZackMode();

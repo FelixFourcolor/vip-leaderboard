@@ -12,6 +12,7 @@
 	}
 
 	.name {
+		line-height: 17.6px;
 		font-size: 15px;
 
 		[data-zack-mode="true"] & {

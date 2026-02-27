@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 
 interface ChartContextValue {
-	queryData: MonthlyRanking;
+	chartData: MonthlyRanking;
 	isolatedPoints: Record<string, Set<string>>;
 	idByColor: Record<string, string>;
 	highlightedUser: string | undefined;

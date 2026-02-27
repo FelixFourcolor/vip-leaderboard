@@ -1,4 +1,4 @@
-export const COLORS = [
+const colors = [
 	"#1f77b4",
 	"#ff7f0e",
 	"#2ca02c",
@@ -11,6 +11,8 @@ export const COLORS = [
 	"#8c564b",
 ] as const;
 
+export const COLORS_COUNT = colors.length;
+
 export function getSeriesColor({ rank }: { rank: number }) {
-	return COLORS[(rank - 1) % COLORS.length]!;
+	return colors[(rank - 1) % COLORS_COUNT]!;
 }

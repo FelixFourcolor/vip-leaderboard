@@ -20,96 +20,97 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [highlightedUser, setHighlightedUser] = useState<string>();
-	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
-
-	const [params] = useChartControls();
-	const months = useMemo(
-		() => monthsInRange(params.since, params.until),
-		[params.since, params.until],
-	);
-	const [queryData = {}, setQueryData] = useState<MonthlyRanking>();
+	const [{ since, until, from, to, cumulative }] = useChartControls();
+	const [totalData = {}, setTotalData] = useState<MonthlyRanking>();
 
 	useEffect(() => {
-		getMonthlyData(params).then((data) => {
-			const { cumulative } = params;
-			setQueryData(
-				mapValues(data, ({ monthlyCount, ...userData }) => {
-					const countByMonth = Object.fromEntries(
-						monthlyCount.map(({ month, count }) => [month, count]),
-					);
+		getMonthlyData({ since, until }).then(setTotalData);
+	}, [since, until]);
 
-					if (!cumulative) {
-						return {
-							...userData,
-							monthlyCount: months.map((month) => ({
-								month,
-								count: countByMonth[month] ?? null,
-							})),
-						};
-					}
-
-					let accumulator = 0;
-					return {
-						...userData,
-						monthlyCount: months.map((month) => {
-							const count = countByMonth[month];
-							if (count != null) {
-								accumulator += count;
-								return { month, count: accumulator };
-							}
-							return { month, count: null };
-						}),
-					};
-				}),
+	const chartData = useMemo<MonthlyRanking>(() => {
+		const months = monthsInRange(since, until);
+		const filteredRankedData = Object.fromEntries(
+			Object.entries(totalData).filter(
+				([, { rank }]) => from <= rank && rank <= to,
+			),
+		);
+		return mapValues(filteredRankedData, ({ monthlyCount, ...userData }) => {
+			const countByMonth = Object.fromEntries(
+				monthlyCount.map(({ month, count }) => [month, count]),
 			);
+
+			if (!cumulative) {
+				return {
+					...userData,
+					monthlyCount: months.map((month) => ({
+						month,
+						count: countByMonth[month] ?? null,
+					})),
+				};
+			}
+
+			let accumulator = 0;
+			return {
+				...userData,
+				monthlyCount: months.map((month) => {
+					const count = countByMonth[month];
+					if (count != null) {
+						accumulator += count;
+						return { month, count: accumulator };
+					}
+					return { month, count: null };
+				}),
+			};
 		});
-	}, [params, months]);
+	}, [totalData, cumulative, from, to, since, until]);
 
 	const isolatedPoints = useMemo(() => {
-		return mapValues(queryData, ({ monthlyCount }) => {
+		return mapValues(chartData, ({ monthlyCount }) => {
 			return new Set(
 				windows3(monthlyCount)
 					.filter(([pre, cur, nex]) => !pre?.count && cur.count && !nex?.count)
 					.map(([, cur]) => cur.month),
 			);
 		});
-	}, [queryData]);
+	}, [chartData]);
 
 	// workaround for nivo's bug of not exposing seriesId for each point
 	const idByColor = useMemo(() => {
 		// requires number of users <= 10 = number of colors
 		return Object.fromEntries(
-			Object.entries(queryData).map(([userId, userData]) => [
+			Object.entries(chartData).map(([userId, userData]) => [
 				getSeriesColor(userData),
 				userId,
 			]),
 		);
-	}, [queryData]);
+	}, [chartData]);
 
-	const chartData = useMemo(() => {
-		return mapValues(queryData, ({ monthlyCount }) => {
+	const [highlightedUser, setHighlightedUser] = useState<string>();
+	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
+
+	const linesData = useMemo(() => {
+		return mapValues(chartData, ({ monthlyCount }) => {
 			return monthlyCount.map(({ month, count }) => ({
 				x: new Date(month),
 				y: count,
 			}));
 		});
-	}, [queryData]);
+	}, [chartData]);
 
-	const sortedChartData = useMemo<ChartSeries[]>(() => {
+	const sortedLinesData = useMemo<ChartSeries[]>(() => {
 		const sortedData = (() => {
 			if (!highlightedUser) {
-				return chartData;
+				return linesData;
 			}
-			const { [highlightedUser]: highlighted, ...rest } = chartData;
+			const { [highlightedUser]: highlighted, ...rest } = linesData;
 			if (!highlighted) {
-				return chartData;
+				return linesData;
 			}
 			return { ...rest, [highlightedUser]: highlighted };
 		})();
 
 		return Object.entries(sortedData).map(([id, data]) => ({ id, data }));
-	}, [chartData, highlightedUser]);
+	}, [linesData, highlightedUser]);
 
 	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
 		(datum) => {
@@ -134,7 +135,7 @@ export function Chart() {
 	return (
 		<ChartContext
 			value={{
-				queryData,
+				chartData,
 				hoveredPoint,
 				isolatedPoints,
 				idByColor,
@@ -144,11 +145,11 @@ export function Chart() {
 		>
 			<div className={cx("container")}>
 				<ChartLine
-					data={sortedChartData}
+					linesData={sortedLinesData}
 					onMouseMove={onMouseMove}
 					onMouseLeave={onMouseLeave}
 				/>
-				<ChartLegend />
+				<ChartLegend entries={totalData} />
 				<ChartControls />
 			</div>
 		</ChartContext>

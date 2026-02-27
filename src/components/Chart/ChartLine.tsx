@@ -29,30 +29,30 @@ import { useChart } from "./context";
 const cx = classNames.bind(styles);
 
 type Props = {
-	data: ChartSeries[];
+	linesData: ChartSeries[];
 	onMouseMove: PointOrSliceMouseHandler<ChartSeries>;
 	onMouseLeave: () => void;
 };
 
-export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
+export const ChartLine = ({ linesData, onMouseMove, onMouseLeave }: Props) => {
 	const [{ cumulative }] = useChartControls();
 	const [isZack] = useZackMode();
-	const { queryData, highlightedUser } = useChart();
+	const { chartData, highlightedUser } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
 	const [chartWidth, setChartWidth] = useState(0);
 	const [animate, setAnimate] = useState(false);
 
 	const xLabels = useMemo(
-		() => getAnyValue(queryData)?.monthlyCount.map(({ month }) => month) ?? [],
-		[queryData],
+		() => getAnyValue(chartData)?.monthlyCount.map(({ month }) => month) ?? [],
+		[chartData],
 	);
 
 	const pointsCount = useMemo(() => {
-		return mapValues(queryData, ({ monthlyCount }) => {
+		return mapValues(chartData, ({ monthlyCount }) => {
 			return monthlyCount.filter(({ count }) => count !== null).length;
 		});
-	}, [queryData]);
+	}, [chartData]);
 
 	useEffect(() => {
 		const chart = chartRef.current;
@@ -88,7 +88,7 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 
 	const lineColor = useCallback(
 		({ id }: { id: string }) => {
-			const color = getSeriesColor(queryData[id]!);
+			const color = getSeriesColor(chartData[id]!);
 			if (highlightedUser === id) {
 				return color;
 			}
@@ -97,7 +97,7 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 			}
 			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;
 		},
-		[queryData, highlightedUser, isZack],
+		[chartData, highlightedUser, isZack],
 	);
 
 	const [gridXValues, axisBottom] = useMemo(() => {
@@ -121,7 +121,7 @@ export const ChartLine = ({ data, onMouseMove, onMouseLeave }: Props) => {
 	return (
 		<div ref={chartRef} className={cx("chart")} onMouseLeave={onMouseLeave}>
 			<ResponsiveLine
-				data={data}
+				data={linesData}
 				colors={lineColor}
 				pointLabel={pointLabel}
 				onMouseMove={onMouseMove}
