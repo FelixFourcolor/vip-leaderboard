@@ -76,7 +76,7 @@ export const ChartLine = ({ linesData, onMouseMove, onMouseLeave }: Props) => {
 			if (highlightedUser !== seriesId || y === null) {
 				return "";
 			}
-			const interval = Math.ceil(xLabels.length / (cumulative ? 8 : 16));
+			const interval = Math.ceil(xLabels.length / (cumulative ? 10 : 20));
 			const count = pointsCount[seriesId] ?? xLabels.length;
 			if ((count - 1 - indexInSeries) % interval === 0) {
 				return String(y);
