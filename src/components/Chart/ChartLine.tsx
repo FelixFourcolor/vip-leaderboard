@@ -170,8 +170,8 @@ function Line({
 	return (
 		<g>
 			{highlighted && (
-				<animated.path
-					d={animatedPath}
+				<path
+					d={path}
 					fill="none"
 					stroke={color}
 					strokeWidth={6}
