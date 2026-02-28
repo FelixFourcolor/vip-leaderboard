@@ -1,10 +1,10 @@
 footer {
-	padding: 1rem;
+	padding: 12px;
 	font-size: var(--text-small);
 
 	hr {
-		margin-top: -1rem;
-		margin-bottom: 1rem;
+		margin-top: -12px;
+		margin-bottom: 12px;
 		border: none;
 		height: 1px;
 		background-color: var(--text-tertiary);
@@ -14,6 +14,6 @@ footer {
 		display: flex;
 		align-items: center;
 		justify-content: space-evenly;
-		gap: 1rem;
+		gap: 12px;
 	}
 }

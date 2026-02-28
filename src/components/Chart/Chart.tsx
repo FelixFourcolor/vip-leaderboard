@@ -107,7 +107,7 @@ export function Chart() {
 			if (!highlighted) {
 				return linesData;
 			}
-			return { ...rest, [highlightedUser]: highlighted };
+			return { [highlightedUser]: highlighted, ...rest };
 		})();
 
 		return Object.entries(sortedData).map(([id, data]) => ({ id, data }));

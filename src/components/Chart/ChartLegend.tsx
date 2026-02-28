@@ -35,7 +35,7 @@ export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
 		<div className={cx("side-panel")} ref={ref}>
 			<div
 				className={cx("legend")}
-				style={{ maxHeight }}
+				style={{ maxHeight, gap: GAP }}
 				onScroll={({ currentTarget: { scrollTop } }) => {
 					setIsScrolling(true);
 					setParams({
@@ -53,7 +53,38 @@ export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
 	);
 }
 
-const ENTRY_HEIGHT = 53;
+type EntryProps = RankingData[string] & { scrolling: boolean };
+
+function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
+	const { highlightedUser, setHighlightedUser } = useChart();
+	return (
+		<div
+			style={{
+				boxSizing: "border-box",
+				minHeight: `${ENTRY_HEIGHT}px`,
+				maxHeight: `${ENTRY_HEIGHT}px`,
+				["--series-color" as string]: getSeriesColor({ rank }),
+			}}
+			className={cx("info-box", {
+				highlighted: !scrolling && highlightedUser === id,
+			})}
+			onMouseEnter={() => !scrolling && setHighlightedUser(id)}
+			onMouseLeave={() => setHighlightedUser(undefined)}
+		>
+			<UserHeader {...userData} />
+			<table>
+				<tbody>
+					<tr>
+						<th>#{rank}</th>
+						<td>{count}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	);
+}
+
+const ENTRY_HEIGHT = 54; // pre-measured based on styles, not worth measuring at runtime
 const GAP = 24;
 
 export function useVisibleCount() {
@@ -81,30 +112,4 @@ export function useVisibleCount() {
 	}, []);
 
 	return [visibleCount, containerRef] as const;
-}
-
-type EntryProps = RankingData[string] & { scrolling: boolean };
-
-function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
-	const { highlightedUser, setHighlightedUser } = useChart();
-	return (
-		<div
-			style={{ ["--series-color" as string]: getSeriesColor({ rank }) }}
-			className={cx("info-box", {
-				highlighted: !scrolling && highlightedUser === id,
-			})}
-			onMouseEnter={() => !scrolling && setHighlightedUser(id)}
-			onMouseLeave={() => setHighlightedUser(undefined)}
-		>
-			<UserHeader {...userData} />
-			<table>
-				<tbody>
-					<tr>
-						<th>#{rank}</th>
-						<td>{count}</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	);
 }

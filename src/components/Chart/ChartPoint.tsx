@@ -16,7 +16,8 @@ export function ChartPoint({
 	color,
 	datum: { x, y },
 }: DotsItemSymbolProps<Point<ChartSeries>>) {
-	const { hoveredPoint, isolatedPoints, idByColor } = useChart();
+	const { highlightedUser, hoveredPoint, isolatedPoints, idByColor } =
+		useChart();
 
 	const seriesId = idByColor[color];
 	if (!seriesId) {
@@ -32,6 +33,9 @@ export function ChartPoint({
 		return <HoveredPoint x={date} y={y} seriesId={seriesId} />;
 	}
 	if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
+		if (highlightedUser === seriesId) {
+			return <circle r={6} fill={color} style={{ zIndex: 91 }} />;
+		}
 		return <circle r={3} fill={color} />;
 	}
 }
@@ -48,14 +52,14 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 	const seriesColor = getSeriesColor(userData);
 
 	const [isZack] = useZackMode();
-	const pointColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
+	const fillColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
 
 	return (
 		<Tooltip
 			element={({ ref }) => (
 				<>
 					<circle ref={ref} r={7} fill={seriesColor} />
-					<circle r={4} fill={pointColor} />
+					<circle r={4} fill={fillColor} />
 				</>
 			)}
 			content={({ ref, style }) => (

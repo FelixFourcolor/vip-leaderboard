@@ -12,8 +12,7 @@
 	}
 
 	.name {
-		line-height: 17.6px;
-		font-size: 15px;
+		font-size: 14.5px;
 
 		[data-is-zack="true"] & {
 			font-weight: bold;

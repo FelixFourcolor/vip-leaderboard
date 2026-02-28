@@ -34,10 +34,8 @@
 			padding: 16px;
 			display: flex;
 			flex-direction: column;
-			gap: 24px;
 			overflow-y: auto;
 			overflow-x: hidden;
-			justify-content: safe center;
 		}
 	}
 
@@ -63,19 +61,19 @@
 }
 
 .info-box {
-	padding: 6px 6px 3px 6px;
+	padding: 6px 6px 4px 6px;
 	border-radius: 4px;
 	border: 2px dashed var(--series-color);
 	width: fit-content;
 	white-space: nowrap;
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	align-items: center;
 	gap: 4px;
 
 	table {
-		line-height: 16.8px;
-		font-size: 15px;
+		font-size: 14.5px;
 		[data-zack-mode="true"] & {
 			font-size: 14px; /* smaller because bold */
 		}
@@ -108,11 +106,14 @@
 
 	.legend & {
 		background-color: var(--bg-primary);
-		/* hardcoded "large enough" value for most usernames */
-		width: 122px;
+		/* hardcoded large enough value for most usernames */
+		width: 140px;
 
 		&.highlighted {
-			box-shadow: 0 0 10px var(--series-color);
+			box-shadow: 0 0 12px var(--series-color);
+			[data-is-zack="true"] & {
+				box-shadow: 0 0 10px var(--series-color);
+			}
 		}
 	}
 }

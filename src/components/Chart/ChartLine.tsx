@@ -143,7 +143,7 @@ function CustomLinesLayer({
 						return 1;
 					}
 					if (!dimmed) {
-						return isZack ? 1 : 0.9;
+						return 0.9;
 					}
 					return isZack ? 0.5 : 0.4;
 				})();
@@ -151,7 +151,7 @@ function CustomLinesLayer({
 					if (!highlighted) {
 						return 0;
 					}
-					return isZack ? 0.2 : 0.4;
+					return isZack ? 0.25 : 0.4;
 				})();
 
 				return (
