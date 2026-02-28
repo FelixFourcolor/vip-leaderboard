@@ -1,7 +1,7 @@
 node_modules
 dist
 temp
-db
+public/db
 .vscode
 pnpm-lock.yaml
 **/data/*.json

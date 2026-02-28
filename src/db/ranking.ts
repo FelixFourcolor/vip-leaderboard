@@ -4,21 +4,13 @@ import { loadDb } from "./db";
 import { activity, user } from "./schema";
 import { type UserData, userFields } from "./user";
 
-export type RankingParams = {
-	since?: string;
-	until?: string;
-	from?: number;
-	to?: number;
-};
-
+export type RankingParams = { since?: string; until?: string };
 export type RankingData = Record<
 	string,
 	{ rank: number; count: number } & UserData
 >;
 
 export async function getRanking({
-	from = 1,
-	to = 1000,
 	since,
 	until,
 }: RankingParams): Promise<RankingData> {
@@ -38,11 +30,9 @@ export async function getRanking({
 		)
 		.groupBy(user.id)
 		.orderBy(desc(count(activity.date)), asc(user.id))
-		.limit(to - from + 1)
-		.offset(from - 1)
 		.all();
 
 	return Object.fromEntries(
-		rows.map((row, index) => [row.id, { ...row, rank: index + from }]),
+		rows.map((row, index) => [row.id, { ...row, rank: index + 1 }]),
 	);
 }

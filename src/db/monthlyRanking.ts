@@ -15,8 +15,6 @@ export type MonthlyRanking = Record<
 >;
 
 export async function getMonthlyData({
-	from = 1,
-	to = 1000,
 	since,
 	until,
 }: RankingParams): Promise<MonthlyRanking> {
@@ -50,9 +48,7 @@ export async function getMonthlyData({
 			})
 			.from(monthCount)
 			.groupBy(monthCount.id)
-			.orderBy(desc(sql`total`), asc(monthCount.id))
-			.limit(to - from + 1)
-			.offset(from - 1),
+			.orderBy(desc(sql`total`), asc(monthCount.id)),
 	);
 
 	const rows = (await db)
@@ -84,7 +80,7 @@ export async function getMonthlyData({
 					color,
 					avatarUrl,
 					count,
-					rank: from + index,
+					rank: index + 1,
 					monthlyCount,
 				},
 			];
