@@ -7,7 +7,7 @@ import { windows3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./ChartControls";
-import { ChartLegend } from "./ChartLegend";
+import { ChartLegend, useVisibleCount } from "./ChartLegend";
 import { ChartLine } from "./ChartLine";
 import { getSeriesColor } from "./colors";
 import { ChartContext } from "./context";
@@ -20,7 +20,8 @@ export type ChartSeries = {
 };
 
 export function Chart() {
-	const [{ since, until, from, to, cumulative }] = useChartControls();
+	const [{ since, until, fromRank, cumulative }] = useChartControls();
+	const [visibleCount, legendRef] = useVisibleCount();
 	const [totalData = {}, setTotalData] = useState<MonthlyRanking>();
 
 	useEffect(() => {
@@ -29,12 +30,12 @@ export function Chart() {
 
 	const chartData = useMemo<MonthlyRanking>(() => {
 		const months = monthsInRange(since, until);
-		const filteredRankedData = Object.fromEntries(
+		const filteredData = Object.fromEntries(
 			Object.entries(totalData).filter(
-				([, { rank }]) => from <= rank && rank <= to,
+				([, { rank }]) => fromRank <= rank && rank < fromRank + visibleCount,
 			),
 		);
-		return mapValues(filteredRankedData, ({ monthlyCount, ...userData }) => {
+		return mapValues(filteredData, ({ monthlyCount, ...userData }) => {
 			const countByMonth = Object.fromEntries(
 				monthlyCount.map(({ month, count }) => [month, count]),
 			);
@@ -62,7 +63,7 @@ export function Chart() {
 				}),
 			};
 		});
-	}, [totalData, cumulative, from, to, since, until]);
+	}, [totalData, cumulative, fromRank, visibleCount, since, until]);
 
 	const isolatedPoints = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
@@ -149,7 +150,11 @@ export function Chart() {
 					onMouseMove={onMouseMove}
 					onMouseLeave={onMouseLeave}
 				/>
-				<ChartLegend entries={totalData} />
+				<ChartLegend
+					entries={totalData}
+					visibleCount={visibleCount}
+					ref={legendRef}
+				/>
 				<ChartControls />
 			</div>
 		</ChartContext>

@@ -1,5 +1,5 @@
 import classNames from "classnames/bind";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import type { RankingData } from "@/db/ranking";
 import styles from "./Chart.module.css";
@@ -9,41 +9,56 @@ import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
 
-export function ChartLegend({ entries }: { entries: RankingData }) {
-	const entriesCount = Object.keys(entries).length;
+type LegendProps = Pick<ComponentProps<"div">, "ref"> & {
+	entries: RankingData;
+	visibleCount: number;
+};
 
-	const [{ from, to }, setParams] = useChartControls();
+export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
+	const [{ fromRank }, setParams] = useChartControls();
 	const [scrolling, setIsScrolling] = useState(false);
-	const [visibleCount, setVisibleCount] = useState(to - from + 1);
-
-	const containerRef = useRef<HTMLDivElement>(null);
 	const scrollRef = useRef<HTMLDivElement>(null);
 
-	const updateParams = useCallback(
-		({ scrollTop }: { scrollTop: number }) => {
-			const topIndex = Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP));
-			const from = topIndex + 1;
-			const to = Math.min(topIndex + visibleCount, entriesCount);
-			setParams({ from, to });
-		},
-		[visibleCount, entriesCount, setParams],
-	);
-
-	useEffect(() => {
-		const scroller = scrollRef.current;
-		if (scroller) {
-			updateParams(scroller);
-		}
-	}, [updateParams]);
-
+	const entriesCount = Object.keys(entries).length;
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scrolling left out to prevent scroll jumping when user scrolls manually (but is a state rather than ref because LegendEntry depends on it)
 	useEffect(() => {
 		const scroller = scrollRef.current;
 		if (!scroller || !entriesCount || scrolling) {
 			return;
 		}
-		scroller.scrollTop = (from - 1) * (ENTRY_HEIGHT + GAP);
-	}, [from, entriesCount]);
+		scroller.scrollTop = (fromRank - 1) * (ENTRY_HEIGHT + GAP);
+	}, [fromRank, entriesCount]);
+
+	const maxHeight = ENTRY_HEIGHT * visibleCount + GAP * (visibleCount - 1);
+
+	return (
+		<div className={cx("side-panel")} ref={ref}>
+			<div
+				className={cx("legend")}
+				style={{ maxHeight }}
+				onScroll={({ currentTarget: { scrollTop } }) => {
+					setIsScrolling(true);
+					setParams({
+						fromRank: Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1,
+					});
+				}}
+				onScrollEnd={() => setIsScrolling(false)}
+				ref={scrollRef}
+			>
+				{Object.values(entries).map((user) => (
+					<LegendEntry key={user.id} {...user} scrolling={scrolling} />
+				))}
+			</div>
+		</div>
+	);
+}
+
+const ENTRY_HEIGHT = 53;
+const GAP = 24;
+
+export function useVisibleCount() {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [visibleCount, setVisibleCount] = useState<number>(COLORS_COUNT);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -65,31 +80,10 @@ export function ChartLegend({ entries }: { entries: RankingData }) {
 		return () => observer.disconnect();
 	}, []);
 
-	return (
-		<div className={cx("side-panel")} ref={containerRef}>
-			<div
-				className={cx("legend")}
-				style={{
-					maxHeight: ENTRY_HEIGHT * visibleCount + GAP * (visibleCount - 1),
-				}}
-				onScroll={({ currentTarget }) => {
-					setIsScrolling(true);
-					updateParams(currentTarget);
-				}}
-				onScrollEnd={() => setIsScrolling(false)}
-				ref={scrollRef}
-			>
-				{Object.values(entries).map((user) => (
-					<LegendEntry key={user.id} {...user} scrolling={scrolling} />
-				))}
-			</div>
-		</div>
-	);
+	return [visibleCount, containerRef] as const;
 }
 
-type EntryProps = RankingData[string] & {
-	scrolling: boolean;
-};
+type EntryProps = RankingData[string] & { scrolling: boolean };
 
 function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
 	const { highlightedUser, setHighlightedUser } = useChart();
@@ -114,6 +108,3 @@ function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
 		</div>
 	);
 }
-
-const ENTRY_HEIGHT = 53;
-const GAP = 24;

@@ -2,15 +2,13 @@ import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { type } from "arktype";
 import { isEmptyObject } from "es-toolkit";
 import { Chart } from "@/components/Chart";
-import { COLORS_COUNT } from "@/components/Chart/colors";
 
 const validate = type({
 	"until?": "string | undefined",
 	"since?": "string | undefined",
 	"cumulative?": "boolean | undefined",
-	"from?": "number >= 1 | undefined",
-	"to?": "number >= 1| undefined",
-}).narrow(({ until, since, from, to, cumulative, ...unknowns }) => {
+	"fromRank?": "number >= 1 | undefined",
+}).narrow(({ until, since, fromRank, cumulative, ...unknowns }) => {
 	if (!isEmptyObject(unknowns)) {
 		return false;
 	}
@@ -29,9 +27,6 @@ const validate = type({
 	if (since && until && new Date(since) > new Date(until)) {
 		return false;
 	}
-	if (from && to && (from > to || to - from >= COLORS_COUNT)) {
-		return false;
-	}
 	return true;
 });
 
@@ -45,9 +40,8 @@ export const Route = createFileRoute("/")({
 				since: undefined,
 				until: undefined,
 				cumulative: undefined,
-				from: undefined,
-				to: undefined,
-			};
+				fromRank: undefined,
+			} satisfies typeof validate.infer;
 		}
 		return out;
 	},

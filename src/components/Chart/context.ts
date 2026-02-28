@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 
 interface ChartContextValue {
@@ -13,9 +13,9 @@ interface ChartContextValue {
 export const ChartContext = createContext<ChartContextValue | null>(null);
 
 export function useChart() {
-	const context = useContext(ChartContext);
+	const context = use(ChartContext);
 	if (!context) {
-		throw new Error("useChart must be used within a ChartContext.Provider");
+		throw new Error("useChart must be used within ChartContext");
 	}
 	return context;
 }

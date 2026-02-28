@@ -15,8 +15,7 @@ const defaultParams = {
 	until: toYyyyMm(lastUpdated),
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
-	from: 1,
-	to: 10,
+	fromRank: 1,
 };
 
 // Earliest month with meaningful data.
