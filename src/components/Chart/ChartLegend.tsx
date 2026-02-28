@@ -15,7 +15,9 @@ export function ChartLegend({ entries }: { entries: RankingData }) {
 	const [{ from, to }, setParams] = useChartControls();
 	const [scrolling, setIsScrolling] = useState(false);
 	const [visibleCount, setVisibleCount] = useState(to - from + 1);
-	const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+	const containerRef = useRef<HTMLDivElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
 
 	const updateParams = useCallback(
 		({ scrollTop }: { scrollTop: number }) => {
@@ -28,23 +30,23 @@ export function ChartLegend({ entries }: { entries: RankingData }) {
 	);
 
 	useEffect(() => {
-		const container = scrollContainerRef.current;
-		if (container) {
-			updateParams(container);
+		const scroller = scrollRef.current;
+		if (scroller) {
+			updateParams(scroller);
 		}
 	}, [updateParams]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scrolling left out to prevent scroll jumping when user scrolls manually (but is a state rather than ref because LegendEntry depends on it)
 	useEffect(() => {
-		const container = scrollContainerRef.current;
-		if (!container || !entriesCount || scrolling) {
+		const scroller = scrollRef.current;
+		if (!scroller || !entriesCount || scrolling) {
 			return;
 		}
-		container.scrollTop = (from - 1) * (ENTRY_HEIGHT + GAP);
+		scroller.scrollTop = (from - 1) * (ENTRY_HEIGHT + GAP);
 	}, [from, entriesCount]);
 
 	useEffect(() => {
-		const container = scrollContainerRef.current;
+		const container = containerRef.current;
 		if (!container) {
 			return;
 		}
@@ -55,9 +57,8 @@ export function ChartLegend({ entries }: { entries: RankingData }) {
 				return;
 			}
 			const containerHeight = entry.contentRect.height;
-			setVisibleCount(
-				Math.floor((containerHeight + GAP) / (ENTRY_HEIGHT + GAP)),
-			);
+			const count = Math.floor(containerHeight / (ENTRY_HEIGHT + GAP));
+			setVisibleCount(Math.min(count, COLORS_COUNT));
 		});
 
 		observer.observe(container);
@@ -65,18 +66,18 @@ export function ChartLegend({ entries }: { entries: RankingData }) {
 	}, []);
 
 	return (
-		<div className={cx("side-panel")}>
+		<div className={cx("side-panel")} ref={containerRef}>
 			<div
 				className={cx("legend")}
 				style={{
-					maxHeight: ENTRY_HEIGHT * COLORS_COUNT + GAP * (COLORS_COUNT - 1),
+					maxHeight: ENTRY_HEIGHT * visibleCount + GAP * (visibleCount - 1),
 				}}
 				onScroll={({ currentTarget }) => {
 					setIsScrolling(true);
 					updateParams(currentTarget);
 				}}
 				onScrollEnd={() => setIsScrolling(false)}
-				ref={scrollContainerRef}
+				ref={scrollRef}
 			>
 				{Object.values(entries).map((user) => (
 					<LegendEntry key={user.id} {...user} scrolling={scrolling} />
