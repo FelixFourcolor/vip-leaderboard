@@ -36,7 +36,6 @@ type Props = {
 
 export const ChartLine = ({ linesData, onMouseMove, onMouseLeave }: Props) => {
 	const [{ cumulative }] = useChartControls();
-	const [isZack] = useZackMode();
 	const { chartData, highlightedUser } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
@@ -87,17 +86,8 @@ export const ChartLine = ({ linesData, onMouseMove, onMouseLeave }: Props) => {
 	);
 
 	const lineColor = useCallback(
-		({ id }: { id: string }) => {
-			const color = getSeriesColor(chartData[id]!);
-			if (highlightedUser === id) {
-				return color;
-			}
-			if (!highlightedUser) {
-				return `rgb(from ${color} r g b / 0.8)`;
-			}
-			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;
-		},
-		[chartData, highlightedUser, isZack],
+		({ id }: { id: string }) => getSeriesColor(chartData[id]!),
+		[chartData],
 	);
 
 	const [gridXValues, axisBottom] = useMemo(() => {
@@ -138,52 +128,73 @@ function CustomLinesLayer({
 	series,
 	lineGenerator,
 }: LineCustomSvgLayerProps<ChartSeries>) {
+	const [isZack] = useZackMode();
+	const { highlightedUser } = useChart();
+
 	return (
 		<g>
-			{series.map(({ id, data, color }) => (
-				<Line
-					key={id}
-					id={id}
-					path={lineGenerator(data.map((d) => d.position)) ?? ""}
-					color={color}
-				/>
-			))}
+			{series.map(({ id, data, color }) => {
+				const highlighted = highlightedUser === id;
+				const dimmed = highlightedUser && !highlighted;
+
+				const width = dimmed ? 1 : 2;
+				const opacity = (() => {
+					if (highlighted) {
+						return 1;
+					}
+					if (!dimmed) {
+						return isZack ? 1 : 0.9;
+					}
+					return isZack ? 0.5 : 0.4;
+				})();
+				const highlight = (() => {
+					if (!highlighted) {
+						return 0;
+					}
+					return isZack ? 0.2 : 0.4;
+				})();
+
+				return (
+					<Line
+						key={id}
+						path={lineGenerator(data.map((d) => d.position)) ?? ""}
+						color={color}
+						width={width}
+						opacity={opacity}
+						highlight={highlight}
+					/>
+				);
+			})}
 		</g>
 	);
 }
 
-function Line({
-	id,
-	path,
-	color,
-}: {
-	id: string;
+type LineProps = {
 	path: string;
 	color: string;
-}) {
+	width: number;
+	opacity: number;
+	highlight: number;
+};
+
+function Line({ path, color, width, opacity, highlight }: LineProps) {
 	const animatedPath = useAnimatedPath(path);
-
-	const { highlightedUser } = useChart();
-	const highlighted = highlightedUser === id;
-	const dimmed = highlightedUser && !highlighted;
-
 	return (
 		<g>
-			{highlighted && (
-				<path
-					d={path}
-					fill="none"
-					stroke={color}
-					strokeWidth={6}
-					strokeOpacity={0.25}
-					style={{ filter: "blur(3px)" }}
-				/>
-			)}
+			<path
+				d={path}
+				fill="none"
+				stroke={color}
+				strokeWidth={6}
+				strokeOpacity={highlight}
+				style={{ filter: "blur(3px)" }}
+			/>
 			<animated.path
 				d={animatedPath}
 				fill="none"
 				stroke={color}
-				strokeWidth={dimmed ? 1 : 2}
+				strokeWidth={width}
+				strokeOpacity={opacity}
 			/>
 		</g>
 	);
