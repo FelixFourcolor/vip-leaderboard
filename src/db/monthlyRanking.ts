@@ -40,8 +40,8 @@ export async function getMonthlyData({
 			.groupBy(activity.userId, sql`month`),
 	);
 
-	const topUsers = (await db).$with("top_users").as(
-		(await db)
+	const topUsers = db.$with("top_users").as(
+		db
 			.select({
 				id: monthCount.id,
 				total: sql<number>`SUM(${monthCount.count})`.as("total"),
@@ -51,7 +51,7 @@ export async function getMonthlyData({
 			.orderBy(desc(sql`total`), asc(monthCount.id)),
 	);
 
-	const rows = (await db)
+	const rows = db
 		.with(monthCount, topUsers)
 		.select({
 			...userFields,
