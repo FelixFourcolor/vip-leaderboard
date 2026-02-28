@@ -76,7 +76,7 @@
 	table {
 		line-height: 16.8px;
 		font-size: 15px;
-		[data-zack-mode="false"] & {
+		[data-zack-mode="true"] & {
 			font-size: 14px; /* smaller because bold */
 		}
 
@@ -94,7 +94,7 @@
 			}
 		}
 		td {
-			[data-zack-mode="true"] & {
+			[data-is-zack="true"] & {
 				color: var(--text-secondary);
 				font-weight: bold;
 			}

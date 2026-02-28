@@ -15,7 +15,7 @@
 		line-height: 17.6px;
 		font-size: 15px;
 
-		[data-zack-mode="true"] & {
+		[data-is-zack="true"] & {
 			font-weight: bold;
 			font-size: 14px;
 		}

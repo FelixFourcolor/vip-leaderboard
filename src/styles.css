@@ -13,7 +13,7 @@
 
 	--accent: #ebbcba;
 
-	&[data-zack-mode="true"] {
+	&[data-is-zack="true"] {
 		--bg-primary: #faf4ed;
 		--bg-secondary: #f2e9e1;
 		--bg-tertiary: #cecacd;

@@ -1,33 +1,42 @@
-import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "zack-mode";
+import { useSyncExternalStore } from "react";
 
 export function useZackMode() {
-	const [isZack, setIsZack] = useState(
-		() => getSessionStorage() ?? getBrowserPreference(),
-	);
-
-	useEffect(() => {
-		updateMode(isZack);
-		setSessionStorage(isZack);
-	}, [isZack]);
-
+	const isZack = useSyncExternalStore(subscribe, getSnapshot);
 	return [isZack, setIsZack] as const;
 }
 
-function getSessionStorage() {
-	const value = sessionStorage.getItem(STORAGE_KEY);
-	return value === null ? null : value === "1";
+const STORAGE_KEY = "is-zack";
+
+let isZack = getLocalStorage() ?? getBrowserPreference();
+updateDOM(isZack); // initialize on load
+const listeners = new Set<() => void>();
+
+const subscribe = (listener: () => void) => {
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+};
+const getSnapshot = () => isZack;
+
+function setIsZack(value: boolean) {
+	isZack = value;
+	updateDOM(value);
+	setLocalStorage(value);
+	listeners.forEach((lis) => lis());
+}
+
+function getLocalStorage() {
+	const value = localStorage.getItem(STORAGE_KEY);
+	return !value ? null : value === "true";
+}
+
+function setLocalStorage(isZack: boolean) {
+	localStorage.setItem(STORAGE_KEY, String(isZack));
 }
 
 function getBrowserPreference() {
 	return window.matchMedia("(prefers-color-scheme: light)").matches;
 }
 
-function updateMode(isZack: boolean) {
-	document.documentElement.setAttribute("data-zack-mode", String(isZack));
-}
-
-function setSessionStorage(isZack: boolean) {
-	sessionStorage.setItem(STORAGE_KEY, isZack ? "1" : "0");
+function updateDOM(isZack: boolean) {
+	document.documentElement.setAttribute("data-is-zack", String(isZack));
 }
