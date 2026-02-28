@@ -3,7 +3,7 @@ import type { Point } from "@nivo/line";
 import classNames from "classnames/bind";
 import { Tooltip } from "@/components/Tooltip";
 import { UserHeader } from "@/components/UserHeader";
-import { useZackMode } from "@/hooks/useZackMode";
+import { useIsZack } from "@/hooks/useIsZack";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
 import styles from "./Chart.module.css";
@@ -51,7 +51,7 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 	const userData = chartData[seriesId]!;
 	const seriesColor = getSeriesColor(userData);
 
-	const [isZack] = useZackMode();
+	const [isZack] = useIsZack();
 	const fillColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
 
 	return (

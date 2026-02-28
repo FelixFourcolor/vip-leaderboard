@@ -5,7 +5,7 @@ import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import type { UserData } from "@/db/user";
 import { getUser } from "@/db/user";
-import { useZackMode } from "@/hooks/useZackMode";
+import { useIsZack } from "@/hooks/useIsZack";
 import styles from "./Footer.module.css";
 
 const cx = classNames.bind(styles);
@@ -19,14 +19,14 @@ export function Footer() {
 			<hr />
 			<div className={cx("container")}>
 				<span>Last update: {lastUpdatedStr} (UTC)</span>
-				<ZackModeToggle />
+				<ZackToggle />
 			</div>
 		</footer>
 	);
 }
 
-function ZackModeToggle() {
-	const [isZack, setIsZack] = useZackMode();
+function ZackToggle() {
+	const [isZack, setIsZack] = useIsZack();
 	const [zackData, setZackData] = useState<UserData | undefined>();
 	useEffect(() => {
 		getUser("zackwb").then(setZackData);

@@ -74,7 +74,7 @@
 
 	table {
 		font-size: 14.5px;
-		[data-zack-mode="true"] & {
+		[data-is-zack="true"] & {
 			font-size: 14px; /* smaller because bold */
 		}
 

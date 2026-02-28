@@ -16,7 +16,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useZackMode } from "@/hooks/useZackMode";
+import { useIsZack } from "@/hooks/useIsZack";
 import { getAnyValue } from "@/utils/object";
 import { toDate } from "@/utils/time";
 import type { ChartSeries } from "./Chart";
@@ -128,7 +128,7 @@ function CustomLinesLayer({
 	series,
 	lineGenerator,
 }: LineCustomSvgLayerProps<ChartSeries>) {
-	const [isZack] = useZackMode();
+	const [isZack] = useIsZack();
 	const { highlightedUser } = useChart();
 
 	return (

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export function useZackMode() {
+export function useIsZack() {
 	const isZack = useSyncExternalStore(subscribe, getSnapshot);
 	return [isZack, setIsZack] as const;
 }
