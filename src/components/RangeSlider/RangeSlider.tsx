@@ -1,16 +1,14 @@
-import { useThrottledValue } from "@tanstack/react-pacer";
 import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
-import { Direction, Range } from "react-range";
+import { Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
 import { Thumb } from "./Thumb";
 import { Track } from "./Track";
 
-type RangeProps<Value> = {
+type SliderProps<Value> = {
 	domain: readonly Value[];
 	selected: readonly [Value, Value];
 	onChange: Dispatch<[Value, Value]>;
 	className?: string;
-	direction?: "horizontal" | "vertical";
 	minDistance?: number;
 	maxDistance?: number;
 };
@@ -21,9 +19,8 @@ export function RangeSlider<Value>({
 	onChange,
 	minDistance = 1,
 	maxDistance = domain.length - 1,
-	direction = "horizontal",
 	className,
-}: RangeProps<Value>) {
+}: SliderProps<Value>) {
 	const [values, setValues] = useControlled(
 		useCallback((): [number, number] => {
 			const fromIndex = domain.indexOf(selectedFrom);
@@ -63,7 +60,15 @@ export function RangeSlider<Value>({
 		[setValues, minDistance, maxDistance, domain.length],
 	);
 
-	const onShift = useCallback(
+	useEffect(() => {
+		const fromValue = domain[values[0]!];
+		const toValue = domain[values[1]!];
+		if (fromValue !== undefined && toValue !== undefined) {
+			onChange([fromValue, toValue]);
+		}
+	}, [values, onChange, domain]);
+
+	const onScroll = useCallback(
 		(dist: number) => {
 			setValues(([currentFrom, currentTo]) => {
 				const currentDistance = currentTo - currentFrom;
@@ -82,21 +87,6 @@ export function RangeSlider<Value>({
 		[setValues, domain.length],
 	);
 
-	const [throttledValues] = useThrottledValue(values, { wait: 300 });
-	const callback = useCallback(
-		(values: [number, number]) => {
-			const fromValue = domain[values[0]!];
-			const toValue = domain[values[1]!];
-			if (fromValue !== undefined && toValue !== undefined) {
-				onChange([fromValue, toValue]);
-			}
-		},
-		[onChange, domain],
-	);
-	useEffect(() => {
-		callback(throttledValues);
-	}, [throttledValues, callback]);
-
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
 	const toLabelRef = useRef<HTMLSpanElement>(null);
@@ -112,8 +102,7 @@ export function RangeSlider<Value>({
 
 		const fromRect = fromLabel.getBoundingClientRect();
 		const toRect = toLabel.getBoundingClientRect();
-		const overlap =
-			fromRect.right > toRect.left && fromRect.bottom > toRect.top;
+		const overlap = fromRect.right > toRect.left;
 		setLabelsOverlap(overlap);
 	}, []);
 
@@ -129,10 +118,8 @@ export function RangeSlider<Value>({
 
 	return (
 		<Range
-			direction={direction === "horizontal" ? Direction.Right : Direction.Down}
 			values={values}
 			onChange={onValueChange}
-			onFinalChange={() => callback(values)}
 			min={0}
 			step={1}
 			max={max}
@@ -143,13 +130,9 @@ export function RangeSlider<Value>({
 					min={0}
 					max={max}
 					value={values}
-					onWheel={(e) => {
-						const delta = Math.sign(e.deltaY || e.deltaX);
-						onShift(delta);
-					}}
+					onWheel={(e) => onScroll(-Math.sign(e.deltaX))}
 					domain={domain}
 					className={className}
-					direction={direction}
 				>
 					{children}
 				</Track>

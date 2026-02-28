@@ -6,14 +6,13 @@ import { Thumb } from "./Thumb";
 
 const cx = classNames.bind(styles);
 
-export interface TrackProps extends ComponentProps<"div"> {
+export type TrackProps = ComponentProps<"div"> & {
 	isDragged: boolean;
 	min: number;
 	max: number;
 	domain: readonly unknown[];
 	value: readonly [number, number];
-	direction: "horizontal" | "vertical";
-}
+};
 
 export function Track({
 	min,
@@ -21,10 +20,9 @@ export function Track({
 	domain,
 	value,
 	isDragged,
-	direction,
 	className,
 	children,
-	...props
+	...divProps
 }: TrackProps) {
 	useCursorDragged(isDragged);
 
@@ -34,10 +32,7 @@ export function Track({
 	const selected = ((to - from) / total) * 100;
 
 	return (
-		<div
-			{...props}
-			className={cx("track", isDragged && "dragged", className, direction)}
-		>
+		<div {...divProps} className={cx("track", className)}>
 			<Thumb className={cx("limit")} kind="from" />
 			<span className={cx("label", "min")}>{String(domain[min])}</span>
 			{children}

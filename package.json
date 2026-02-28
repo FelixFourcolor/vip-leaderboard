@@ -16,7 +16,6 @@
 		"@nivo/line": "^0.99.0",
 		"@nivo/theming": "^0.99.0",
 		"@react-spring/web": "^10.0.3",
-		"@tanstack/react-pacer": "^0.20.0",
 		"@tanstack/react-router": "^1.163.3",
 		"@tanstack/router-plugin": "^1.163.3",
 		"arktype": "^2.1.29",

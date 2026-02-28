@@ -1,6 +1,8 @@
 .track {
 	display: flex;
 	align-items: center;
+	flex-direction: row;
+	height: 20px;
 
 	[data-is-cursor-dragged="false"] & {
 		&,
@@ -12,10 +14,18 @@
 	.bar {
 		background-color: var(--text-tertiary);
 		display: flex;
+		height: 3px;
+		width: 100%;
+		flex-direction: row;
 
+		.pre {
+			width: var(--pre);
+		}
 		.selected {
 			background-color: var(--accent);
 			align-self: center;
+			height: 3px;
+			width: var(--selected);
 		}
 	}
 
@@ -23,10 +33,15 @@
 		position: relative;
 		background-color: var(--accent);
 		outline: none;
+		width: 3px;
+		height: 19px;
 
 		.label {
 			color: var(--accent);
 			font-weight: bold;
+			top: 23px;
+			left: 50%;
+			transform: translateX(-50%);
 
 			&.hidden {
 				visibility: hidden;
@@ -38,47 +53,8 @@
 		position: absolute;
 		background-color: var(--text-tertiary);
 		z-index: -1;
-	}
-
-	.label {
-		cursor: default;
-		position: absolute;
-		white-space: nowrap;
-		font-size: var(--text-mini);
-	}
-}
-
-.track.horizontal {
-	flex-direction: row;
-	height: 20px;
-
-	.bar {
-		height: 3px;
-		width: 100%;
-		flex-direction: row;
-
-		.pre {
-			width: var(--pre);
-		}
-		.selected {
-			height: 3px;
-			width: var(--selected);
-		}
-	}
-
-	.thumb {
-		width: 3px;
-		height: 19px;
-
-		.label {
-			top: 23px;
-			left: 50%;
-			transform: translateX(-50%);
-		}
-	}
-
-	.limit {
 		height: 13px;
+
 		&.from {
 			left: -1.5px;
 		}
@@ -88,7 +64,12 @@
 	}
 
 	.label {
+		cursor: default;
+		position: absolute;
+		white-space: nowrap;
+		font-size: var(--text-mini);
 		top: -16px;
+
 		&.min {
 			left: 0;
 			transform: translateX(-50%);
@@ -96,56 +77,6 @@
 		&.max {
 			right: 0;
 			transform: translateX(50%);
-		}
-	}
-}
-
-.track.vertical {
-	flex-direction: column;
-	width: 20px;
-
-	.bar {
-		width: 3px;
-		height: 100%;
-		flex-direction: column;
-
-		.pre {
-			height: var(--pre);
-		}
-		.selected {
-			width: 3px;
-			height: var(--selected);
-		}
-	}
-
-	.thumb {
-		height: 3px;
-		width: 19px;
-
-		.label {
-			top: 50%;
-			left: -16px;
-			transform: translateY(-50%);
-		}
-	}
-
-	.limit {
-		width: 13px;
-		&.from {
-			top: -1.5px;
-		}
-		&.to {
-			bottom: -1.5px;
-		}
-	}
-
-	.label {
-		right: -16px;
-		&.min {
-			top: -7.5px;
-		}
-		&.max {
-			bottom: -7.5px;
 		}
 	}
 }

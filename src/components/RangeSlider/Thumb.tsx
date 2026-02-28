@@ -22,7 +22,7 @@ export function Thumb({
 	return (
 		<div {...props} className={cx("thumb", kind, className)}>
 			{label != null && (
-				<span ref={labelRef} className={cx("label", hideLabel && "hidden")}>
+				<span ref={labelRef} className={cx("label", { hidden: hideLabel })}>
 					{String(label)}
 				</span>
 			)}
