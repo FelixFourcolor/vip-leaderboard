@@ -1,13 +1,16 @@
-import { createContext, use } from "react";
+import { createContext, type Dispatch, use } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 
 interface ChartContextValue {
 	chartData: MonthlyRanking;
 	isolatedPoints: Record<string, Set<string>>;
 	idByColor: Record<string, string>;
+	visibleUsersCount: number;
+	setVisibleUsersCount: Dispatch<number>;
 	highlightedUser: string | undefined;
-	setHighlightedUser: (user: string | undefined) => void;
+	setHighlightedUser: Dispatch<string | undefined>;
 	hoveredPoint: { x: Date; y: number } | undefined;
+	setHoveredPoint: Dispatch<{ x: Date; y: number } | undefined>;
 }
 
 export const ChartContext = createContext<ChartContextValue | null>(null);

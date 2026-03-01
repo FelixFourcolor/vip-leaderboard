@@ -1,24 +1,42 @@
 import classNames from "classnames/bind";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import type { RankingData } from "@/db/ranking";
 import styles from "./Chart.module.css";
-import { useChartControls } from "./ChartControls";
-import { COLORS_COUNT, getSeriesColor } from "./colors";
+import { useChartControls } from "./Controls";
+import { colorsCount, getSeriesColor } from "./colors";
 import { useChart } from "./context";
 
 const cx = classNames.bind(styles);
 
-type LegendProps = Pick<ComponentProps<"div">, "ref"> & {
-	entries: RankingData;
-	visibleCount: number;
-};
-
-export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
+type LegendProps = { entries: RankingData };
+export function ChartLegend({ entries }: LegendProps) {
+	const { visibleUsersCount, setVisibleUsersCount } = useChart();
 	const [{ fromRank }, setParams] = useChartControls();
 	const [scrolling, setIsScrolling] = useState(false);
-	const scrollRef = useRef<HTMLDivElement>(null);
 
+	const containerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) {
+			return;
+		}
+
+		const observer = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (!entry) {
+				return;
+			}
+			const containerHeight = entry.contentRect.height;
+			const count = Math.floor(containerHeight / (ENTRY_HEIGHT + GAP));
+			setVisibleUsersCount(Math.min(count, colorsCount));
+		});
+
+		observer.observe(container);
+		return () => observer.disconnect();
+	}, [setVisibleUsersCount]);
+
+	const scrollRef = useRef<HTMLDivElement>(null);
 	const entriesCount = Object.keys(entries).length;
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scrolling left out to prevent scroll jumping when user scrolls manually (but is a state rather than ref because LegendEntry depends on it)
 	useEffect(() => {
@@ -29,10 +47,11 @@ export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
 		scroller.scrollTop = (fromRank - 1) * (ENTRY_HEIGHT + GAP);
 	}, [fromRank, entriesCount]);
 
-	const maxHeight = ENTRY_HEIGHT * visibleCount + GAP * (visibleCount - 1);
+	const maxHeight =
+		ENTRY_HEIGHT * visibleUsersCount + GAP * (visibleUsersCount - 1);
 
 	return (
-		<div className={cx("side-panel")} ref={ref}>
+		<div className={cx("side-panel")} ref={containerRef}>
 			<div
 				className={cx("legend")}
 				style={{ maxHeight, gap: GAP }}
@@ -54,7 +73,6 @@ export function ChartLegend({ entries, visibleCount, ref }: LegendProps) {
 }
 
 type EntryProps = RankingData[string] & { scrolling: boolean };
-
 function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
 	const { highlightedUser, setHighlightedUser } = useChart();
 	return (
@@ -84,32 +102,5 @@ function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
 	);
 }
 
-const ENTRY_HEIGHT = 54; // pre-measured based on styles, not worth measuring at runtime
+const ENTRY_HEIGHT = 54; // pre-measured based on current styles, not worth measuring at runtime
 const GAP = 24;
-
-export function useVisibleCount() {
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [visibleCount, setVisibleCount] = useState<number>(COLORS_COUNT);
-
-	useEffect(() => {
-		const container = containerRef.current;
-		if (!container) {
-			return;
-		}
-
-		const observer = new ResizeObserver((entries) => {
-			const entry = entries[0];
-			if (!entry) {
-				return;
-			}
-			const containerHeight = entry.contentRect.height;
-			const count = Math.floor(containerHeight / (ENTRY_HEIGHT + GAP));
-			setVisibleCount(Math.min(count, COLORS_COUNT));
-		});
-
-		observer.observe(container);
-		return () => observer.disconnect();
-	}, []);
-
-	return [visibleCount, containerRef] as const;
-}

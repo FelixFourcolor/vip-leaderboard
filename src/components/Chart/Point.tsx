@@ -34,7 +34,7 @@ export function ChartPoint({
 	}
 	if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
 		if (highlightedUser === seriesId) {
-			return <circle r={6} fill={color} style={{ zIndex: 91 }} />;
+			return <circle r={6} fill={color} />;
 		}
 		return <circle r={3} fill={color} />;
 	}

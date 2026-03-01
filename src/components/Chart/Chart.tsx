@@ -1,95 +1,68 @@
-import type { PointOrSliceMouseHandler } from "@nivo/line";
+import {
+	type Point,
+	type PointOrSliceMouseHandler,
+	ResponsiveLine,
+} from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
-import { windows3 } from "@/utils/array";
-import { monthsInRange } from "@/utils/time";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { RankingData } from "@/db/ranking";
+import { getAnyValue } from "@/utils/object";
+import { toDate } from "@/utils/time";
 import styles from "./Chart.module.css";
-import { ChartControls, useChartControls } from "./ChartControls";
-import { ChartLegend, useVisibleCount } from "./ChartLegend";
-import { ChartLine } from "./ChartLine";
-import { getSeriesColor } from "./colors";
-import { ChartContext } from "./context";
+import { ChartControls, useChartControls } from "./Controls";
+import { useChartColors } from "./colors";
+import configs from "./configs";
+import { useChart } from "./context";
+import { ChartLegend } from "./Legend";
+import { ChartProvider } from "./Provider";
 
 const cx = classNames.bind(styles);
+
+const Chart = ({ entries }: { entries: RankingData }) => {
+	const { chartData } = useChart();
+	const xLabels = useMemo(() => {
+		// all series have the same x values
+		const data = getAnyValue(chartData);
+		if (!data) {
+			return [];
+		}
+		return data.monthlyCount.map(({ month }) => month);
+	}, [chartData]);
+	const { ref, gridXValues, axisBottom } = useLabelsSpacing(xLabels);
+
+	const { onMouseMove, onMouseLeave } = useInteractive();
+
+	return (
+		<div className={cx("container")}>
+			<div ref={ref} className={cx("chart")} onMouseLeave={onMouseLeave}>
+				<ResponsiveLine
+					data={useSeriesData()}
+					colors={useChartColors()}
+					pointLabel={usePointLabel(xLabels)}
+					onMouseMove={onMouseMove}
+					gridXValues={gridXValues}
+					axisBottom={axisBottom}
+					{...configs}
+				/>
+			</div>
+			<ChartLegend entries={entries} />
+			<ChartControls />
+		</div>
+	);
+};
+
+export default () => <ChartProvider>{Chart}</ChartProvider>;
 
 export type ChartSeries = {
 	id: string;
 	data: { x: Date; y: number | null }[];
 };
 
-export function Chart() {
-	const [{ since, until, fromRank, cumulative }] = useChartControls();
-	const [visibleCount, legendRef] = useVisibleCount();
-	const [totalData = {}, setTotalData] = useState<MonthlyRanking>();
+function useSeriesData() {
+	const { chartData, highlightedUser } = useChart();
 
-	useEffect(() => {
-		getMonthlyData({ since, until }).then(setTotalData);
-	}, [since, until]);
-
-	const chartData = useMemo<MonthlyRanking>(() => {
-		const months = monthsInRange(since, until);
-		const filteredData = Object.fromEntries(
-			Object.entries(totalData).filter(
-				([, { rank }]) => fromRank <= rank && rank < fromRank + visibleCount,
-			),
-		);
-		return mapValues(filteredData, ({ monthlyCount, ...userData }) => {
-			const countByMonth = Object.fromEntries(
-				monthlyCount.map(({ month, count }) => [month, count]),
-			);
-
-			if (!cumulative) {
-				return {
-					...userData,
-					monthlyCount: months.map((month) => ({
-						month,
-						count: countByMonth[month] ?? null,
-					})),
-				};
-			}
-
-			let accumulator = 0;
-			return {
-				...userData,
-				monthlyCount: months.map((month) => {
-					const count = countByMonth[month];
-					if (count != null) {
-						accumulator += count;
-						return { month, count: accumulator };
-					}
-					return { month, count: null };
-				}),
-			};
-		});
-	}, [totalData, cumulative, fromRank, visibleCount, since, until]);
-
-	const isolatedPoints = useMemo(() => {
-		return mapValues(chartData, ({ monthlyCount }) => {
-			return new Set(
-				windows3(monthlyCount)
-					.filter(([pre, cur, nex]) => !pre?.count && cur.count && !nex?.count)
-					.map(([, cur]) => cur.month),
-			);
-		});
-	}, [chartData]);
-
-	// workaround for nivo's bug of not exposing seriesId for each point
-	const idByColor = useMemo(() => {
-		// requires number of users <= 10 = number of colors
-		return Object.fromEntries(
-			Object.entries(chartData).map(([userId, userData]) => [
-				getSeriesColor(userData),
-				userId,
-			]),
-		);
-	}, [chartData]);
-
-	const [highlightedUser, setHighlightedUser] = useState<string>();
-	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
-
-	const linesData = useMemo(() => {
+	const data = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
 			return monthlyCount.map(({ month, count }) => ({
 				x: new Date(month),
@@ -98,65 +71,106 @@ export function Chart() {
 		});
 	}, [chartData]);
 
-	const sortedLinesData = useMemo<ChartSeries[]>(() => {
-		const sortedData = (() => {
+	const sortedData = useMemo<ChartSeries[]>(() => {
+		const sorted = (() => {
 			if (!highlightedUser) {
-				return linesData;
+				return data;
 			}
-			const { [highlightedUser]: highlighted, ...rest } = linesData;
+			const { [highlightedUser]: highlighted, ...rest } = data;
 			if (!highlighted) {
-				return linesData;
+				return data;
 			}
 			return { [highlightedUser]: highlighted, ...rest };
 		})();
+		return Object.entries(sorted).map(([id, data]) => ({ id, data }));
+	}, [data, highlightedUser]);
 
-		return Object.entries(sortedData).map(([id, data]) => ({ id, data }));
-	}, [linesData, highlightedUser]);
+	return sortedData;
+}
 
-	const onMouseMove = useCallback<PointOrSliceMouseHandler<ChartSeries>>(
-		(datum) => {
-			if (!("seriesId" in datum)) {
-				return;
-			}
-			const { seriesId, data } = datum;
-			setHighlightedUser(seriesId);
-			const { x, y } = data;
-			if (y !== null) {
-				setHoveredPoint({ x, y });
-			}
-		},
-		[],
-	);
+function useInteractive() {
+	const { setHoveredPoint, setHighlightedUser } = useChart();
 
-	const onMouseLeave = useCallback(() => {
+	const onMouseMove: PointOrSliceMouseHandler<ChartSeries> = (datum) => {
+		if (!("seriesId" in datum)) {
+			return;
+		}
+		const { seriesId, data } = datum;
+		setHighlightedUser(seriesId);
+		const { x, y } = data;
+		if (y !== null) {
+			setHoveredPoint({ x, y });
+		}
+	};
+
+	const onMouseLeave = () => {
 		setHighlightedUser(undefined);
 		setHoveredPoint(undefined);
+	};
+
+	return { onMouseMove, onMouseLeave };
+}
+
+function usePointLabel(xLabels: string[]) {
+	const [{ cumulative }] = useChartControls();
+	const { chartData, highlightedUser } = useChart();
+
+	const pointsCount = useMemo(() => {
+		return mapValues(chartData, ({ monthlyCount }) => {
+			return monthlyCount.filter(({ count }) => count !== null).length;
+		});
+	}, [chartData]);
+
+	return useCallback(
+		({ seriesId, indexInSeries, data: { y } }: Point<ChartSeries>) => {
+			if (highlightedUser !== seriesId || y === null) {
+				return "";
+			}
+			const interval = Math.ceil(xLabels.length / (cumulative ? 10 : 20));
+			const count = pointsCount[seriesId] ?? xLabels.length;
+			if ((count - 1 - indexInSeries) % interval === 0) {
+				return String(y);
+			}
+			return "";
+		},
+		[highlightedUser, cumulative, pointsCount, xLabels.length],
+	);
+}
+
+const fontSize = 12;
+const gap = 12;
+const labelWidth = 7 * fontSize * 0.6 + gap;
+const { left: marginLeft, right: marginRight } = configs.margin;
+function useLabelsSpacing(xLabels: string[]) {
+	const ref = useRef<HTMLDivElement | null>(null);
+	const [width, setWidth] = useState(0);
+
+	useEffect(() => {
+		const chart = ref.current;
+		if (!chart) {
+			return;
+		}
+		setWidth(chart.clientWidth);
+		const observer = new ResizeObserver(
+			([entry]) => entry && setWidth(entry.contentRect.width),
+		);
+		observer.observe(chart);
+		return () => observer.disconnect();
 	}, []);
 
-	return (
-		<ChartContext
-			value={{
-				chartData,
-				hoveredPoint,
-				isolatedPoints,
-				idByColor,
-				highlightedUser,
-				setHighlightedUser,
-			}}
-		>
-			<div className={cx("container")}>
-				<ChartLine
-					linesData={sortedLinesData}
-					onMouseMove={onMouseMove}
-					onMouseLeave={onMouseLeave}
-				/>
-				<ChartLegend
-					entries={totalData}
-					visibleCount={visibleCount}
-					ref={legendRef}
-				/>
-				<ChartControls />
-			</div>
-		</ChartContext>
-	);
+	const [gridXValues, axisBottom] = useMemo(() => {
+		const count = xLabels.length;
+		const innerWidth = Math.max(0, width - marginLeft - marginRight);
+		const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
+		const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
+
+		const tickValues = xLabels
+			.filter((_, index) => (count - 1 - index) % interval === 0)
+			.map(toDate);
+		const axisBottom = { format: "%Y-%m", tickValues };
+
+		return [tickValues, axisBottom];
+	}, [xLabels, width]);
+
+	return { ref, gridXValues, axisBottom };
 }
