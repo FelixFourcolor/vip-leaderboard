@@ -68,24 +68,53 @@ export function RangeSlider<Value>({
 		}
 	}, [values, onChange, domain]);
 
-	const onScroll = useCallback(
-		(dist: number) => {
-			setValues(([currentFrom, currentTo]) => {
-				const currentDistance = currentTo - currentFrom;
-				let from = currentFrom + dist;
-				let to = currentTo + dist;
-				if (from < 0) {
-					from = 0;
-					to = currentDistance;
-				} else if (to >= domain.length) {
-					to = domain.length - 1;
-					from = to - currentDistance;
-				}
-				return [from, to];
-			});
-		},
-		[setValues, domain.length],
-	);
+	const onShift = (delta: number) => {
+		if (!delta) {
+			return;
+		}
+		setValues(([currentFrom, currentTo]) => {
+			const currentDistance = currentTo - currentFrom;
+			let from = currentFrom + delta;
+			let to = currentTo + delta;
+			if (from < 0) {
+				from = 0;
+				to = currentDistance;
+			} else if (to >= domain.length) {
+				to = domain.length - 1;
+				from = to - currentDistance;
+			}
+			return [from, to];
+		});
+	};
+
+	const onZoom = (delta: number) => {
+		if (!delta) {
+			return;
+		}
+		setValues(([currentFrom, currentTo]) => {
+			let from = currentFrom - delta;
+			let to = currentTo + delta;
+			if (from < 0) {
+				from = 0;
+			}
+			if (to >= domain.length) {
+				to = domain.length - 1;
+			}
+
+			const distance = to - from;
+			if (distance < minDistance) {
+				const adjustment = minDistance - distance;
+				from -= Math.floor(adjustment / 2);
+				to += Math.ceil(adjustment / 2);
+			} else if (distance > maxDistance) {
+				const adjustment = distance - maxDistance;
+				from += Math.floor(adjustment / 2);
+				to -= Math.ceil(adjustment / 2);
+			}
+
+			return [from, to];
+		});
+	};
 
 	const [labelsOverlap, setLabelsOverlap] = useState(false);
 	const fromLabelRef = useRef<HTMLSpanElement>(null);
@@ -130,7 +159,10 @@ export function RangeSlider<Value>({
 					min={0}
 					max={max}
 					value={values}
-					onWheel={(e) => onScroll(-Math.sign(e.deltaX))}
+					onWheel={(e) => {
+						onShift(Math.sign(e.deltaX));
+						onZoom(Math.sign(e.deltaY));
+					}}
 					domain={domain}
 					className={className}
 				>
