@@ -5,13 +5,12 @@ import {
 } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { RankingData } from "@/db/ranking";
 import { getAnyValue } from "@/utils/object";
-import { toDate } from "@/utils/time";
+import { toDate, toYyyyMm } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./Controls";
-import { useChartColors } from "./colors";
 import configs from "./configs";
 import { useChart } from "./context";
 import { ChartLegend } from "./Legend";
@@ -20,7 +19,8 @@ import { ChartProvider } from "./Provider";
 const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
-	const { chartData } = useChart();
+	const { chartData, colorById } = useChart();
+
 	const xLabels = useMemo(() => {
 		// all series have the same x values
 		const data = getAnyValue(chartData);
@@ -29,6 +29,7 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 		}
 		return data.monthlyCount.map(({ month }) => month);
 	}, [chartData]);
+
 	const { ref, gridXValues, axisBottom } = useLabelsSpacing(xLabels);
 
 	const { onMouseMove, onMouseLeave } = useInteractive();
@@ -38,7 +39,7 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 			<div ref={ref} className={cx("chart")} onMouseLeave={onMouseLeave}>
 				<ResponsiveLine
 					data={useSeriesData()}
-					colors={useChartColors()}
+					colors={({ id }) => colorById[id]!}
 					pointLabel={usePointLabel(xLabels)}
 					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}

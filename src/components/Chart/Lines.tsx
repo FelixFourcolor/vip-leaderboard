@@ -36,32 +36,15 @@ function Line({ id, path, color }: LineProps) {
 	const highlighted = highlightedUser === id;
 	const dimmed = highlightedUser && !highlighted;
 
-	const highlight = (() => {
-		if (!highlighted) {
-			return 0;
-		}
-		return isZack ? 0.25 : 0.4;
-	})();
-	const opacity = (() => {
-		if (highlighted) {
-			return 1;
-		}
-		if (!dimmed) {
-			return 0.9;
-		}
-		return isZack ? 0.5 : 0.4;
-	})();
-	const width = dimmed ? 1 : 2;
-
 	return (
 		<g>
-			{highlight && (
+			{highlighted && (
 				<path
 					d={path}
 					fill="none"
 					stroke={color}
 					strokeWidth={6}
-					strokeOpacity={highlight}
+					strokeOpacity={isZack ? 0.25 : 0.4}
 					style={{ filter: "blur(3px)" }}
 				/>
 			)}
@@ -69,8 +52,7 @@ function Line({ id, path, color }: LineProps) {
 				d={useAnimatedPath(path)}
 				fill="none"
 				stroke={color}
-				strokeWidth={width}
-				strokeOpacity={opacity}
+				strokeWidth={dimmed ? 1 : 2}
 			/>
 		</g>
 	);

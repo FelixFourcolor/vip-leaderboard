@@ -1,5 +1,3 @@
-import { useChart } from "./context";
-
 const colors = [
 	"#1f77b4",
 	"#ff7f0e",
@@ -17,9 +15,4 @@ export const colorsCount = colors.length;
 
 export function getSeriesColor({ rank }: { rank: number }) {
 	return colors[(rank - 1) % colorsCount]!;
-}
-
-export function useChartColors() {
-	const { chartData } = useChart();
-	return ({ id }: { id: string }) => getSeriesColor(chartData[id]!);
 }

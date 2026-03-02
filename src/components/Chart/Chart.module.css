@@ -21,8 +21,7 @@
 		path {
 			transition:
 				stroke 0.2s ease,
-				stroke-width 0.2s ease,
-				stroke-opacity 0.2s ease;
+				stroke-width 0.2s ease;
 		}
 	}
 
