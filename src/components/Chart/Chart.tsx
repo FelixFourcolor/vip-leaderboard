@@ -113,7 +113,7 @@ function useInteractive() {
 
 function usePointLabel(xLabels: string[]) {
 	const [{ cumulative }] = useChartControls();
-	const { chartData, highlightedUser } = useChart();
+	const { chartData, highlightedUser, isolatedPoints } = useChart();
 
 	const pointsCount = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
@@ -121,20 +121,26 @@ function usePointLabel(xLabels: string[]) {
 		});
 	}, [chartData]);
 
-	return useCallback(
-		({ seriesId, indexInSeries, data: { y } }: Point<ChartSeries>) => {
-			if (highlightedUser !== seriesId || y === null) {
-				return "";
-			}
-			const interval = Math.ceil(xLabels.length / (cumulative ? 10 : 20));
-			const count = pointsCount[seriesId] ?? xLabels.length;
-			if ((count - 1 - indexInSeries) % interval === 0) {
-				return String(y);
-			}
+	const labelsCount = cumulative ? 10 : 20;
+	const labelInterval = Math.ceil(xLabels.length / labelsCount);
+
+	return ({ seriesId, indexInSeries, data: { x, y } }: Point<ChartSeries>) => {
+		if (highlightedUser !== seriesId || y === null) {
 			return "";
-		},
-		[highlightedUser, cumulative, pointsCount, xLabels.length],
-	);
+		}
+
+		const count = pointsCount[seriesId] ?? xLabels.length;
+		// reversed so that last point is always labeled (most recent = most important)
+		const index = count - 1 - indexInSeries;
+		if (
+			index % labelInterval === 0 ||
+			isolatedPoints[seriesId]?.has(toYyyyMm(x))
+		) {
+			return String(y);
+		}
+
+		return "";
+	};
 }
 
 const fontSize = 12;
