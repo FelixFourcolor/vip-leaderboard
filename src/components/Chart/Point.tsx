@@ -32,11 +32,22 @@ export function ChartPoint({
 	) {
 		return <HoveredPoint x={date} y={y} seriesId={seriesId} />;
 	}
+
 	if (isolatedPoints[seriesId]?.has(toYyyyMm(date))) {
-		if (highlightedUser === seriesId) {
-			return <circle r={6} fill={color} />;
-		}
-		return <circle r={3} fill={color} />;
+		const highlighted = highlightedUser === seriesId;
+		return (
+			<>
+				{highlighted && (
+					<circle
+						r={6}
+						fill={color}
+						opacity={isZack ? 0.35 : 0.5}
+						style={{ filter: "blur(3px)" }}
+					/>
+				)}
+				<circle r={highlighted ? 4 : 3} fill={color} />
+			</>
+		);
 	}
 }
 
@@ -51,15 +62,12 @@ function HoveredPoint({ x, y, seriesId }: HoveredPointProps) {
 	const userData = chartData[seriesId]!;
 	const seriesColor = getSeriesColor(userData);
 
-	const [isZack] = useIsZack();
-	const fillColor = isZack ? "var(--bg-primary)" : "var(--text-primary)";
-
 	return (
 		<Tooltip
 			element={({ ref }) => (
 				<>
-					<circle ref={ref} r={7} fill={seriesColor} />
-					<circle r={4} fill={fillColor} />
+					<circle ref={ref} r={8} fill={seriesColor} />
+					<circle r={5} fill={"var(--bg-primary)"} />
 				</>
 			)}
 			content={({ ref, style }) => (
