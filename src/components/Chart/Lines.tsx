@@ -30,7 +30,7 @@ type LineProps = {
 };
 
 function Line({ id, path, color }: LineProps) {
-	const [isZack] = useIsZack();
+	const isZack = useIsZack();
 	const { highlightedUser } = useChart();
 
 	const highlighted = highlightedUser === id;

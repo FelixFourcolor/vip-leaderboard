@@ -1,28 +1,27 @@
 import { useSyncExternalStore } from "react";
 
-export function useIsZack() {
-	const isZack = useSyncExternalStore(subscribe, getSnapshot);
-	return [isZack, setIsZack] as const;
-}
-
 const STORAGE_KEY = "is-zack";
 
-let isZack = getLocalStorage() ?? getBrowserPreference();
-updateDOM(isZack); // initialize on load
-const listeners = new Set<() => void>();
+export function useIsZack() {
+	return useSyncExternalStore(subscribe, getSnapshot);
+}
 
-const subscribe = (listener: () => void) => {
-	listeners.add(listener);
-	return () => listeners.delete(listener);
-};
-const getSnapshot = () => isZack;
-
-function setIsZack(value: boolean) {
+export function setIsZack(value: boolean) {
 	isZack = value;
 	updateDOM(value);
 	setLocalStorage(value);
 	listeners.forEach((lis) => lis());
 }
+
+let isZack = getLocalStorage() ?? getBrowserPreference();
+updateDOM(isZack); // initialize on load
+
+const listeners = new Set<() => void>();
+const subscribe = (listener: () => void) => {
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+};
+const getSnapshot = () => isZack;
 
 function getLocalStorage() {
 	const value = localStorage.getItem(STORAGE_KEY);

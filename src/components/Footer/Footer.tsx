@@ -5,7 +5,7 @@ import { Toggle } from "@/components/Toggle";
 import { UserHeader } from "@/components/UserHeader";
 import type { UserData } from "@/db/user";
 import { getUser } from "@/db/user";
-import { useIsZack } from "@/hooks/useIsZack";
+import { setIsZack, useIsZack } from "@/hooks/useIsZack";
 import styles from "./Footer.module.css";
 
 const cx = classNames.bind(styles);
@@ -26,7 +26,7 @@ export function Footer() {
 }
 
 function ZackToggle() {
-	const [isZack, setIsZack] = useIsZack();
+	const isZack = useIsZack();
 	const [zackData, setZackData] = useState<UserData | undefined>();
 	useEffect(() => {
 		getUser("zackwb").then(setZackData);

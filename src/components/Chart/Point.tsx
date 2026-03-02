@@ -16,6 +16,7 @@ export function ChartPoint({
 	color,
 	datum: { x, y },
 }: DotsItemSymbolProps<Point<ChartSeries>>) {
+	const isZack = useIsZack();
 	const { highlightedUser, hoveredPoint, isolatedPoints, idByColor } =
 		useChart();
 
