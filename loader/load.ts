@@ -18,11 +18,11 @@ const VIP_REACTIONS = new Set([
 ]);
 
 type UserData = typeof user.$inferInsert;
-type ReactionData = typeof activity.$inferInsert;
+type ActivityData = typeof activity.$inferInsert;
 
 async function load_data() {
 	const usersMap = new Map<string, UserData>();
-	const reactionsMap = new Map<string, ReactionData>();
+	const activities: ActivityData[] = [];
 
 	function getOrCreateUser({
 		name,
@@ -66,10 +66,7 @@ async function load_data() {
 				.flatMap((r) => r.users)
 				.map(getOrCreateUser)
 				.filter((userId) => userId !== undefined)
-				.forEach((userId) => {
-					const key = `${timestamp}-${userId}`;
-					reactionsMap.set(key, { date, userId });
-				});
+				.forEach((userId) => activities.push({ date, userId }));
 		});
 	}
 
@@ -82,7 +79,7 @@ async function load_data() {
 
 	return {
 		users: Array.from(usersMap.values()),
-		reactions: Array.from(reactionsMap.values()),
+		activities,
 	};
 }
 
@@ -90,7 +87,7 @@ async function main() {
 	const data = load_data();
 	const sqlite = new Database("public/db");
 	const db = drizzle(sqlite);
-	const { users, reactions } = await data;
+	const { users, activities } = await data;
 	await db
 		.insert(user)
 		.values(users)
@@ -102,7 +99,7 @@ async function main() {
 				color: sql`excluded.color`,
 			},
 		});
-	await db.insert(activity).values(reactions).onConflictDoNothing();
+	await db.insert(activity).values(activities).onConflictDoNothing();
 	await db.delete(user).where(isNull(user.color));
 	sqlite.close();
 }
