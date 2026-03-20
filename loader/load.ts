@@ -33,18 +33,21 @@ async function load_data() {
 		const id = name.toLowerCase(); // sql primary key may be case-insensitive
 		const existing = usersMap.get(id);
 
+		const avatarParamIndex = avatarUrl.lastIndexOf("?");
+		avatarUrl = avatarUrl.substring(
+			"https://cdn.discordapp.com/".length,
+			avatarParamIndex === -1 ? undefined : avatarParamIndex,
+		);
+
 		if (!existing) {
 			const name = nickname;
-
-			const avatarParamIndex = avatarUrl.lastIndexOf("?");
-			avatarUrl = avatarUrl.substring(
-				"https://cdn.discordapp.com/".length,
-				avatarParamIndex === -1 ? undefined : avatarParamIndex,
-			);
 			usersMap.set(id, { id, name, avatarUrl, color });
-		} else if (color) {
-			// idk why color is sometimes null, so update it when it's available
-			existing.color = color;
+		} else {
+			existing.avatarUrl = avatarUrl;
+			// color is sometimes null, need to check
+			if (color) {
+				existing.color = color;
+			}
 		}
 
 		return id;
