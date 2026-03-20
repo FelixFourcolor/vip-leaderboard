@@ -7,7 +7,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"load": "tsx --tsconfig tsconfig.proj.json loader/load.ts",
-		"reload": "rm public/db ; drizzle-kit push && pnpm load"
+		"reload": "rm public/db.sqlite ; drizzle-kit push && pnpm load"
 	},
 	"dependencies": {
 		"@floating-ui/react": "^0.27.18",

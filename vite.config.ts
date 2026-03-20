@@ -38,7 +38,7 @@ function lastUpdatedBundler(): Plugin {
 			if (id !== `\0virtual:db/last-updated`) {
 				return;
 			}
-			const db = new DatabaseSync(res("public/db"));
+			const db = new DatabaseSync(res("public/db.sqlite"));
 			const { date } = db
 				.prepare("SELECT date FROM activity ORDER BY date DESC LIMIT 1")
 				.get() as { date: number };

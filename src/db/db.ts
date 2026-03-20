@@ -5,7 +5,7 @@ import initSqlJs from "sql.js";
 export const loadDb = memoize(() =>
 	Promise.all([
 		initSqlJs(),
-		fetch("/db")
+		fetch("/db.sqlite")
 			.then((res) => res.arrayBuffer())
 			.then((buffer) => new Uint8Array(buffer)),
 	])

@@ -88,7 +88,7 @@ async function load_data() {
 
 async function main() {
 	const data = load_data();
-	const sqlite = new Database("public/db");
+	const sqlite = new Database("public/db.sqlite");
 	const db = drizzle(sqlite);
 	const { users, activities } = await data;
 	await db
