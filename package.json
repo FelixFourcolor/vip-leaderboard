@@ -16,33 +16,29 @@
 		"@nivo/line": "^0.99.0",
 		"@nivo/theming": "^0.99.0",
 		"@react-spring/web": "^10.0.3",
-		"@tanstack/react-router": "^1.167.5",
-		"@tanstack/router-plugin": "^1.166.14",
+		"@tanstack/react-router": "^1.168.23",
+		"@tanstack/router-plugin": "^1.167.23",
 		"arktype": "^2.2.0",
 		"classnames": "^2.5.1",
-		"drizzle-orm": "^0.45.1",
-		"es-toolkit": "^1.45.1",
-		"react": "^19.2.4",
-		"react-dom": "^19.2.4",
+		"drizzle-orm": "^0.45.2",
+		"es-toolkit": "^1.46.0",
+		"react": "^19.2.5",
+		"react-dom": "^19.2.5",
 		"react-range": "^1.10.0",
 		"sql.js": "^1.14.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.8",
+		"@biomejs/biome": "^2.4.13",
 		"@types/better-sqlite3": "^7.6.13",
-		"@types/node": "^25.5.0",
+		"@types/node": "^25.6.0",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
-		"@types/sql.js": "^1.4.10",
-		"@vitejs/plugin-react": "^5.2.0",
-		"better-sqlite3": "^12.8.0",
+		"@types/sql.js": "^1.4.11",
+		"@vitejs/plugin-react": "^6.0.1",
+		"better-sqlite3": "^12.9.0",
 		"drizzle-kit": "^0.31.10",
-		"typescript": "~5.9.3",
-		"vite": "npm:rolldown-vite@7.3.1"
-	},
-	"pnpm": {
-		"overrides": {
-			"vite": "npm:rolldown-vite@7.3.1"
-		}
+		"tsx": "^4.21.0",
+		"typescript": "~6.0.3",
+		"vite": "^8.0.10"
 	}
 }
