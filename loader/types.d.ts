@@ -1,3 +1,7 @@
+type ChannelId = string;
+type MessageId = string;
+export type LastUpdateData = Record<ChannelId, MessageId>;
+
 export type User = {
 	name: string;
 	nickname: string;
@@ -5,9 +9,10 @@ export type User = {
 	color: string | null;
 };
 
-type Message = {
-	id: string;
+export type Message = {
+	id: MessageId;
 	timestamp: string;
+	author: User;
 	reactions: {
 		emoji: { code: string };
 		users: User[];
@@ -15,5 +20,7 @@ type Message = {
 };
 
 export type Data = {
+	channel: { id: ChannelId };
+	noUpdate?: true;
 	messages: Message[];
 };

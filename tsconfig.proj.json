@@ -5,7 +5,7 @@
 		"moduleResolution": "bundler",
 		"verbatimModuleSyntax": true,
 		"allowSyntheticDefaultImports": true,
-		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
 		"noEmit": true,
 		"paths": { "@/*": ["./src/*"] },
 
