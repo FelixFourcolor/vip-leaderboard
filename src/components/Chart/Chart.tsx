@@ -6,6 +6,7 @@ import {
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { MonthlyRanking } from "@/db/monthlyRanking";
 import type { RankingData } from "@/db/ranking";
 import { getAnyValue } from "@/utils/object";
 import { toDate, toYyyyMm } from "@/utils/time";
@@ -19,32 +20,26 @@ import { ChartProvider } from "./Provider";
 const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
-	const { chartData, colorById } = useChart();
+	const { colorById } = useChart();
 
-	const xLabels = useMemo(() => {
-		// all series have the same x values
-		const data = getAnyValue(chartData);
-		if (!data) {
-			return [];
-		}
-		return data.monthlyCount.map(({ month }) => month);
-	}, [chartData]);
-
-	const { ref, gridXValues, axisBottom } = useLabelsSpacing(xLabels);
-
+	const { xLabels, chartRef, gridXValues, axisBottom } = useHorizontalScale();
+	const { yScale, axisLeft, gridYValues } = useVerticalScale();
 	const { onMouseMove, onMouseLeave } = useInteractive();
 
 	return (
 		<div className={cx("container")}>
-			<div ref={ref} className={cx("chart")} onMouseLeave={onMouseLeave}>
+			<div ref={chartRef} className={cx("chart")} onMouseLeave={onMouseLeave}>
 				<ResponsiveLine
+					{...configs}
 					data={useSeriesData()}
 					colors={({ id }) => colorById[id]!}
 					pointLabel={usePointLabel(xLabels)}
 					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
-					{...configs}
+					yScale={yScale}
+					axisLeft={axisLeft}
+					gridYValues={gridYValues}
 				/>
 			</div>
 			<ChartLegend entries={entries} />
@@ -148,12 +143,14 @@ const fontSize = 12;
 const gap = 12;
 const labelWidth = 7 * fontSize * 0.6 + gap;
 const { left: marginLeft, right: marginRight } = configs.margin;
-function useLabelsSpacing(xLabels: string[]) {
-	const ref = useRef<HTMLDivElement | null>(null);
+function useHorizontalScale() {
+	const { chartData } = useChart();
+
+	const chartRef = useRef<HTMLDivElement | null>(null);
 	const [width, setWidth] = useState(0);
 
 	useEffect(() => {
-		const chart = ref.current;
+		const chart = chartRef.current;
 		if (!chart) {
 			return;
 		}
@@ -165,7 +162,16 @@ function useLabelsSpacing(xLabels: string[]) {
 		return () => observer.disconnect();
 	}, []);
 
-	const [gridXValues, axisBottom] = useMemo(() => {
+	const xLabels = useMemo(() => {
+		// all series have the same x values
+		const data = getAnyValue(chartData);
+		if (!data) {
+			return [];
+		}
+		return data.monthlyCount.map(({ month }) => month);
+	}, [chartData]);
+
+	return useMemo(() => {
 		const count = xLabels.length;
 		const innerWidth = Math.max(0, width - marginLeft - marginRight);
 		const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
@@ -174,10 +180,48 @@ function useLabelsSpacing(xLabels: string[]) {
 		const tickValues = xLabels
 			.filter((_, index) => (count - 1 - index) % interval === 0)
 			.map(toDate);
-		const axisBottom = { format: "%Y-%m", tickValues };
 
-		return [tickValues, axisBottom];
+		return {
+			chartRef,
+			xLabels,
+			axisBottom: { ...configs.axisBottom, tickValues },
+			gridXValues: tickValues,
+		};
 	}, [xLabels, width]);
+}
 
-	return { ref, gridXValues, axisBottom };
+function findMaxClamped(chartData: MonthlyRanking, threshold: number) {
+	let max = 0;
+	for (const { monthlyCount } of Object.values(chartData)) {
+		for (const { count } of monthlyCount) {
+			if (count == null) {
+				continue;
+			}
+			if (count >= threshold) {
+				return threshold;
+			}
+			if (count > max) {
+				max = count;
+			}
+		}
+	}
+	return max;
+}
+function useVerticalScale() {
+	const { chartData } = useChart();
+
+	return useMemo(() => {
+		const maxData = findMaxClamped(chartData, 8);
+		const yScaleMax = maxData >= 2 ? ("auto" as const) : 2;
+		const tickValues =
+			maxData >= 8
+				? undefined
+				: Array.from({ length: Math.max(2, maxData) + 1 }, (_, i) => i);
+
+		return {
+			yScale: { ...configs.yScale, max: yScaleMax },
+			axisLeft: { ...configs.axisLeft, tickValues },
+			gridYValues: tickValues,
+		};
+	}, [chartData]);
 }

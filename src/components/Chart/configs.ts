@@ -12,8 +12,10 @@ export default {
 	enablePointLabel: true,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
+	yScale: { type: "linear", min: 0 },
 	margin: { top: 24, right: 28, bottom: 24, left: 64 },
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
+	axisBottom: { format: "%Y-%m" },
 	pointSymbol: ChartPoint,
 	layers: ["grid", "axes", "areas", ChartLines, "points", "mesh"],
 	theme: {
