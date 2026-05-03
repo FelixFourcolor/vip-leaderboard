@@ -5,6 +5,7 @@ import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
 	routeTree,
+	basepath: "/vip-leaderboard/",
 	defaultPreload: "intent",
 	defaultPreloadStaleTime: 0,
 	scrollRestoration: true,

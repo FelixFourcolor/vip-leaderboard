@@ -23,6 +23,7 @@ export default defineConfig({
 			[`/${SQL_WASM.output}`]: SQL_WASM.origin,
 		},
 	},
+	base: "/vip-leaderboard/",
 });
 
 // so that the page can render before db is loaded
