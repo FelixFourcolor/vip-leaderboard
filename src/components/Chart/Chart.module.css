@@ -1,7 +1,7 @@
 .container {
 	--legend-padding: 16px;
 	/* hardcoded value large enough for most usernames */
-	--legend-item-width: 140px;
+	--legend-item-width: 134px;
 
 	flex: 1;
 	min-height: 0;
