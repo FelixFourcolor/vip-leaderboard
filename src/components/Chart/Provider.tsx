@@ -12,7 +12,7 @@ type Props = {
 	children: (_: { entries: MonthlyRanking }) => ReactNode;
 };
 export function ChartProvider({ children: Chart }: Props) {
-	const [{ since, until, fromRank, cumulative }] = useChartControls();
+	const [{ since, until, fromRank, cumulative, stacked }] = useChartControls();
 	const [visibleUsersCount, setVisibleUsersCount] = useState(colorsCount);
 
 	const [totalData = {}, setTotalData] = useState<MonthlyRanking>();
@@ -38,7 +38,7 @@ export function ChartProvider({ children: Chart }: Props) {
 					...userData,
 					monthlyCount: months.map((month) => ({
 						month,
-						count: countByMonth[month] ?? null,
+						count: countByMonth[month] ?? (stacked ? 0 : null),
 					})),
 				};
 			}
@@ -50,13 +50,23 @@ export function ChartProvider({ children: Chart }: Props) {
 					const count = countByMonth[month];
 					if (count != null) {
 						accumulator += count;
-						return { month, count: accumulator };
 					}
-					return { month, count: null };
+					return {
+						month,
+						count: stacked || count != null ? accumulator : null,
+					};
 				}),
 			};
 		});
-	}, [totalData, cumulative, fromRank, visibleUsersCount, since, until]);
+	}, [
+		totalData,
+		cumulative,
+		fromRank,
+		visibleUsersCount,
+		since,
+		until,
+		stacked,
+	]);
 
 	const isolatedPoints = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {

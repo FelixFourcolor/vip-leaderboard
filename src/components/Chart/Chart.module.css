@@ -56,8 +56,13 @@
 		grid-column: 1;
 		grid-row: 2;
 
-		.toggle {
-			font-size: var(--text-small);
+		.toggles {
+			display: flex;
+			gap: 12px;
+
+			.toggle {
+				font-size: var(--text-small);
+			}
 		}
 
 		.slider {

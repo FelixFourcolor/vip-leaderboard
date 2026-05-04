@@ -15,6 +15,7 @@ const defaultParams = {
 	until: toYyyyMm(lastUpdated),
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
+	stacked: false,
 	fromRank: 1,
 };
 
@@ -26,7 +27,7 @@ const VALID_MONTHS = monthsInRange(startDate, lastUpdated);
 
 export function ChartControls() {
 	const [params, setParams] = useChartControls();
-	const { until, since, cumulative } = params;
+	const { until, since, cumulative, stacked } = params;
 
 	const onDateChange = useCallback(
 		([since, until]: [string, string]) => setParams({ since, until }),
@@ -35,13 +36,23 @@ export function ChartControls() {
 
 	return (
 		<div className={cx("bottom-panel")}>
-			<Toggle
-				value={cumulative}
-				onChange={(cumulative) => setParams({ cumulative })}
-				className={cx("toggle")}
-			>
-				Cumulative
-			</Toggle>
+			<div className={cx("toggles")}>
+				<Toggle
+					value={cumulative}
+					onChange={(cumulative) => setParams({ cumulative })}
+					className={cx("toggle")}
+				>
+					Cumulative
+				</Toggle>
+				<Toggle
+					value={stacked}
+					onChange={(stacked) => setParams({ stacked })}
+					className={cx("toggle")}
+				>
+					Stacked
+				</Toggle>
+			</div>
+
 			<RangeSlider
 				className={cx("slider")}
 				domain={VALID_MONTHS}

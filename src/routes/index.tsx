@@ -8,7 +8,8 @@ const validate = type({
 	"since?": "string | undefined",
 	"cumulative?": "boolean | undefined",
 	"fromRank?": "number >= 1 | undefined",
-}).narrow(({ until, since, fromRank, cumulative, ...unknowns }) => {
+	"stacked?": "boolean | undefined",
+}).narrow(({ until, since, fromRank, cumulative, stacked, ...unknowns }) => {
 	if (!isEmptyObject(unknowns)) {
 		return false;
 	}

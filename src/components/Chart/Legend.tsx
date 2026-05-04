@@ -75,6 +75,7 @@ export function ChartLegend({ entries }: LegendProps) {
 type EntryProps = RankingData[string] & { scrolling: boolean };
 function LegendEntry({ scrolling, id, count, rank, ...userData }: EntryProps) {
 	const { highlightedUser, setHighlightedUser } = useChart();
+
 	return (
 		<div
 			style={{

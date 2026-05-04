@@ -4,7 +4,7 @@ import {
 	ResponsiveLine,
 } from "@nivo/line";
 import classNames from "classnames/bind";
-import { mapValues } from "es-toolkit";
+import { mapValues, noop } from "es-toolkit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 import type { RankingData } from "@/db/ranking";
@@ -20,9 +20,17 @@ import { ChartProvider } from "./Provider";
 const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
-	const { colorById } = useChart();
+	const { chartData, colorById } = useChart();
 
-	const { xLabels, chartRef, gridXValues, axisBottom } = useHorizontalScale();
+	const xLabels = useMemo(() => {
+		const data = getAnyValue(chartData); // all series have the same x values
+		if (!data) {
+			return [];
+		}
+		return data.monthlyCount.map(({ month }) => month);
+	}, [chartData]);
+
+	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(xLabels);
 	const { yScale, axisLeft, gridYValues } = useVerticalScale();
 	const { onMouseMove, onMouseLeave } = useInteractive();
 
@@ -57,6 +65,7 @@ export type ChartSeries = {
 
 function useSeriesData() {
 	const { chartData, highlightedUser } = useChart();
+	const [{ stacked }] = useChartControls();
 
 	const data = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
@@ -68,24 +77,38 @@ function useSeriesData() {
 	}, [chartData]);
 
 	const sortedData = useMemo<ChartSeries[]>(() => {
-		const sorted = (() => {
-			if (!highlightedUser) {
-				return data;
-			}
-			const { [highlightedUser]: highlighted, ...rest } = data;
-			if (!highlighted) {
-				return data;
-			}
-			return { [highlightedUser]: highlighted, ...rest };
-		})();
-		return Object.entries(sorted).map(([id, data]) => ({ id, data }));
-	}, [data, highlightedUser]);
+		if (stacked) {
+			return Object.entries(data)
+				.map(([id, data]) => ({ id, data }))
+				.reverse(); // so that higher ranked users are drawn on top
+		}
+		return Object.entries(
+			(() => {
+				// move highlighted user first so that it's drawn on top
+				if (!highlightedUser) {
+					return data;
+				}
+				const { [highlightedUser]: highlightedData, ...rest } = data;
+				if (!highlightedData) {
+					return data;
+				}
+				return { [highlightedUser]: highlightedData, ...rest };
+			})(),
+		).map(([id, data]) => ({ id, data }));
+	}, [data, highlightedUser, stacked]);
 
 	return sortedData;
 }
 
 function useInteractive() {
 	const { setHoveredPoint, setHighlightedUser } = useChart();
+	const [{ stacked }] = useChartControls();
+
+	if (stacked) {
+		// TODO: support tooltip for stacked mode
+		// nivo's position calculation doesn't work for stacked mode, need to DIY
+		return { onMouseMove: noop, onMouseLeave: noop };
+	}
 
 	const onMouseMove: PointOrSliceMouseHandler<ChartSeries> = (datum) => {
 		if (!("seriesId" in datum)) {
@@ -107,7 +130,7 @@ function useInteractive() {
 	return { onMouseMove, onMouseLeave };
 }
 
-function usePointLabel(xLabels: string[]) {
+function usePointLabel(xLabels: readonly string[]) {
 	const [{ cumulative }] = useChartControls();
 	const { chartData, highlightedUser, isolatedPoints } = useChart();
 
@@ -143,9 +166,7 @@ const fontSize = 12;
 const gap = 12;
 const labelWidth = 7 * fontSize * 0.6 + gap;
 const { left: marginLeft, right: marginRight } = configs.margin;
-function useHorizontalScale() {
-	const { chartData } = useChart();
-
+function useHorizontalScale(xLabels: readonly string[]) {
 	const chartRef = useRef<HTMLDivElement | null>(null);
 	const [width, setWidth] = useState(0);
 
@@ -161,15 +182,6 @@ function useHorizontalScale() {
 		observer.observe(chart);
 		return () => observer.disconnect();
 	}, []);
-
-	const xLabels = useMemo(() => {
-		// all series have the same x values
-		const data = getAnyValue(chartData);
-		if (!data) {
-			return [];
-		}
-		return data.monthlyCount.map(({ month }) => month);
-	}, [chartData]);
 
 	return useMemo(() => {
 		const count = xLabels.length;
@@ -209,19 +221,20 @@ function findMaxClamped(chartData: MonthlyRanking, threshold: number) {
 }
 function useVerticalScale() {
 	const { chartData } = useChart();
+	const [{ stacked }] = useChartControls();
 
 	return useMemo(() => {
 		const maxData = findMaxClamped(chartData, 8);
-		const yScaleMax = maxData >= 2 ? ("auto" as const) : 2;
+		const max = maxData >= 2 ? ("auto" as const) : 2;
 		const tickValues =
 			maxData >= 8
 				? undefined
 				: Array.from({ length: Math.max(2, maxData) + 1 }, (_, i) => i);
 
 		return {
-			yScale: { ...configs.yScale, max: yScaleMax },
+			yScale: { ...configs.yScale, max, stacked },
 			axisLeft: { ...configs.axisLeft, tickValues },
 			gridYValues: tickValues,
 		};
-	}, [chartData]);
+	}, [chartData, stacked]);
 }
