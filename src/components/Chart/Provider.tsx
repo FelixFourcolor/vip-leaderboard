@@ -96,7 +96,7 @@ export function ChartProvider({ children: Chart }: Props) {
 
 			const dimmed = highlightedUser && !highlighted;
 			if (!dimmed) {
-				return `rgb(from ${color} r g b / ${isZack ? 0.85 : 0.8})`;
+				return `rgb(from ${color} r g b / ${isZack ? 0.85 : 0.75})`;
 			}
 
 			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;

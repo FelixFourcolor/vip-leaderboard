@@ -1,10 +1,14 @@
 import { curveFromProp, useAnimatedPath } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
+import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import type { ChartSeries } from "./Chart";
+import styles from "./Chart.module.css";
 import { useChartControls } from "./Controls";
 import { useChart } from "./context";
+
+const cx = classNames.bind(styles);
 
 export function ChartAreas({
 	series,
@@ -53,13 +57,14 @@ type AreaProps = {
 };
 function Area({ id, path, color }: AreaProps) {
 	const { highlightedUser } = useChart();
-	const animatedPath = useAnimatedPath(path);
+	const highlighted = highlightedUser === id;
+	const dimmed = highlightedUser && !highlighted;
 
 	return (
 		<animated.path
-			d={animatedPath}
+			d={useAnimatedPath(path)}
 			fill={color}
-			fillOpacity={highlightedUser === id ? 0.25 : 0.05}
+			className={cx("area", { highlighted, dimmed })}
 		/>
 	);
 }

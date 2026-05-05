@@ -1,10 +1,13 @@
 import { useAnimatedPath } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
-import { useIsZack } from "@/hooks/useIsZack";
+import classNames from "classnames/bind";
 import type { ChartSeries } from "./Chart";
+import styles from "./Chart.module.css";
 import { useChartControls } from "./Controls";
 import { useChart } from "./context";
+
+const cx = classNames.bind(styles);
 
 export function ChartLines({
 	series,
@@ -30,31 +33,22 @@ type LineProps = {
 	color: string;
 };
 function Line({ id, path, color }: LineProps) {
-	const isZack = useIsZack();
 	const { highlightedUser } = useChart();
 	const [{ stacked }] = useChartControls();
 	const animatedPath = useAnimatedPath(path);
 
-	const highlighted = !stacked && highlightedUser === id;
-	const dimmed = !stacked && highlightedUser && !highlighted;
+	const highlighted = highlightedUser === id;
+	const dimmed = highlightedUser && !highlighted;
 
 	return (
-		<g>
-			{highlighted && (
-				<animated.path
-					d={animatedPath}
-					fill="none"
-					stroke={color}
-					strokeWidth={6}
-					strokeOpacity={isZack ? 0.25 : 0.4}
-					style={{ filter: "blur(3px)" }}
-				/>
-			)}
+		<g style={{ ["--series-color" as string]: color }}>
 			<animated.path
 				d={animatedPath}
-				fill="none"
-				stroke={color}
-				strokeWidth={dimmed ? 1 : 2}
+				className={cx("outline", { visible: !stacked && highlighted })}
+			/>
+			<animated.path
+				d={animatedPath}
+				className={cx("line", { stacked, dimmed })}
 			/>
 		</g>
 	);
