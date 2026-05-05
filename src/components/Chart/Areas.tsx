@@ -63,7 +63,7 @@ function Area({ id, path, color }: AreaProps) {
 	return (
 		<animated.path
 			d={useAnimatedPath(path)}
-			fill={color}
+			style={{ ["--series-color" as string]: color }}
 			className={cx("area", { highlighted, dimmed })}
 		/>
 	);

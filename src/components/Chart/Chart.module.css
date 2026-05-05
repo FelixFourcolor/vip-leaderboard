@@ -27,18 +27,13 @@
 				fill: none;
 
 				stroke: var(--series-color);
-
 				stroke-width: 2px;
 				&.dimmed {
 					stroke-width: 1px;
 				}
 
 				&.stacked {
-					stroke: var(--text-tertiary);
-					[data-is-zack="true"] & {
-						stroke: var(--text-secondary);
-					}
-
+					stroke: var(--text-secondary);
 					stroke-width: 1px;
 					&.dimmed {
 						stroke-width: 0.5px;
@@ -63,12 +58,17 @@
 			}
 
 			&.area {
-				fill-opacity: 0.45;
+				fill: var(--series-color);
+				[data-is-zack="false"] &:not(.highlighted) {
+					fill: hsl(from var(--series-color) h s calc(l + 10));
+				}
+
+				fill-opacity: 0.4;
 				&.dimmed {
-					fill-opacity: 0.25;
+					fill-opacity: 0.2;
 				}
 				&.highlighted {
-					fill-opacity: 0.65;
+					fill-opacity: 0.6;
 				}
 			}
 		}

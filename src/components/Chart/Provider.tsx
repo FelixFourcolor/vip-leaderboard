@@ -1,7 +1,6 @@
 import { mapValues } from "es-toolkit";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
-import { useIsZack } from "@/hooks/useIsZack";
 import { windows3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import { useChartControls } from "./Controls";
@@ -84,7 +83,6 @@ export function ChartProvider({ children: Chart }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
 
-	const isZack = useIsZack();
 	const colorById = useMemo(() => {
 		return mapValues(chartData, (user) => {
 			const color = getSeriesColor(user);
@@ -95,13 +93,13 @@ export function ChartProvider({ children: Chart }: Props) {
 			}
 
 			const dimmed = highlightedUser && !highlighted;
-			if (!dimmed) {
-				return `rgb(from ${color} r g b / ${isZack ? 0.85 : 0.75})`;
+			if (dimmed) {
+				return `rgb(from ${color} r g b / 0.45)`;
 			}
 
-			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;
+			return `rgb(from ${color} r g b / 0.85)`;
 		});
-	}, [chartData, highlightedUser, isZack]);
+	}, [chartData, highlightedUser]);
 
 	// workaround for nivo's bug of not exposing seriesId for each point
 	const idByColor = useMemo(() => {
