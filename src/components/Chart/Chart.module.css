@@ -23,6 +23,16 @@
 				stroke 0.2s ease,
 				stroke-width 0.2s ease;
 		}
+
+		text.label {
+			fill: var(--text-primary);
+			[data-is-zack="true"] & {
+				fill: black;
+			}
+			font-size: 13px;
+			text-anchor: middle;
+			dominant-baseline: central;
+		}
 	}
 
 	.slider {

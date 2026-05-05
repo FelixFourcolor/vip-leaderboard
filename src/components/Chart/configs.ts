@@ -2,6 +2,7 @@ import type { ResponsiveLine } from "@nivo/line";
 import type { ComponentProps } from "react";
 import { ChartAreas } from "./Areas";
 import type { ChartSeries } from "./Chart";
+import { ChartLabels } from "./Labels";
 import { ChartLines } from "./Lines";
 import { ChartPoint } from "./Point";
 
@@ -10,7 +11,6 @@ export default {
 	curve: "monotoneX",
 	useMesh: true,
 	enableCrosshair: false,
-	enablePointLabel: true,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
 	yScale: { type: "linear", min: 0 },
@@ -18,13 +18,18 @@ export default {
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
 	axisBottom: { format: "%Y-%m" },
 	pointSymbol: ChartPoint,
-	layers: ["grid", "axes", ChartAreas, ChartLines, "points", "mesh"],
+	layers: [
+		"grid",
+		"axes",
+		ChartAreas,
+		ChartLines,
+		"points",
+		ChartLabels,
+		"mesh",
+	],
 	theme: {
 		background: "var(--bg-secondary)",
-		text: {
-			fill: "var(--text-primary)",
-			fontSize: "var(--text-mini)",
-		},
+		text: { fill: "var(--text-primary)" },
 		axis: {
 			ticks: {
 				line: {

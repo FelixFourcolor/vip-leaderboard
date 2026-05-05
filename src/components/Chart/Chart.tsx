@@ -1,15 +1,11 @@
-import {
-	type Point,
-	type PointOrSliceMouseHandler,
-	ResponsiveLine,
-} from "@nivo/line";
+import { type PointOrSliceMouseHandler, ResponsiveLine } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues, noop } from "es-toolkit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 import type { RankingData } from "@/db/ranking";
 import { getAnyValue } from "@/utils/object";
-import { toDate, toYyyyMm } from "@/utils/time";
+import { toDate } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./Controls";
 import configs from "./configs";
@@ -21,7 +17,6 @@ const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
 	const { chartData, colorById } = useChart();
-	const [{ stacked }] = useChartControls();
 
 	const xLabels = useMemo(() => {
 		const data = getAnyValue(chartData); // all series have the same x values
@@ -42,8 +37,6 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 					{...configs}
 					data={useSeriesData()}
 					colors={({ id }) => colorById[id]!}
-					pointLabel={usePointLabel(xLabels)}
-					enableArea={stacked}
 					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
@@ -60,10 +53,8 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 
 export default () => <ChartProvider>{Chart}</ChartProvider>;
 
-export type ChartSeries = {
-	id: string;
-	data: { x: Date; y: number | null }[];
-};
+export type ChartPoint = { x: Date; y: number | null };
+export type ChartSeries = { id: string; data: ChartPoint[] };
 
 function useSeriesData() {
 	const { chartData, highlightedUser } = useChart();
@@ -130,38 +121,6 @@ function useInteractive() {
 	};
 
 	return { onMouseMove, onMouseLeave };
-}
-
-function usePointLabel(xLabels: readonly string[]) {
-	const [{ cumulative }] = useChartControls();
-	const { chartData, highlightedUser, isolatedPoints } = useChart();
-
-	const pointsCount = useMemo(() => {
-		return mapValues(chartData, ({ monthlyCount }) => {
-			return monthlyCount.filter(({ count }) => count).length;
-		});
-	}, [chartData]);
-
-	const labelsCount = cumulative ? 10 : 20;
-	const labelInterval = Math.ceil(xLabels.length / labelsCount);
-
-	return ({ seriesId, indexInSeries, data: { x, y } }: Point<ChartSeries>) => {
-		if (highlightedUser !== seriesId || !y) {
-			return "";
-		}
-
-		const count = pointsCount[seriesId] ?? xLabels.length;
-		// reversed so that last point is always labeled (most recent = most important)
-		const index = count - 1 - indexInSeries;
-		if (
-			index % labelInterval === 0 ||
-			isolatedPoints[seriesId]?.has(toYyyyMm(x))
-		) {
-			return String(y);
-		}
-
-		return "";
-	};
 }
 
 const fontSize = 12;

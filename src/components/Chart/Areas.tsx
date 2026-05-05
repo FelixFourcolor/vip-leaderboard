@@ -59,7 +59,7 @@ function Area({ id, path, color }: AreaProps) {
 		<animated.path
 			d={animatedPath}
 			fill={color}
-			fillOpacity={highlightedUser === id ? 0.3 : 0.05}
+			fillOpacity={highlightedUser === id ? 0.25 : 0.05}
 		/>
 	);
 }
