@@ -21,6 +21,7 @@ const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
 	const { chartData, colorById } = useChart();
+	const [{ stacked }] = useChartControls();
 
 	const xLabels = useMemo(() => {
 		const data = getAnyValue(chartData); // all series have the same x values
@@ -42,6 +43,7 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 					data={useSeriesData()}
 					colors={({ id }) => colorById[id]!}
 					pointLabel={usePointLabel(xLabels)}
+					enableArea={stacked}
 					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
@@ -136,7 +138,7 @@ function usePointLabel(xLabels: readonly string[]) {
 
 	const pointsCount = useMemo(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
-			return monthlyCount.filter(({ count }) => count !== null).length;
+			return monthlyCount.filter(({ count }) => count).length;
 		});
 	}, [chartData]);
 
@@ -144,7 +146,7 @@ function usePointLabel(xLabels: readonly string[]) {
 	const labelInterval = Math.ceil(xLabels.length / labelsCount);
 
 	return ({ seriesId, indexInSeries, data: { x, y } }: Point<ChartSeries>) => {
-		if (highlightedUser !== seriesId || y === null) {
+		if (highlightedUser !== seriesId || !y) {
 			return "";
 		}
 

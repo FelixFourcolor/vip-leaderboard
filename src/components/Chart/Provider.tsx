@@ -72,7 +72,10 @@ export function ChartProvider({ children: Chart }: Props) {
 		return mapValues(chartData, ({ monthlyCount }) => {
 			return new Set(
 				windows3(monthlyCount)
-					.filter(([pre, cur, nex]) => !pre?.count && cur.count && !nex?.count)
+					.filter(
+						([pre, cur, nex]) =>
+							pre?.count == null && cur.count != null && nex?.count == null,
+					)
 					.map(([, cur]) => cur.month),
 			);
 		});
@@ -93,7 +96,7 @@ export function ChartProvider({ children: Chart }: Props) {
 
 			const dimmed = highlightedUser && !highlighted;
 			if (!dimmed) {
-				return `rgb(from ${color} r g b / 0.9)`;
+				return `rgb(from ${color} r g b / ${isZack ? 0.85 : 0.8})`;
 			}
 
 			return `rgb(from ${color} r g b / ${isZack ? 0.5 : 0.4})`;

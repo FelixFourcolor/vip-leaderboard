@@ -3,6 +3,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
 import { useIsZack } from "@/hooks/useIsZack";
 import type { ChartSeries } from "./Chart";
+import { useChartControls } from "./Controls";
 import { useChart } from "./context";
 
 export function ChartLines({
@@ -28,19 +29,20 @@ type LineProps = {
 	path: string;
 	color: string;
 };
-
 function Line({ id, path, color }: LineProps) {
 	const isZack = useIsZack();
 	const { highlightedUser } = useChart();
+	const [{ stacked }] = useChartControls();
+	const animatedPath = useAnimatedPath(path);
 
-	const highlighted = highlightedUser === id;
-	const dimmed = highlightedUser && !highlighted;
+	const highlighted = !stacked && highlightedUser === id;
+	const dimmed = !stacked && highlightedUser && !highlighted;
 
 	return (
 		<g>
 			{highlighted && (
-				<path
-					d={path}
+				<animated.path
+					d={animatedPath}
 					fill="none"
 					stroke={color}
 					strokeWidth={6}
@@ -49,7 +51,7 @@ function Line({ id, path, color }: LineProps) {
 				/>
 			)}
 			<animated.path
-				d={useAnimatedPath(path)}
+				d={animatedPath}
 				fill="none"
 				stroke={color}
 				strokeWidth={dimmed ? 1 : 2}

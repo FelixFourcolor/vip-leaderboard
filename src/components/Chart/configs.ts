@@ -1,5 +1,6 @@
 import type { ResponsiveLine } from "@nivo/line";
 import type { ComponentProps } from "react";
+import { ChartAreas } from "./Areas";
 import type { ChartSeries } from "./Chart";
 import { ChartLines } from "./Lines";
 import { ChartPoint } from "./Point";
@@ -17,7 +18,7 @@ export default {
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
 	axisBottom: { format: "%Y-%m" },
 	pointSymbol: ChartPoint,
-	layers: ["grid", "axes", "areas", ChartLines, "points", "mesh"],
+	layers: ["grid", "axes", ChartAreas, ChartLines, "points", "mesh"],
 	theme: {
 		background: "var(--bg-secondary)",
 		text: {
