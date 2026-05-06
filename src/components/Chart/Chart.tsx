@@ -1,6 +1,6 @@
-import { type PointOrSliceMouseHandler, ResponsiveLine } from "@nivo/line";
+import { ResponsiveLine } from "@nivo/line";
 import classNames from "classnames/bind";
-import { mapValues, noop } from "es-toolkit";
+import { mapValues } from "es-toolkit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 import type { RankingData } from "@/db/ranking";
@@ -28,16 +28,14 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(xLabels);
 	const { yScale, axisLeft, gridYValues } = useVerticalScale();
-	const { onMouseMove, onMouseLeave } = useInteractive();
 
 	return (
 		<div className={cx("container")}>
-			<div ref={chartRef} className={cx("chart")} onMouseLeave={onMouseLeave}>
+			<div ref={chartRef} className={cx("chart")}>
 				<ResponsiveLine
 					{...configs}
 					data={useSeriesData()}
 					colors={useColors()}
-					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
 					yScale={yScale}
@@ -53,8 +51,8 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 
 export default () => <ChartProvider>{Chart}</ChartProvider>;
 
-export type ChartPoint = { x: Date; y: number | null };
-export type ChartSeries = { id: string; data: ChartPoint[] };
+export type ChartDataPoint = { x: Date; y: number | null };
+export type ChartSeries = { id: string; data: ChartDataPoint[] };
 
 function useSeriesData() {
 	const { chartData, highlightedUser } = useChart();
@@ -113,36 +111,6 @@ function useColors() {
 	}, [chartData, isMuted, isHighlighted]);
 
 	return ({ id }: { id: string }) => colorById[id]!;
-}
-
-function useInteractive() {
-	const { setHoveredPoint, setHighlightedUser } = useChart();
-	const [{ stacked }] = useChartControls();
-
-	if (stacked) {
-		// TODO: support tooltip for stacked mode
-		// nivo's position calculation doesn't work for stacked mode, need to DIY
-		return { onMouseMove: noop, onMouseLeave: noop };
-	}
-
-	const onMouseMove: PointOrSliceMouseHandler<ChartSeries> = (datum) => {
-		if (!("seriesId" in datum)) {
-			return;
-		}
-		const { seriesId, data } = datum;
-		setHighlightedUser(seriesId);
-		const { x, y } = data;
-		if (y !== null) {
-			setHoveredPoint({ x, seriesId });
-		}
-	};
-
-	const onMouseLeave = () => {
-		setHighlightedUser(undefined);
-		setHoveredPoint(undefined);
-	};
-
-	return { onMouseMove, onMouseLeave };
 }
 
 const fontSize = 12;

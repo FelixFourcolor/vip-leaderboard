@@ -2,6 +2,7 @@ import type { ResponsiveLine } from "@nivo/line";
 import type { ComponentProps } from "react";
 import type { ChartSeries } from "./Chart";
 import { ChartAreas } from "./layers/Areas";
+import { ChartInteraction } from "./layers/Interaction";
 import { ChartLabels } from "./layers/Labels";
 import { ChartLines } from "./layers/Lines";
 import { ChartPoints } from "./layers/Points";
@@ -9,7 +10,7 @@ import { ChartPoints } from "./layers/Points";
 export default {
 	tooltip: () => null,
 	curve: "monotoneX",
-	useMesh: true,
+	useMesh: false,
 	enableCrosshair: false,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
@@ -24,7 +25,7 @@ export default {
 		ChartLines,
 		ChartPoints,
 		ChartLabels,
-		"mesh",
+		ChartInteraction,
 	],
 	theme: {
 		background: "var(--bg-secondary)",

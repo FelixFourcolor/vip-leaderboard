@@ -9,7 +9,7 @@ import type { CSSProperties, JSX, Ref } from "react";
 import { createPortal } from "react-dom";
 
 type Props = {
-	element: (props: { ref: Ref<any> }) => JSX.Element;
+	element: (props: { ref: Ref<any> }) => JSX.Element | null;
 	content: (props: { ref: Ref<any>; style: CSSProperties }) => JSX.Element;
 	offset?: number;
 	padding?: number;

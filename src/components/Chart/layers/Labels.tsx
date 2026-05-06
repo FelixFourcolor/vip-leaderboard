@@ -2,7 +2,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useMemo } from "react";
 import { getAnyValue } from "@/utils/object";
-import type { ChartPoint, ChartSeries } from "../Chart";
+import type { ChartDataPoint, ChartSeries } from "../Chart";
 import styles from "../Chart.module.css";
 import { useChartControls } from "../Controls";
 import { useChart } from "../context";
@@ -40,7 +40,7 @@ export function ChartLabels({
 }
 
 function useVisibility() {
-	const [{ cumulative }] = useChartControls();
+	const [{ cumulative, stacked }] = useChartControls();
 	const { chartData, isIsolated, isHighlighted, isHovered } = useChart();
 
 	const xLabels = useMemo(() => {
@@ -52,8 +52,12 @@ function useVisibility() {
 	const labelsCount = cumulative ? 10 : 20;
 	const labelInterval = Math.max(1, Math.ceil(xLabels.length / labelsCount));
 
-	return (seriesId: string, index: number, { x, y }: ChartPoint) => {
-		if (!y || !isHighlighted(seriesId) || isHovered({ seriesId, x })) {
+	return (seriesId: string, index: number, { x, y }: ChartDataPoint) => {
+		if (
+			!y ||
+			!isHighlighted(seriesId) ||
+			(!stacked && isHovered({ seriesId, x }))
+		) {
 			return false;
 		}
 		return (

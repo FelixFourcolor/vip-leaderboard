@@ -95,16 +95,6 @@
 		}
 
 		circle {
-			&.outer {
-				r: 8px;
-				fill: var(--series-color);
-			}
-
-			&.inner {
-				r: 4px;
-				fill: var(--bg-primary);
-			}
-
 			&.point {
 				r: 3px;
 				&.highlighted {
@@ -125,6 +115,21 @@
 
 				&:not(.visible) {
 					display: none;
+				}
+			}
+
+			&.hovered {
+				&.outer {
+					r: 8px;
+					fill: var(--series-color);
+				}
+				&.inner {
+					r: 4px;
+					fill: var(--bg-primary);
+				}
+				&:not(.visible) {
+					/* cannot use `display: none`, tooltip needs to know its position */
+					visibility: hidden;
 				}
 			}
 		}
@@ -219,6 +224,7 @@
 	&.tooltip {
 		background-color: rgb(from var(--bg-primary) r g b / 0.7);
 		width: fit-content;
+		pointer-events: none;
 	}
 
 	.legend & {

@@ -3,8 +3,9 @@ import classNames from "classnames/bind";
 import { Tooltip } from "@/components/Tooltip";
 import { UserHeader } from "@/components/UserHeader";
 import { toYyyyMm } from "@/utils/time";
-import type { ChartPoint, ChartSeries } from "../Chart";
+import type { ChartDataPoint, ChartSeries } from "../Chart";
 import styles from "../Chart.module.css";
+import { useChartControls } from "../Controls";
 import { useChart } from "../context";
 
 const cx = classNames.bind(styles);
@@ -13,10 +14,12 @@ export function ChartPoints({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 	return (
 		<g>
 			{series.map(({ id, data, color }) => {
-				return data.map(({ data, position }) => (
+				return data.map(({ data, position: { x, y } }) => (
 					<g
 						key={`${id}-${data.x}`}
-						transform={`translate(${position.x},${position.y})`}
+						// idk why some ys are null, they aren't rendered anyway,
+						// set it to 0 to supress console error
+						transform={`translate(${x},${y ?? 0})`}
 					>
 						<Point seriesId={id} color={color} data={data} />
 					</g>
@@ -29,17 +32,17 @@ export function ChartPoints({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 type PointProps = {
 	seriesId: string;
 	color: string;
-	data: ChartPoint;
+	data: ChartDataPoint;
 };
 
 function Point({ data, seriesId, color }: PointProps) {
 	const { isHovered } = useChart();
 
-	const renderer = isHovered({ seriesId, x: data.x })
+	const Renderer = isHovered({ seriesId, x: data.x })
 		? HoveredPoint
 		: IsolatedPoint;
 
-	return renderer({ seriesId, color, data });
+	return <Renderer seriesId={seriesId} color={color} data={data} />;
 }
 
 function IsolatedPoint({ seriesId, color, data: { x } }: PointProps) {
@@ -61,15 +64,17 @@ function IsolatedPoint({ seriesId, color, data: { x } }: PointProps) {
 
 function HoveredPoint({ seriesId, color, data }: PointProps) {
 	const { chartData } = useChart();
+	const [{ stacked }] = useChartControls();
+
 	const colorStyle = { ["--series-color" as string]: color };
 
 	return (
 		<Tooltip
+			offset={stacked ? -6 : 4}
 			element={({ ref }) => (
 				<g ref={ref} style={colorStyle}>
-					{" "}
-					<circle className={cx("outer")} />
-					<circle className={cx("inner")} />
+					<circle className={cx("hovered", "outer", { visible: !stacked })} />
+					<circle className={cx("hovered", "inner", { visible: !stacked })} />
 				</g>
 			)}
 			content={({ ref, style }) => (
