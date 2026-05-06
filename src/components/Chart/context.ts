@@ -4,8 +4,6 @@ import type { MonthlyRanking } from "@/db/monthlyRanking";
 interface ChartContextValue {
 	chartData: MonthlyRanking;
 	isolatedPoints: Record<string, Set<string>>;
-	colorById: Record<string, string>;
-	idByColor: Record<string, string>;
 	visibleUsersCount: number;
 	setVisibleUsersCount: Dispatch<number>;
 	highlightedUser: string | undefined;

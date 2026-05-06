@@ -4,10 +4,10 @@ import { mapValues } from "es-toolkit";
 import { useMemo } from "react";
 import { getAnyValue } from "@/utils/object";
 import { toYyyyMm } from "@/utils/time";
-import type { ChartPoint, ChartSeries } from "./Chart";
-import styles from "./Chart.module.css";
-import { useChartControls } from "./Controls";
-import { useChart } from "./context";
+import type { ChartPoint, ChartSeries } from "../Chart";
+import styles from "../Chart.module.css";
+import { useChartControls } from "../Controls";
+import { useChart } from "../context";
 
 const cx = classNames.bind(styles);
 

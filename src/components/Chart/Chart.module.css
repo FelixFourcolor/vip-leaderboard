@@ -82,6 +82,41 @@
 			text-anchor: middle;
 			dominant-baseline: central;
 		}
+
+		circle {
+			&.outer {
+				r: 8px;
+				fill: var(--series-color);
+			}
+
+			&.inner {
+				r: 4px;
+				fill: var(--bg-primary);
+			}
+
+			&.point {
+				r: 3px;
+				&.highlighted {
+					r: 4px;
+				}
+				fill: var(--series-color);
+			}
+
+			&.outline {
+				r: 6px;
+				fill: var(--series-color);
+				filter: blur(3px);
+
+				opacity: 0.5;
+				[data-is-zack="true"] & {
+					opacity: 0.35;
+				}
+
+				&:not(.visible) {
+					display: none;
+				}
+			}
+		}
 	}
 
 	.slider {

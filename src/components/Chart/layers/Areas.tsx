@@ -3,10 +3,10 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
-import type { ChartSeries } from "./Chart";
-import styles from "./Chart.module.css";
-import { useChartControls } from "./Controls";
-import { useChart } from "./context";
+import type { ChartSeries } from "../Chart";
+import styles from "../Chart.module.css";
+import { useChartControls } from "../Controls";
+import { useChart } from "../context";
 
 const cx = classNames.bind(styles);
 

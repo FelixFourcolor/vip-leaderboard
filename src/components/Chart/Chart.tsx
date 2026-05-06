@@ -8,6 +8,7 @@ import { getAnyValue } from "@/utils/object";
 import { toDate } from "@/utils/time";
 import styles from "./Chart.module.css";
 import { ChartControls, useChartControls } from "./Controls";
+import { getSeriesColor } from "./colors";
 import configs from "./configs";
 import { useChart } from "./context";
 import { ChartLegend } from "./Legend";
@@ -16,8 +17,7 @@ import { ChartProvider } from "./Provider";
 const cx = classNames.bind(styles);
 
 const Chart = ({ entries }: { entries: RankingData }) => {
-	const { chartData, colorById } = useChart();
-
+	const { chartData } = useChart();
 	const xLabels = useMemo(() => {
 		const data = getAnyValue(chartData); // all series have the same x values
 		if (!data) {
@@ -36,7 +36,7 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 				<ResponsiveLine
 					{...configs}
 					data={useSeriesData()}
-					colors={({ id }) => colorById[id]!}
+					colors={useColors()}
 					onMouseMove={onMouseMove}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
@@ -91,6 +91,30 @@ function useSeriesData() {
 	}, [data, highlightedUser, stacked]);
 
 	return sortedData;
+}
+
+function useColors() {
+	const { chartData, highlightedUser } = useChart();
+
+	const colorById = useMemo(() => {
+		return mapValues(chartData, (user) => {
+			const color = getSeriesColor(user);
+
+			const highlighted = highlightedUser === user.id;
+			if (highlighted) {
+				return color;
+			}
+
+			const dimmed = highlightedUser && !highlighted;
+			if (dimmed) {
+				return `rgb(from ${color} r g b / 0.45)`;
+			}
+
+			return `rgb(from ${color} r g b / 0.85)`;
+		});
+	}, [chartData, highlightedUser]);
+
+	return ({ id }: { id: string }) => colorById[id]!;
 }
 
 function useInteractive() {

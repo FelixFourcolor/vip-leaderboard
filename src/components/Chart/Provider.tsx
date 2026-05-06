@@ -4,7 +4,7 @@ import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
 import { windows3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import { useChartControls } from "./Controls";
-import { colorsCount, getSeriesColor } from "./colors";
+import { colorsCount } from "./colors";
 import { ChartContext } from "./context";
 
 type Props = {
@@ -83,39 +83,11 @@ export function ChartProvider({ children: Chart }: Props) {
 	const [highlightedUser, setHighlightedUser] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
 
-	const colorById = useMemo(() => {
-		return mapValues(chartData, (user) => {
-			const color = getSeriesColor(user);
-
-			const highlighted = highlightedUser === user.id;
-			if (highlighted) {
-				return color;
-			}
-
-			const dimmed = highlightedUser && !highlighted;
-			if (dimmed) {
-				return `rgb(from ${color} r g b / 0.45)`;
-			}
-
-			return `rgb(from ${color} r g b / 0.85)`;
-		});
-	}, [chartData, highlightedUser]);
-
-	// workaround for nivo's bug of not exposing seriesId for each point
-	const idByColor = useMemo(() => {
-		// requires number of users <= 10 = number of colors
-		return Object.fromEntries(
-			Object.entries(colorById).map(([userId, color]) => [color, userId]),
-		);
-	}, [colorById]);
-
 	return (
 		<ChartContext
 			value={{
 				chartData,
 				isolatedPoints,
-				colorById,
-				idByColor,
 				visibleUsersCount,
 				setVisibleUsersCount,
 				highlightedUser,

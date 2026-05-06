@@ -1,10 +1,10 @@
 import type { ResponsiveLine } from "@nivo/line";
 import type { ComponentProps } from "react";
-import { ChartAreas } from "./Areas";
 import type { ChartSeries } from "./Chart";
-import { ChartLabels } from "./Labels";
-import { ChartLines } from "./Lines";
-import { ChartPoint } from "./Point";
+import { ChartAreas } from "./layers/Areas";
+import { ChartLabels } from "./layers/Labels";
+import { ChartLines } from "./layers/Lines";
+import { ChartPoints } from "./layers/Points";
 
 export default {
 	tooltip: () => null,
@@ -17,13 +17,12 @@ export default {
 	margin: { top: 24, right: 28, bottom: 24, left: 64 },
 	axisLeft: { legend: "Tickets handled", legendOffset: -48 },
 	axisBottom: { format: "%Y-%m" },
-	pointSymbol: ChartPoint,
 	layers: [
 		"grid",
 		"axes",
 		ChartAreas,
 		ChartLines,
-		"points",
+		ChartPoints,
 		ChartLabels,
 		"mesh",
 	],
