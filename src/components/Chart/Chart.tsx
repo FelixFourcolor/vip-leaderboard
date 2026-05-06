@@ -73,11 +73,11 @@ function useSeriesData() {
 		if (stacked) {
 			return Object.entries(data)
 				.map(([id, data]) => ({ id, data }))
-				.reverse(); // so that higher ranked users are drawn on top
+				.reverse(); //  higher ranked users are drawn above
 		}
+		// highlighted user is drawn on top
 		return Object.entries(
 			(() => {
-				// move highlighted user first so that it's drawn on top
 				if (!highlightedUser) {
 					return data;
 				}
@@ -94,25 +94,23 @@ function useSeriesData() {
 }
 
 function useColors() {
-	const { chartData, highlightedUser } = useChart();
+	const { chartData, isMuted, isHighlighted } = useChart();
 
 	const colorById = useMemo(() => {
 		return mapValues(chartData, (user) => {
 			const color = getSeriesColor(user);
 
-			const highlighted = highlightedUser === user.id;
-			if (highlighted) {
+			if (isHighlighted(user.id)) {
 				return color;
 			}
 
-			const dimmed = highlightedUser && !highlighted;
-			if (dimmed) {
+			if (isMuted(user.id)) {
 				return `rgb(from ${color} r g b / 0.45)`;
 			}
 
 			return `rgb(from ${color} r g b / 0.85)`;
 		});
-	}, [chartData, highlightedUser]);
+	}, [chartData, isMuted, isHighlighted]);
 
 	return ({ id }: { id: string }) => colorById[id]!;
 }
@@ -135,7 +133,7 @@ function useInteractive() {
 		setHighlightedUser(seriesId);
 		const { x, y } = data;
 		if (y !== null) {
-			setHoveredPoint({ x, y });
+			setHoveredPoint({ x, seriesId });
 		}
 	};
 

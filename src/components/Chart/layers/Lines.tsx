@@ -33,22 +33,19 @@ type LineProps = {
 	color: string;
 };
 function Line({ id, path, color }: LineProps) {
-	const { highlightedUser } = useChart();
+	const { isHighlighted, isMuted } = useChart();
 	const [{ stacked }] = useChartControls();
 	const animatedPath = useAnimatedPath(path);
-
-	const highlighted = highlightedUser === id;
-	const dimmed = highlightedUser && !highlighted;
 
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
 			<animated.path
 				d={animatedPath}
-				className={cx("outline", { visible: !stacked && highlighted })}
+				className={cx("outline", { visible: !stacked && isHighlighted(id) })}
 			/>
 			<animated.path
 				d={animatedPath}
-				className={cx("line", { stacked, dimmed })}
+				className={cx("line", { stacked, muted: isMuted(id) })}
 			/>
 		</g>
 	);

@@ -2,7 +2,6 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useMemo } from "react";
 import { getAnyValue } from "@/utils/object";
-import { toYyyyMm } from "@/utils/time";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import styles from "../Chart.module.css";
 import { useChartControls } from "../Controls";
@@ -42,7 +41,7 @@ export function ChartLabels({
 
 function useVisibility() {
 	const [{ cumulative }] = useChartControls();
-	const { chartData, isolatedPoints, highlightedUser } = useChart();
+	const { chartData, isIsolated, isHighlighted, isHovered } = useChart();
 
 	const xLabels = useMemo(() => {
 		const data = getAnyValue(chartData);
@@ -53,15 +52,13 @@ function useVisibility() {
 	const labelsCount = cumulative ? 10 : 20;
 	const labelInterval = Math.max(1, Math.ceil(xLabels.length / labelsCount));
 
-	return (id: string, index: number, point: ChartPoint) => {
-		if (!point.y || highlightedUser !== id) {
+	return (seriesId: string, index: number, { x, y }: ChartPoint) => {
+		if (!y || !isHighlighted(seriesId) || isHovered({ seriesId, x })) {
 			return false;
 		}
 		return (
-			// reverse index to show labels for recent points
 			(xLabels.length - 1 - index) % labelInterval === 0 ||
-			// always show isolated points
-			isolatedPoints[id]?.has(toYyyyMm(point.x))
+			isIsolated({ seriesId, x })
 		);
 	};
 }

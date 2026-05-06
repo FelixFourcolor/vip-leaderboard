@@ -56,15 +56,16 @@ type AreaProps = {
 	color: string;
 };
 function Area({ id, path, color }: AreaProps) {
-	const { highlightedUser } = useChart();
-	const highlighted = highlightedUser === id;
-	const dimmed = highlightedUser && !highlighted;
+	const { isHighlighted, isMuted } = useChart();
 
 	return (
 		<animated.path
 			d={useAnimatedPath(path)}
 			style={{ ["--series-color" as string]: color }}
-			className={cx("area", { highlighted, dimmed })}
+			className={cx("area", {
+				highlighted: isHighlighted(id),
+				muted: isMuted(id),
+			})}
 		/>
 	);
 }

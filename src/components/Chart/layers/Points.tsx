@@ -32,25 +32,25 @@ type PointProps = {
 	data: ChartPoint;
 };
 
-function Point(props: PointProps) {
-	const { hoveredPoint } = useChart();
+function Point({ data, seriesId, color }: PointProps) {
+	const { isHovered } = useChart();
 
-	const isHovered =
-		hoveredPoint?.x.getTime() === props.data.x.getTime() &&
-		hoveredPoint.y === props.data.y;
+	const renderer = isHovered({ seriesId, x: data.x })
+		? HoveredPoint
+		: IsolatedPoint;
 
-	return (isHovered ? HoveredPoint : IsolatedPoint)(props);
+	return renderer({ seriesId, color, data });
 }
 
-function IsolatedPoint({ seriesId, color, data }: PointProps) {
-	const { highlightedUser, isolatedPoints } = useChart();
+function IsolatedPoint({ seriesId, color, data: { x } }: PointProps) {
+	const { isHighlighted, isIsolated } = useChart();
 
-	const isolated = isolatedPoints[seriesId]?.has(toYyyyMm(data.x));
-	if (!isolated) {
+	if (!isIsolated({ seriesId, x })) {
 		return null;
 	}
 
-	const highlighted = highlightedUser === seriesId;
+	const highlighted = isHighlighted(seriesId);
+
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
 			<circle className={cx("outline", { visible: highlighted })} />
@@ -61,13 +61,13 @@ function IsolatedPoint({ seriesId, color, data }: PointProps) {
 
 function HoveredPoint({ seriesId, color, data }: PointProps) {
 	const { chartData } = useChart();
-
 	const colorStyle = { ["--series-color" as string]: color };
 
 	return (
 		<Tooltip
 			element={({ ref }) => (
 				<g ref={ref} style={colorStyle}>
+					{" "}
 					<circle className={cx("outer")} />
 					<circle className={cx("inner")} />
 				</g>

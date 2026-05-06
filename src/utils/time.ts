@@ -1,16 +1,18 @@
-export function toYyyyMm(date: Date): string {
+export type YyyyMm = string;
+
+export function toYyyyMm(date: Date): YyyyMm {
 	return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
-export function toDate(yyyyMm: string): Date {
+export function toDate(yyyyMm: YyyyMm): Date {
 	const [year, month] = yyyyMm.split("-").map(Number);
 	return new Date(year!, month! - 1, 1);
 }
 
 export function monthsInRange(
-	since: string | Date,
-	until: string | Date,
-): string[] {
+	since: YyyyMm | Date,
+	until: YyyyMm | Date,
+): YyyyMm[] {
 	const sinceDate = new Date(since);
 	const sinceYear = sinceDate.getUTCFullYear();
 	const sinceMonth = sinceDate.getUTCMonth();
@@ -29,9 +31,9 @@ export function monthsInRange(
 }
 
 export function offset(
-	date: string | Date,
+	date: YyyyMm | Date,
 	offset: Partial<Record<"days" | "months" | "years", number>>,
-): string {
+): YyyyMm {
 	date = new Date(date);
 	if (offset.days) {
 		date.setUTCDate(date.getUTCDate() + offset.days);

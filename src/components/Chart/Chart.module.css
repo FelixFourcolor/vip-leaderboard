@@ -28,14 +28,14 @@
 
 				stroke: var(--series-color);
 				stroke-width: 2px;
-				&.dimmed {
+				&.muted {
 					stroke-width: 1px;
 				}
 
 				&.stacked {
 					stroke: var(--text-secondary);
 					stroke-width: 1px;
-					&.dimmed {
+					&.muted {
 						stroke-width: 0.5px;
 					}
 				}
@@ -59,16 +59,27 @@
 
 			&.area {
 				fill: var(--series-color);
-				[data-is-zack="false"] &:not(.highlighted) {
-					fill: hsl(from var(--series-color) h s calc(l + 10));
-				}
 
-				fill-opacity: 0.4;
-				&.dimmed {
-					fill-opacity: 0.2;
+				fill-opacity: 0.45;
+				&.muted {
+					fill-opacity: 0.25;
 				}
 				&.highlighted {
-					fill-opacity: 0.6;
+					fill-opacity: 0.65;
+				}
+
+				[data-is-zack="false"] & {
+					&:not(.highlighted) {
+						fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10));
+					}
+
+					fill-opacity: 0.35;
+					&.muted {
+						fill-opacity: 0.15;
+					}
+					&.highlighted {
+						fill-opacity: 0.55;
+					}
 				}
 			}
 		}

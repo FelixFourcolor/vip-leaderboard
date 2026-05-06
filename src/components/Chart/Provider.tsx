@@ -5,7 +5,7 @@ import { windows3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import { useChartControls } from "./Controls";
 import { colorsCount } from "./colors";
-import { ChartContext } from "./context";
+import { ChartContext, type PointId } from "./context";
 
 type Props = {
 	children: (_: { entries: MonthlyRanking }) => ReactNode;
@@ -81,7 +81,7 @@ export function ChartProvider({ children: Chart }: Props) {
 	}, [chartData]);
 
 	const [highlightedUser, setHighlightedUser] = useState<string>();
-	const [hoveredPoint, setHoveredPoint] = useState<{ x: Date; y: number }>();
+	const [hoveredPoint, setHoveredPoint] = useState<PointId>();
 
 	return (
 		<ChartContext
