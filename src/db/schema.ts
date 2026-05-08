@@ -19,6 +19,9 @@ export const activity = sqliteTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
+		type: text("type", { enum: ["reaction", "warning"] }).notNull(),
 	},
+	// cannot use autoincrement pk
+	// because you can react multiple times to a message, but they should only be counted once
 	(t) => [primaryKey({ columns: [t.date, t.userId] })],
 );

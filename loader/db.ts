@@ -7,16 +7,18 @@ import { pick } from "@/utils/object";
 export type UserData = typeof user.$inferInsert;
 export type ActivityData = typeof activity.$inferInsert;
 
-export async function populateDb(
-	users: UserData[],
-	activities: ActivityData[],
-) {
-	const sqlite = new Database("public/db.sqlite");
+export function writeToDB(data: {
+	users: UserData[];
+	activities: ActivityData[];
+}) {
+	const { users, activities } = data;
+	const db = new Database("public/db.sqlite");
 
-	await drizzle(sqlite).transaction((tx) => {
-		if (users.length > 0) {
-			tx.insert(user)
-				.values(users)
+	drizzle(db).transaction((tx) => {
+		inChunks(users, 8000, (values) =>
+			tx
+				.insert(user)
+				.values(values)
 				.onConflictDoUpdate({
 					target: user.id,
 					set: {
@@ -25,11 +27,12 @@ export async function populateDb(
 						color: sql`COALESCE(excluded.color, color)`,
 					},
 				})
-				.run();
-		}
-		if (activities.length > 0) {
-			tx.insert(activity).values(activities).onConflictDoNothing().run();
-		}
+				.run(),
+		);
+
+		inChunks(activities, 10000, (values) =>
+			tx.insert(activity).values(values).onConflictDoNothing().run(),
+		);
 
 		const activeUserIds = tx.select(pick(activity, ["userId"])).from(activity);
 		tx.delete(user)
@@ -37,5 +40,11 @@ export async function populateDb(
 			.run();
 	});
 
-	sqlite.close();
+	db.close();
+}
+
+function inChunks<T>(array: T[], chunkSize: number, f: (chunk: T[]) => void) {
+	for (let i = 0; i < array.length; i += chunkSize) {
+		f(array.slice(i, i + chunkSize));
+	}
 }

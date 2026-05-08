@@ -13,6 +13,7 @@ export type Message = {
 	id: MessageId;
 	timestamp: string;
 	author: User;
+	content: string;
 	reactions: {
 		emoji: { code: string };
 		users: User[];
@@ -21,6 +22,5 @@ export type Message = {
 
 export type Data = {
 	channel: { id: ChannelId };
-	noUpdate?: true;
 	messages: Message[];
 };

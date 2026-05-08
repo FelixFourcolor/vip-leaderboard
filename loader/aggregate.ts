@@ -1,16 +1,7 @@
 import type { ActivityData, UserData } from "./db.js";
 import type { Message, User } from "./types.js";
 
-const VIP_REACTIONS = new Set([
-	"white_check_mark",
-	"x",
-	"hammer",
-	"warning",
-	"wastebasket",
-	"lock",
-]);
-
-export function aggregate(messages: Message[]) {
+export function aggregate(channels: { id: string; messages: Message[] }[]) {
 	const usersMap = new Map<string, UserData>();
 	const activities: ActivityData[] = [];
 
@@ -38,20 +29,50 @@ export function aggregate(messages: Message[]) {
 		return id;
 	}
 
-	messages.forEach(({ author, timestamp, reactions }) => {
-		getOrCreateUser(author);
-		const vipReactions = reactions.filter((r) =>
-			VIP_REACTIONS.has(r.emoji.code),
-		);
-		if (vipReactions.length === 0) {
-			return;
-		}
-		const date = new Date(timestamp);
-		vipReactions
-			.flatMap((r) => r.users)
-			.map(getOrCreateUser)
-			.forEach((userId) => activities.push({ date, userId }));
-	});
+	const countReactions = (messages: Message[]) =>
+		messages
+			.map(modReactionsOnly)
+			.filter(hasReactions)
+			.forEach(({ reactions, timestamp }) => {
+				const date = new Date(timestamp);
+				reactions
+					.flatMap((r) => r.users)
+					.map(getOrCreateUser)
+					.forEach((userId) =>
+						activities.push({ date, userId, type: "reaction" }),
+					);
+			});
 
-	return [Array.from(usersMap.values()), activities] as const;
+	const countWarnings = (messages: Message[]) =>
+		messages.filter(isWarning).forEach(({ author, timestamp }) => {
+			const userId = getOrCreateUser(author);
+			const date = new Date(timestamp);
+			activities.push({ date, userId, type: "warning" });
+		});
+
+	channels.forEach(({ id, messages }) => {
+		if (id === WARNINGS_CHANNEL_ID) {
+			countWarnings(messages);
+		} else {
+			countReactions(messages);
+		}
+	});
+	return { users: Array.from(usersMap.values()), activities };
 }
+
+const MOD_REACTIONS = new Set([
+	"white_check_mark",
+	"x",
+	"hammer",
+	"warning",
+	"wastebasket",
+	"lock",
+]);
+const modReactionsOnly = ({ reactions, ...rest }: Message) => {
+	reactions = reactions.filter((r) => MOD_REACTIONS.has(r.emoji.code));
+	return { ...rest, reactions };
+};
+const hasReactions = ({ reactions }: Message) => reactions.length > 0;
+
+const WARNINGS_CHANNEL_ID = "614936519710605408";
+const isWarning = ({ content }: Message) => /\w{64}/.test(content);

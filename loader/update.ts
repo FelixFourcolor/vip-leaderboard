@@ -42,18 +42,17 @@ async function fetch(channelId: string, afterMessageId: string) {
 	return data;
 }
 
-async function logUpdate({ channel: { id }, noUpdate, messages }: Data) {
-	if (!noUpdate) {
-		const latest = messages[messages.length - 1];
-		if (!latest) {
-			return [];
-		}
-		const lastUpdateData = await readJson<LastUpdateData>(
-			"last-update.json",
-		).catch(() => ({}) as LastUpdateData);
-		lastUpdateData[id] = latest.id;
-		writeJson(lastUpdateData, "last-update.json");
+async function logUpdate({ channel: { id }, messages }: Data) {
+	const latest = messages[messages.length - 1];
+	if (!latest) {
+		return { id, messages };
 	}
 
-	return messages;
+	const lastUpdateData = await readJson<LastUpdateData>(
+		"last-update.json",
+	).catch(() => ({}) as LastUpdateData);
+	lastUpdateData[id] = latest.id;
+	writeJson(lastUpdateData, "last-update.json");
+
+	return { id, messages };
 }
