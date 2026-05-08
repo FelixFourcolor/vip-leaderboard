@@ -16,7 +16,6 @@ const defaultParams = {
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
-	fromRank: 1,
 };
 
 // Earliest month with meaningful data.

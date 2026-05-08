@@ -7,8 +7,9 @@ export type PointId = { x: Date; seriesId: string };
 interface ChartContextValue {
 	chartData: MonthlyRanking;
 	isolatedPoints: Record<string, Set<YyyyMm>>;
-	visibleUsersCount: number;
-	setVisibleUsersCount: Dispatch<number>;
+	setStartingRank: Dispatch<number>;
+	visibleRanks: number;
+	setVisibleRanks: Dispatch<number>;
 	highlightedUser: string | undefined;
 	setHighlightedUser: Dispatch<string | undefined>;
 	hoveredPoint: PointId | undefined;

@@ -11,8 +11,9 @@ type Props = {
 	children: (_: { entries: MonthlyRanking }) => ReactNode;
 };
 export function ChartProvider({ children: Chart }: Props) {
-	const [{ since, until, fromRank, cumulative, stacked }] = useChartControls();
-	const [visibleUsersCount, setVisibleUsersCount] = useState(colorsCount);
+	const [{ since, until, cumulative, stacked }] = useChartControls();
+	const [startingRank, setStartingRank] = useState(1);
+	const [visibleRanks, setVisibleRanks] = useState(colorsCount);
 
 	const [totalData = {}, setTotalData] = useState<MonthlyRanking>();
 	useEffect(() => {
@@ -24,7 +25,7 @@ export function ChartProvider({ children: Chart }: Props) {
 		const filteredData = Object.fromEntries(
 			Object.entries(totalData).filter(
 				([, { rank }]) =>
-					fromRank <= rank && rank < fromRank + visibleUsersCount,
+					startingRank <= rank && rank < startingRank + visibleRanks,
 			),
 		);
 		return mapValues(filteredData, ({ monthlyCount, ...userData }) => {
@@ -60,8 +61,8 @@ export function ChartProvider({ children: Chart }: Props) {
 	}, [
 		totalData,
 		cumulative,
-		fromRank,
-		visibleUsersCount,
+		startingRank,
+		visibleRanks,
 		since,
 		until,
 		stacked,
@@ -82,14 +83,22 @@ export function ChartProvider({ children: Chart }: Props) {
 
 	const [highlightedUser, setHighlightedUser] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<PointId>();
+	useEffect(() => {
+		if (highlightedUser && !chartData[highlightedUser]) {
+			setHighlightedUser(undefined);
+		} else if (hoveredPoint && chartData[hoveredPoint.seriesId]) {
+			setHighlightedUser(hoveredPoint.seriesId);
+		}
+	}, [highlightedUser, hoveredPoint, chartData]);
 
 	return (
 		<ChartContext
 			value={{
 				chartData,
 				isolatedPoints,
-				visibleUsersCount,
-				setVisibleUsersCount,
+				setStartingRank,
+				visibleRanks,
+				setVisibleRanks,
 				highlightedUser,
 				setHighlightedUser,
 				hoveredPoint,
