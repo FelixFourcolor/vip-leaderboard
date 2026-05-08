@@ -31,7 +31,6 @@ export const Route = createFileRoute("/")({
 	validateSearch: (search) => {
 		const out = validate(search);
 		if (out instanceof type.errors) {
-			console.log(out.summary);
 			return {
 				since: undefined,
 				until: undefined,

@@ -40,7 +40,6 @@ export function ChartLegend({ entries }: LegendProps) {
 				className={cx("legend")}
 				style={{ maxHeight, gap: GAP }}
 				onScroll={({ currentTarget: { scrollTop } }) => {
-					console.log({ scrollTop });
 					setStartingRank(
 						Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1,
 					);
