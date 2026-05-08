@@ -2,7 +2,7 @@ import { mapValues } from "es-toolkit";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
 import { windows3 } from "@/utils/array";
-import { monthsInRange } from "@/utils/time";
+import { monthsInRange, type YyyyMm } from "@/utils/time";
 import { useChartControls } from "./Controls";
 import { colorsCount } from "./colors";
 import { ChartContext, type PointId } from "./context";
@@ -53,7 +53,7 @@ export function ChartProvider({ children: Chart }: Props) {
 					}
 					return {
 						month,
-						count: stacked || count != null ? accumulator : null,
+						count: stacked || accumulator !== 0 ? accumulator : null,
 					};
 				}),
 			};
@@ -68,8 +68,11 @@ export function ChartProvider({ children: Chart }: Props) {
 		stacked,
 	]);
 
-	const isolatedPoints = useMemo(() => {
+	const isolatedPoints = useMemo<Record<string, Set<YyyyMm>>>(() => {
 		return mapValues(chartData, ({ monthlyCount }) => {
+			if (cumulative || stacked) {
+				return new Set();
+			}
 			return new Set(
 				windows3(monthlyCount)
 					.filter(
@@ -79,7 +82,7 @@ export function ChartProvider({ children: Chart }: Props) {
 					.map(([, cur]) => cur.month),
 			);
 		});
-	}, [chartData]);
+	}, [chartData, cumulative, stacked]);
 
 	const [highlightedUser, setHighlightedUser] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<PointId>();

@@ -1,13 +1,13 @@
 import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
 import { pick } from "@/utils/object";
-import { offset } from "@/utils/time";
+import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
 import type { RankingData, RankingParams } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
 
-type MonthlyCount = { month: string; count: number | null }[];
+type MonthlyCount = { month: YyyyMm; count: number | null }[];
 
 export type MonthlyRanking = Record<
 	string,
