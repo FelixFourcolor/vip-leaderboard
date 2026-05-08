@@ -3,7 +3,7 @@ import type { Message, User } from "./types.js";
 
 export function aggregate(channels: { id: string; messages: Message[] }[]) {
 	const usersMap = new Map<string, UserData>();
-	const activities: ActivityData[] = [];
+	const activitiesMap = new Map<string, ActivityData>();
 
 	function getOrCreateUser({ name, nickname, avatarUrl, color }: User): string {
 		const id = name.toLowerCase(); // sql primary key may be case-insensitive
@@ -39,7 +39,11 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 					.flatMap((r) => r.users)
 					.map(getOrCreateUser)
 					.forEach((userId) =>
-						activities.push({ date, userId, type: "reaction" }),
+						activitiesMap.set(`${timestamp}-${userId}`, {
+							date,
+							userId,
+							type: "reaction",
+						}),
 					);
 			});
 
@@ -47,7 +51,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 		messages.filter(isWarning).forEach(({ author, timestamp }) => {
 			const userId = getOrCreateUser(author);
 			const date = new Date(timestamp);
-			activities.push({ date, userId, type: "warning" });
+			activitiesMap.set(timestamp, { date, userId, type: "warning" });
 		});
 
 	channels.forEach(({ id, messages }) => {
@@ -57,14 +61,16 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 			countReactions(messages);
 		}
 	});
-	return { users: Array.from(usersMap.values()), activities };
+	return {
+		users: Array.from(usersMap.values()),
+		activities: Array.from(activitiesMap.values()),
+	};
 }
 
 const MOD_REACTIONS = new Set([
 	"white_check_mark",
 	"x",
 	"hammer",
-	"warning",
 	"wastebasket",
 	"lock",
 ]);
