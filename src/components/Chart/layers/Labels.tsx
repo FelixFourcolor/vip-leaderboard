@@ -1,5 +1,6 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
+import { mapValues } from "es-toolkit";
 import { useMemo } from "react";
 import { getAnyValue } from "@/utils/object";
 import type { ChartDataPoint, ChartSeries } from "../Chart";
@@ -41,7 +42,8 @@ export function ChartLabels({
 
 function useVisibility() {
 	const [{ cumulative, stacked }] = useChartControls();
-	const { chartData, isIsolated, isHighlighted, isHovered } = useChart();
+	const { chartData, isPointIsolated, isHighlighted, isPointHovered } =
+		useChart();
 
 	const xLabels = useMemo(() => {
 		const data = getAnyValue(chartData);
@@ -49,22 +51,28 @@ function useVisibility() {
 		return data.monthlyCount.map(({ month }) => month);
 	}, [chartData]);
 
+	const lastIndex = useMemo(() => {
+		if (!cumulative || stacked) {
+			return null;
+		}
+		return mapValues(chartData, ({ monthlyCount }) =>
+			monthlyCount.reduce((lastNonNullIndex, { count }, index) => {
+				return count ? index : lastNonNullIndex;
+			}, 0),
+		);
+	}, [chartData, cumulative, stacked]);
+
 	const labelsCount = cumulative ? 10 : 20;
 	const labelInterval = Math.max(1, Math.ceil(xLabels.length / labelsCount));
+	const isLabelIndex = (i: number, seriesId: string) =>
+		// reversed to show label at the end
+		(-i + (lastIndex?.[seriesId] ?? xLabels.length - 1)) % labelInterval === 0;
 
-	return (seriesId: string, index: number, { x, y }: ChartDataPoint) => {
-		if (
-			!y ||
-			!isHighlighted(seriesId) ||
-			(!stacked && isHovered({ seriesId, x }))
-		) {
-			return false;
-		}
-		return (
-			(xLabels.length - 1 - index) % labelInterval === 0 ||
-			isIsolated({ seriesId, x })
-		);
-	};
+	return (seriesId: string, index: number, { x, y }: ChartDataPoint) =>
+		y &&
+		isHighlighted(seriesId) &&
+		(stacked || !isPointHovered({ seriesId, x })) &&
+		(isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x }));
 }
 
 function useYPosition() {

@@ -43,20 +43,49 @@ export function ChartProvider({ children: Chart }: Props) {
 				};
 			}
 
-			let accumulator = 0;
-			return {
-				...userData,
-				monthlyCount: months.map((month) => {
-					const count = countByMonth[month];
-					if (count != null) {
-						accumulator += count;
-					}
-					return {
-						month,
-						count: stacked || accumulator !== 0 ? accumulator : null,
-					};
-				}),
-			};
+			if (stacked) {
+				let sum = 0;
+				return {
+					...userData,
+					monthlyCount: months.map((month) => {
+						const count = countByMonth[month] ?? 0;
+						sum += count;
+						return { month, count: sum };
+					}),
+				};
+			}
+
+			// Replace nulls with 0s, but only between the first and last non-null values.
+			const continuousCounts = months.map((month) => ({
+				month,
+				count: countByMonth[month] ?? null,
+			}));
+			let nonNullEncountered = false;
+			for (const entry of continuousCounts) {
+				if (entry.count != null) {
+					nonNullEncountered = true;
+				} else if (nonNullEncountered) {
+					entry.count = 0;
+				}
+			}
+			for (const entry of [...continuousCounts].reverse()) {
+				if (entry.count !== 0) {
+					break;
+				}
+				entry.count = null;
+			}
+
+			// Cumulative sum
+			let sum = 0;
+			const cumulativeCounts = continuousCounts.map(({ month, count }) => {
+				if (count == null) {
+					return { month, count: null };
+				}
+				sum += count;
+				return { month, count: sum };
+			});
+
+			return { ...userData, monthlyCount: cumulativeCounts };
 		});
 	}, [
 		totalData,

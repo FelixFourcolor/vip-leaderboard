@@ -26,14 +26,14 @@ export function useChart() {
 
 	const { hoveredPoint, isolatedPoints, highlightedUser, ...rest } = context;
 
-	const isHovered = useCallback(
+	const isPointHovered = useCallback(
 		(point: PointId) =>
 			hoveredPoint?.seriesId === point.seriesId &&
 			hoveredPoint?.x.getTime() === point.x.getTime(),
 		[hoveredPoint],
 	);
 
-	const isIsolated = useCallback(
+	const isPointIsolated = useCallback(
 		(point: PointId) => isolatedPoints[point.seriesId]?.has(toYyyyMm(point.x)),
 		[isolatedPoints],
 	);
@@ -50,8 +50,8 @@ export function useChart() {
 
 	return {
 		...rest,
-		isHovered,
-		isIsolated,
+		isPointHovered,
+		isPointIsolated,
 		highlightedUser,
 		isHighlighted,
 		isMuted,

@@ -7,8 +7,7 @@ import type { RankingData, RankingParams } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
 
-type MonthlyCount = { month: YyyyMm; count: number | null }[];
-
+export type MonthlyCount = { month: YyyyMm; count: number | null }[];
 export type MonthlyRanking = Record<
 	string,
 	{ monthlyCount: MonthlyCount } & RankingData[string]

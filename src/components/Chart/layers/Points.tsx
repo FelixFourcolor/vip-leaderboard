@@ -36,9 +36,9 @@ type PointProps = {
 };
 
 function Point({ data, seriesId, color }: PointProps) {
-	const { isHovered } = useChart();
+	const { isPointHovered } = useChart();
 
-	const Renderer = isHovered({ seriesId, x: data.x })
+	const Renderer = isPointHovered({ seriesId, x: data.x })
 		? HoveredPoint
 		: IsolatedPoint;
 
@@ -46,9 +46,9 @@ function Point({ data, seriesId, color }: PointProps) {
 }
 
 function IsolatedPoint({ seriesId, color, data: { x } }: PointProps) {
-	const { isHighlighted, isIsolated } = useChart();
+	const { isHighlighted, isPointIsolated } = useChart();
 
-	if (!isIsolated({ seriesId, x })) {
+	if (!isPointIsolated({ seriesId, x })) {
 		return null;
 	}
 
