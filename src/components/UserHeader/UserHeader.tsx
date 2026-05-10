@@ -1,15 +1,19 @@
 import classNames from "classnames/bind";
+import { useState } from "react";
 import type { UserData } from "@/db/user";
 import styles from "./UserHeader.module.css";
 
 const cx = classNames.bind(styles);
 
 export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
+	const [imgError, setImgError] = useState(false);
+
 	return (
 		<div className={cx("header")}>
-			{avatarUrl && (
+			{!imgError && (
 				<img
 					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}
+					onError={() => setImgError(true)}
 					className={cx("avatar")}
 				/>
 			)}
