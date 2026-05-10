@@ -2,6 +2,7 @@ import { ResponsiveLine } from "@nivo/line";
 import classNames from "classnames/bind";
 import { mapValues } from "es-toolkit";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import type { MonthlyRanking } from "@/db/monthlyRanking";
 import type { RankingData } from "@/db/ranking";
 import { getAnyValue } from "@/utils/object";
@@ -34,7 +35,7 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 	return (
 		<div className={cx("container")}>
 			<div ref={chartRef} className={cx("chart")}>
-				{data.length > 0 && (
+				{data.length > 0 ? (
 					<ResponsiveLine
 						{...configs}
 						data={data}
@@ -45,6 +46,8 @@ const Chart = ({ entries }: { entries: RankingData }) => {
 						axisLeft={axisLeft}
 						gridYValues={gridYValues}
 					/>
+				) : (
+					<LoadingSpinner size={48} />
 				)}
 			</div>
 			<ChartLegend entries={entries} />

@@ -1,0 +1,33 @@
+.spinner {
+	place-self: center;
+	width: var(--size);
+	height: var(--size);
+	border-radius: 50%;
+	border-top: var(--thickness) solid var(--text-secondary);
+	[data-is-zack="true"] & {
+		border-top-color: var(--text-tertiary);
+	}
+	border-right: var(--thickness) solid transparent;
+	animation: rotation 1.25s linear infinite;
+
+	&::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: var(--size);
+		height: var(--size);
+		border-radius: 50%;
+		border-bottom: var(--thickness) solid var(--accent);
+		border-left: var(--thickness) solid transparent;
+	}
+}
+
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}

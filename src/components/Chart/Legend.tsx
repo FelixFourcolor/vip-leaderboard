@@ -2,6 +2,7 @@ import classNames from "classnames/bind";
 import { useEffect, useRef } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import type { RankingData } from "@/db/ranking";
+import { LoadingSpinner } from "../LoadingSpinner";
 import styles from "./Chart.module.css";
 import { colorsCount, getSeriesColor } from "./colors";
 import { useChart } from "./context";
@@ -34,6 +35,7 @@ export function ChartLegend({ entries }: LegendProps) {
 		return () => observer.disconnect();
 	}, [setVisibleRanks]);
 
+	const values = Object.values(entries);
 	return (
 		<div className={cx("side-panel")} ref={containerRef}>
 			<div
@@ -45,9 +47,11 @@ export function ChartLegend({ entries }: LegendProps) {
 					);
 				}}
 			>
-				{Object.values(entries).map((user) => (
-					<LegendEntry key={user.id} {...user} />
-				))}
+				{values.length > 0 ? (
+					values.map((user) => <LegendEntry key={user.id} {...user} />)
+				) : (
+					<LoadingSpinner size={36} />
+				)}
 			</div>
 		</div>
 	);
