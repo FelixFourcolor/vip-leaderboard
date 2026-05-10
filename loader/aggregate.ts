@@ -48,10 +48,22 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 			});
 
 	const countWarnings = (messages: Message[]) =>
-		messages.filter(isWarning).forEach(({ author, timestamp }) => {
+		messages.forEach(({ author, content, timestamp }) => {
+			const recipientIds = content.match(USER_ID_REGEX) ?? [];
+			if (recipientIds.length === 0) {
+				return;
+			}
+
 			const userId = getOrCreateUser(author);
 			const date = new Date(timestamp);
-			activitiesMap.set(timestamp, { date, userId, type: "warning" });
+
+			recipientIds.forEach((recipientId) =>
+				activitiesMap.set(`${timestamp}-${recipientId}`, {
+					date,
+					userId,
+					type: "warning",
+				}),
+			);
 		});
 
 	channels.forEach(({ id, messages }) => {
@@ -81,4 +93,4 @@ const modReactionsOnly = ({ reactions, ...rest }: Message) => {
 const hasReactions = ({ reactions }: Message) => reactions.length > 0;
 
 const WARNINGS_CHANNEL_ID = "614936519710605408";
-const isWarning = ({ content }: Message) => /\w{64}/.test(content);
+const USER_ID_REGEX = /(?<![a-z0-9])[a-z0-9]{64}(?![a-z0-9])/g;
