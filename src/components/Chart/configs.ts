@@ -15,8 +15,8 @@ export default {
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
 	yScale: { type: "linear", min: 0 },
-	margin: { top: 24, right: 28, bottom: 24, left: 64 },
-	axisLeft: { legend: "Units of work", legendOffset: -48 },
+	margin: { top: 24, right: 28, bottom: 28, left: 60 },
+	axisLeft: { legend: "Units of work", legendOffset: -42 },
 	axisBottom: { format: "%Y-%m" },
 	layers: [
 		"grid",

@@ -33,7 +33,7 @@ function setLocalStorage(isZack: boolean) {
 }
 
 function getBrowserPreference() {
-	return window.matchMedia("(prefers-color-scheme: light)").matches;
+	return matchMedia("(prefers-color-scheme: light)").matches;
 }
 
 function updateDOM(isZack: boolean) {

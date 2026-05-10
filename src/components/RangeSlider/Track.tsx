@@ -33,7 +33,7 @@ export function Track({
 
 	return (
 		<div {...divProps} className={cx("track", className)}>
-			<Thumb className={cx("limit")} kind="from" />
+			{from !== 0 && <Thumb className={cx("limit")} kind="from" />}
 			<span className={cx("label", "min")}>{String(domain[min])}</span>
 			{children}
 			<div
@@ -46,7 +46,7 @@ export function Track({
 				<div className={cx("pre")} />
 				<div className={cx("selected")} />
 			</div>
-			<Thumb className={cx("limit")} kind="to" />
+			{to !== max && <Thumb className={cx("limit")} kind="to" />}
 			<span className={cx("label", "max")}>{String(domain[max])}</span>
 		</div>
 	);

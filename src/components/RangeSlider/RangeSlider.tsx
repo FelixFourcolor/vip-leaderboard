@@ -7,7 +7,7 @@ import { Track } from "./Track";
 type SliderProps<Value> = {
 	domain: readonly Value[];
 	selected: readonly [Value, Value];
-	onChange: Dispatch<[Value, Value]>;
+	onChange: Dispatch<readonly [Value, Value]>;
 	className?: string;
 	minDistance?: number;
 	maxDistance?: number;
@@ -139,8 +139,8 @@ export function RangeSlider<Value>({
 	useEffect(updateLabelOverlap, [updateLabelOverlap, values]);
 
 	useEffect(() => {
-		window.addEventListener("resize", updateLabelOverlap);
-		return () => window.removeEventListener("resize", updateLabelOverlap);
+		addEventListener("resize", updateLabelOverlap);
+		return () => removeEventListener("resize", updateLabelOverlap);
 	}, [updateLabelOverlap]);
 
 	const max = domain.length - 1;

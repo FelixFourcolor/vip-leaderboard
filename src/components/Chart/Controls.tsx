@@ -29,7 +29,7 @@ export function ChartControls() {
 	const { until, since, cumulative, stacked } = params;
 
 	const onDateChange = useCallback(
-		([since, until]: [string, string]) => setParams({ since, until }),
+		([since, until]: readonly [string, string]) => setParams({ since, until }),
 		[setParams],
 	);
 

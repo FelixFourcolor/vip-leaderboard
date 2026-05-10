@@ -14,7 +14,7 @@
 	.bar {
 		background-color: var(--text-tertiary);
 		display: flex;
-		height: 3px;
+		height: 2.5px;
 		width: 100%;
 		flex-direction: row;
 
@@ -24,7 +24,7 @@
 		.selected {
 			background-color: var(--accent);
 			align-self: center;
-			height: 3px;
+			height: 2.5px;
 			width: var(--selected);
 		}
 	}
@@ -33,8 +33,8 @@
 		position: relative;
 		background-color: var(--accent);
 		outline: none;
-		width: 3px;
-		height: 19px;
+		width: 2.5px;
+		height: 18px;
 
 		.label {
 			color: var(--accent);
@@ -56,10 +56,10 @@
 		height: 13px;
 
 		&.from {
-			left: -1.5px;
+			left: -1px;
 		}
 		&.to {
-			right: -1.5px;
+			right: -1px;
 		}
 	}
 
@@ -68,7 +68,7 @@
 		position: absolute;
 		white-space: nowrap;
 		font-size: var(--text-mini);
-		top: -16px;
+		top: -15px;
 
 		&.min {
 			left: 0;

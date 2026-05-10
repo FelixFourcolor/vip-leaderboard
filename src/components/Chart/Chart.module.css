@@ -14,6 +14,25 @@
 	grid-template-rows: 1fr auto;
 	gap: 16px;
 
+	.chart,
+	.bottom-panel,
+	.side-panel {
+		outline-style: solid;
+		outline-width: 1px;
+
+		outline-color: var(--text-tertiary);
+		[data-is-zack="true"] & {
+			outline-color: var(--text-secondary);
+		}
+
+		&:hover {
+			outline-color: var(--accent);
+			[data-is-zack="true"] & {
+				outline-width: 2px;
+			}
+		}
+	}
+
 	.chart {
 		grid-column: 1;
 		grid-row: 1;
@@ -159,8 +178,8 @@
 	.bottom-panel {
 		background-color: var(--bg-secondary);
 		display: flex;
-		padding: 16px;
-		gap: 32px;
+		padding: 20px 16px;
+		gap: 48px;
 		align-items: center;
 		justify-content: space-between;
 		grid-column: 1;
