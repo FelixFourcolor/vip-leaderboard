@@ -153,13 +153,18 @@ function useHorizontalScale(xLabels: readonly string[]) {
 	}, [xLabels, width]);
 }
 
-function findMaxClamped(chartData: MonthlyRanking, threshold: number) {
-	let max = 0;
-	for (const { monthlyCount } of Object.values(chartData)) {
-		for (const { count } of monthlyCount) {
-			if (count == null) {
-				continue;
-			}
+function findMaxClamped(
+	chartData: MonthlyRanking,
+	stacked: boolean,
+	threshold: number,
+) {
+	function whenStacked() {
+		let max = 0;
+		const seriesLength = getAnyValue(chartData)?.monthlyCount.length ?? 0;
+		for (let i = 0; i < seriesLength; ++i) {
+			const count = Object.values(chartData)
+				.map(({ monthlyCount }) => monthlyCount[i]?.count ?? 0)
+				.reduce((acc, n) => acc + n, 0);
 			if (count >= threshold) {
 				return threshold;
 			}
@@ -167,15 +172,35 @@ function findMaxClamped(chartData: MonthlyRanking, threshold: number) {
 				max = count;
 			}
 		}
+		return max;
 	}
-	return max;
+
+	function whenNotStacked() {
+		let max = 0;
+		for (const { monthlyCount } of Object.values(chartData)) {
+			for (const { count } of monthlyCount) {
+				if (count == null) {
+					continue;
+				}
+				if (count >= threshold) {
+					return threshold;
+				}
+				if (count > max) {
+					max = count;
+				}
+			}
+		}
+		return max;
+	}
+
+	return stacked ? whenStacked() : whenNotStacked();
 }
 function useVerticalScale() {
 	const { chartData } = useChart();
 	const [{ stacked }] = useChartControls();
 
 	return useMemo(() => {
-		const maxData = findMaxClamped(chartData, 8);
+		const maxData = findMaxClamped(chartData, stacked, 8);
 		const max = maxData >= 2 ? ("auto" as const) : 2;
 		const tickValues =
 			maxData >= 8
