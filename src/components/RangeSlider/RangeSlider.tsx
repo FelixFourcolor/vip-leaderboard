@@ -159,9 +159,12 @@ export function RangeSlider<Value>({
 					min={0}
 					max={max}
 					value={values}
-					onWheel={(e) => {
-						onShift(Math.sign(e.deltaX));
-						onZoom(Math.sign(e.deltaY));
+					onWheel={({ deltaX, deltaY }) => {
+						if (Math.abs(deltaX) > Math.abs(deltaY)) {
+							onShift(Math.sign(deltaX));
+						} else {
+							onZoom(Math.sign(deltaY));
+						}
 					}}
 					domain={domain}
 					className={className}
