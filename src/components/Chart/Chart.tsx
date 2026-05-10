@@ -19,29 +19,33 @@ const cx = classNames.bind(styles);
 const Chart = ({ entries }: { entries: RankingData }) => {
 	const { chartData } = useChart();
 	const xLabels = useMemo(() => {
-		const data = getAnyValue(chartData); // all series have the same x values
-		if (!data) {
+		const userData = getAnyValue(chartData); // all series have the same x values
+		if (!userData) {
 			return [];
 		}
-		return data.monthlyCount.map(({ month }) => month);
+		return userData.monthlyCount.map(({ month }) => month);
 	}, [chartData]);
 
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(xLabels);
 	const { yScale, axisLeft, gridYValues } = useVerticalScale();
+	const data = useSeriesData();
+	const colors = useColors();
 
 	return (
 		<div className={cx("container")}>
 			<div ref={chartRef} className={cx("chart")}>
-				<ResponsiveLine
-					{...configs}
-					data={useSeriesData()}
-					colors={useColors()}
-					gridXValues={gridXValues}
-					axisBottom={axisBottom}
-					yScale={yScale}
-					axisLeft={axisLeft}
-					gridYValues={gridYValues}
-				/>
+				{data.length > 0 && (
+					<ResponsiveLine
+						{...configs}
+						data={data}
+						colors={colors}
+						gridXValues={gridXValues}
+						axisBottom={axisBottom}
+						yScale={yScale}
+						axisLeft={axisLeft}
+						gridYValues={gridYValues}
+					/>
+				)}
 			</div>
 			<ChartLegend entries={entries} />
 			<ChartControls />
