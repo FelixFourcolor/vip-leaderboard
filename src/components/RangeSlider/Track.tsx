@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import type { ComponentProps } from "react";
-import { useCursorDragged } from "@/hooks/useCursorDragged";
+import { useIsGrabbing } from "./Manager";
 import styles from "./RangeSlider.module.css";
 import { Thumb } from "./Thumb";
 
@@ -24,7 +24,7 @@ export function Track({
 	children,
 	...divProps
 }: TrackProps) {
-	useCursorDragged(isDragged);
+	useIsGrabbing(isDragged);
 
 	const [from, to] = value;
 	const total = Math.max(max - min, 1);

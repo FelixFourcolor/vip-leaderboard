@@ -1,4 +1,6 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
+import { useGrab } from "@/components/RangeSlider";
+import { useResize } from "@/components/Resizer";
 import type { ChartSeries } from "../Chart";
 import { useChartControls } from "../Controls";
 import { type PointId, useChart } from "../context";
@@ -11,6 +13,9 @@ export function ChartInteraction({
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const { setHighlightedUser, setHoveredPoint } = useChart();
 	const [{ stacked }] = useChartControls();
+
+	const { isGrabbing } = useGrab();
+	const { isResizing } = useResize();
 
 	const highlight = (point: PointId) => {
 		setHighlightedUser(point.seriesId);
@@ -28,6 +33,10 @@ export function ChartInteraction({
 			height={innerHeight}
 			opacity={0}
 			onMouseMove={({ currentTarget, clientX, clientY }) => {
+				if (isGrabbing || isResizing) {
+					return;
+				}
+
 				const rect = currentTarget.getBoundingClientRect();
 				const mouse = { x: clientX - rect.left, y: clientY - rect.top };
 

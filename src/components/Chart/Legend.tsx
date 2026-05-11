@@ -1,8 +1,10 @@
 import classNames from "classnames/bind";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useGrab } from "@/components/RangeSlider";
+import { Resizer, useResize } from "@/components/Resizer";
 import { UserHeader } from "@/components/UserHeader";
 import type { RankingData } from "@/db/ranking";
-import { LoadingSpinner } from "../LoadingSpinner";
 import styles from "./Chart.module.css";
 import { colorsCount, getSeriesColor } from "./colors";
 import { useChart } from "./context";
@@ -35,30 +37,51 @@ export function ChartLegend({ entries }: LegendProps) {
 		return () => observer.disconnect();
 	}, [setVisibleRanks]);
 
+	const [legendWidth, setLegendWidth] = useState(140);
+	const resizeWidth = useCallback((delta: number) => {
+		setLegendWidth((current) => Math.max(Math.min(current + delta, 260), 90));
+	}, []);
+
 	const values = Object.values(entries);
 	return (
-		<div className={cx("side-panel")} ref={containerRef}>
-			<div
-				className={cx("legend")}
-				style={{ maxHeight, gap: GAP }}
-				onScroll={({ currentTarget: { scrollTop } }) => {
-					setStartingRank(
-						Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1,
-					);
-				}}
+		<>
+			<Resizer
+				type="column"
+				direction="negative"
+				onChange={resizeWidth}
+				className={cx("legend-width-resizer")}
 			>
-				{values.length > 0 ? (
-					values.map((user) => <LegendEntry key={user.id} {...user} />)
-				) : (
-					<LoadingSpinner size={36} />
-				)}
+				<div />
+			</Resizer>
+			<div
+				style={{ ["--legend-width" as string]: `${legendWidth}px` }}
+				className={cx("side-panel")}
+				ref={containerRef}
+			>
+				<div
+					className={cx("legend")}
+					style={{ maxHeight, gap: GAP }}
+					onScroll={({ currentTarget: { scrollTop } }) => {
+						setStartingRank(
+							Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1,
+						);
+					}}
+				>
+					{values.length > 0 ? (
+						values.map((user) => <LegendEntry key={user.id} {...user} />)
+					) : (
+						<LoadingSpinner size={36} />
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
 function LegendEntry({ id, count, rank, ...user }: RankingData[string]) {
 	const { isHighlighted, setHighlightedUser } = useChart();
+	const { isGrabbing } = useGrab();
+	const { isResizing } = useResize();
 
 	return (
 		<div
@@ -69,7 +92,11 @@ function LegendEntry({ id, count, rank, ...user }: RankingData[string]) {
 				["--series-color" as string]: getSeriesColor({ rank }),
 			}}
 			className={cx("info-box", { highlighted: isHighlighted(id) })}
-			onMouseEnter={() => setHighlightedUser(id)}
+			onMouseEnter={() => {
+				if (!isResizing && !isGrabbing) {
+					setHighlightedUser(id);
+				}
+			}}
 			onMouseLeave={() => setHighlightedUser(undefined)}
 		>
 			<UserHeader {...user} />

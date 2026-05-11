@@ -1,0 +1,7 @@
+.row {
+	cursor: row-resize;
+}
+
+.column {
+	cursor: col-resize;
+}

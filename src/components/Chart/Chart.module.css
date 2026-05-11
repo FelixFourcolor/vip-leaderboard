@@ -1,18 +1,12 @@
 .container {
 	--legend-padding: 16px;
-	/* hardcoded value large enough for most usernames */
-	--legend-item-width: 140px;
 
 	flex: 1;
 	min-height: 0;
 	display: grid;
-	grid-template-columns: 1fr calc(
-			var(--legend-item-width) +
-			var(--legend-padding) *
-			2
-		);
-	grid-template-rows: 1fr auto;
-	gap: 16px;
+	grid-template-columns: 1fr 16px auto;
+	grid-template-rows: 1fr 16px auto;
+	user-select: none;
 
 	.chart,
 	.bottom-panel,
@@ -27,7 +21,7 @@
 			outline-color: var(--text-secondary);
 		}
 
-		&:hover {
+		:root:not([data-is-resizing]) &:hover {
 			outline-color: var(--accent);
 			[data-is-zack="true"] & {
 				outline-width: 2px;
@@ -161,12 +155,32 @@
 		flex: 1;
 	}
 
+	.legend-width-resizer {
+		grid-row: 1 / -1;
+		grid-column: 2;
+
+		display: flex;
+		justify-content: center;
+
+		> div {
+			width: 2px;
+			height: 100%;
+		}
+		&:is(:hover, [data-is-active="true"]) > div {
+			background-color: var(--text-secondary);
+		}
+	}
+
 	.side-panel {
+		grid-column: 3;
+		grid-row: 1 / -1;
+
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		grid-column: 2;
-		grid-row: 1 / -1;
+
+		/* prevent layout shift on load */
+		width: calc(var(--legend-width) + var(--legend-padding) * 2);
 
 		.legend {
 			padding: var(--legend-padding);
@@ -184,7 +198,7 @@
 		align-items: center;
 		justify-content: space-between;
 		grid-column: 1;
-		grid-row: 2;
+		grid-row: 3;
 
 		.toggles {
 			display: flex;
@@ -196,7 +210,8 @@
 		}
 
 		.slider {
-			max-width: 800px;
+			min-width: 50px;
+			max-width: 750px;
 		}
 	}
 }
@@ -248,7 +263,7 @@
 
 	.legend & {
 		background-color: var(--bg-primary);
-		width: var(--legend-item-width);
+		width: var(--legend-width);
 
 		&.highlighted {
 			box-shadow: 0 0 12px var(--series-color);

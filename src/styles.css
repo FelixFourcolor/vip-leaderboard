@@ -25,10 +25,15 @@
 		--accent: #eb6f92;
 	}
 
-	&[data-is-cursor-dragged="true"] {
-		* {
-			cursor: grabbing !important;
-		}
+	&[data-is-grabbing="true"] * {
+		cursor: grabbing !important;
+	}
+
+	&[data-is-resizing="column"] * {
+		cursor: col-resize !important;
+	}
+	&[data-is-resizing="row"] * {
+		cursor: row-resize !important;
 	}
 
 	::-webkit-scrollbar {

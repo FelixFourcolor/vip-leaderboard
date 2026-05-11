@@ -1,6 +1,8 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { GrabManager } from "./components/RangeSlider";
+import { ResizeManager } from "./components/Resizer";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
@@ -13,7 +15,11 @@ const router = createRouter({
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<RouterProvider router={router} />
+		<GrabManager>
+			<ResizeManager>
+				<RouterProvider router={router} />
+			</ResizeManager>
+		</GrabManager>
 	</StrictMode>,
 );
 
