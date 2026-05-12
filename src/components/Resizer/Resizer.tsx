@@ -12,21 +12,18 @@ import styles from "./Resizer.module.css";
 const cx = classNames.bind(styles);
 
 type Props = {
-	type: "column" | "row";
-	direction: "positive" | "negative";
+	side: "left" | "right" | "top" | "bottom";
 	onChange: (delta: number) => void;
 	style?: CSSProperties;
 	className?: string;
 	children?: ReactNode;
 };
 
-export function Resizer({
-	type,
-	direction,
-	onChange,
-	className,
-	...rest
-}: Props) {
+export function Resizer({ side, onChange, className, ...rest }: Props) {
+	const type = side === "left" || side === "right" ? "column" : "row";
+	const direction =
+		side === "right" || side === "bottom" ? "positive" : "negative";
+
 	const { isResizing, delta, onResize } = useResizePrivate();
 
 	const isResizingRef = useRef(false);

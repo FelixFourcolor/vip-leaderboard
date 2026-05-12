@@ -45,14 +45,6 @@ export function ChartLegend({ entries }: LegendProps) {
 	const values = Object.values(entries);
 	return (
 		<>
-			<Resizer
-				type="column"
-				direction="negative"
-				onChange={resizeWidth}
-				className={cx("legend-width-resizer")}
-			>
-				<div />
-			</Resizer>
 			<div
 				style={{ ["--legend-width" as string]: `${legendWidth}px` }}
 				className={cx("side-panel")}
@@ -74,6 +66,13 @@ export function ChartLegend({ entries }: LegendProps) {
 					)}
 				</div>
 			</div>
+			<Resizer
+				side="left"
+				onChange={resizeWidth}
+				className={cx("legend-width-resizer")}
+			>
+				<div />
+			</Resizer>
 		</>
 	);
 }
