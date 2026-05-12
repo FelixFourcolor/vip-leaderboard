@@ -1,5 +1,12 @@
 import classNames from "classnames/bind";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type UIEventHandler,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGrab } from "@/components/RangeSlider";
 import { Resizer, useResize } from "@/components/Resizer";
@@ -42,6 +49,42 @@ export function ChartLegend({ entries }: LegendProps) {
 		setLegendWidth((current) => Math.max(Math.min(current + delta, 260), 90));
 	}, []);
 
+	const ignoreScroll = useRef(false);
+	const previousRank = useRef(1);
+	const legendRef = useRef<HTMLDivElement>(null);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: To stay on the same rank when entries change
+	useLayoutEffect(() => {
+		const legend = legendRef.current;
+		if (!legend) {
+			return;
+		}
+
+		// ignore scrolls triggered by re-rendering the legend
+		ignoreScroll.current = true;
+		legend.scrollTop = calculateScroll(previousRank.current);
+		// If out of bound, the browser will clamp it.
+		// So read back the value for the actual rank
+		const rank = calculateRank(legend.scrollTop);
+		setStartingRank(rank);
+		previousRank.current = rank;
+
+		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
+		return () => clearTimeout(timeoutId);
+	}, [entries, setStartingRank]);
+
+	const onScroll = useCallback<UIEventHandler>(
+		({ currentTarget: { scrollTop } }) => {
+			if (ignoreScroll.current) {
+				return;
+			}
+			const rank = calculateRank(scrollTop);
+			previousRank.current = rank;
+			setStartingRank(rank);
+		},
+		[setStartingRank],
+	);
+
 	const values = Object.values(entries);
 	return (
 		<>
@@ -53,11 +96,8 @@ export function ChartLegend({ entries }: LegendProps) {
 				<div
 					className={cx("legend")}
 					style={{ maxHeight, gap: GAP }}
-					onScroll={({ currentTarget: { scrollTop } }) => {
-						setStartingRank(
-							Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1,
-						);
-					}}
+					ref={legendRef}
+					onScroll={onScroll}
 				>
 					{values.length > 0 ? (
 						values.map((user) => <LegendEntry key={user.id} {...user} />)
@@ -113,3 +153,8 @@ function LegendEntry({ id, count, rank, ...user }: RankingData[string]) {
 
 const ENTRY_HEIGHT = 54; // pre-measured based on current styles, not worth measuring at runtime
 const GAP = 24;
+
+const calculateRank = (scrollTop: number) =>
+	Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1;
+
+const calculateScroll = (rank: number) => (rank - 1) * (ENTRY_HEIGHT + GAP);
