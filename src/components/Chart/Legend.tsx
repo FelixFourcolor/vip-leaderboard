@@ -1,5 +1,7 @@
 import classNames from "classnames/bind";
 import {
+	type CSSProperties,
+	type Ref,
 	type UIEventHandler,
 	useCallback,
 	useEffect,
@@ -21,12 +23,19 @@ const cx = classNames.bind(styles);
 type LegendProps = { entries: RankingData };
 export function ChartLegend({ entries }: LegendProps) {
 	const { setStartingRank, visibleRanks, setVisibleRanks } = useChart();
-	const maxHeight = ENTRY_HEIGHT * visibleRanks + GAP * (visibleRanks - 1);
 
-	const containerRef = useRef<HTMLDivElement>(null);
+	const [entryHeight, setEntryHeight] = useState<number | undefined>();
+	const entryRef = (entry: HTMLDivElement | null) => {
+		if (entry) {
+			const { height } = entry.getBoundingClientRect();
+			setEntryHeight(height);
+		}
+	};
+
+	const legendRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		const container = containerRef.current;
-		if (!container) {
+		const container = legendRef.current?.parentElement;
+		if (!container || !entryHeight) {
 			return;
 		}
 
@@ -36,13 +45,13 @@ export function ChartLegend({ entries }: LegendProps) {
 				return;
 			}
 			const containerHeight = entry.contentRect.height;
-			const count = Math.floor(containerHeight / (ENTRY_HEIGHT + GAP));
+			const count = Math.floor(containerHeight / (entryHeight + gap));
 			setVisibleRanks(Math.min(count, colorsCount));
 		});
 
 		observer.observe(container);
 		return () => observer.disconnect();
-	}, [setVisibleRanks]);
+	}, [entryHeight, setVisibleRanks]);
 
 	const [legendWidth, setLegendWidth] = useState(140);
 	const resizeWidth = useCallback((delta: number) => {
@@ -51,56 +60,65 @@ export function ChartLegend({ entries }: LegendProps) {
 
 	const ignoreScroll = useRef(false);
 	const previousRank = useRef(1);
-	const legendRef = useRef<HTMLDivElement>(null);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: To stay on the same rank when entries change
 	useLayoutEffect(() => {
 		const legend = legendRef.current;
-		if (!legend) {
+		if (!legend || !entryHeight) {
 			return;
 		}
 
 		// ignore scrolls triggered by re-rendering the legend
 		ignoreScroll.current = true;
-		legend.scrollTop = calculateScroll(previousRank.current);
+		legend.scrollTop = calculateScroll(previousRank.current, entryHeight);
 		// If out of bound, the browser will clamp it.
 		// So read back the value for the actual rank
-		const rank = calculateRank(legend.scrollTop);
+		const rank = calculateRank(legend.scrollTop, entryHeight);
 		setStartingRank(rank);
 		previousRank.current = rank;
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [entries, setStartingRank]);
+	}, [entries, entryHeight, setStartingRank]);
 
 	const onScroll = useCallback<UIEventHandler>(
 		({ currentTarget: { scrollTop } }) => {
-			if (ignoreScroll.current) {
+			if (ignoreScroll.current || !entryHeight) {
 				return;
 			}
-			const rank = calculateRank(scrollTop);
+			const rank = calculateRank(scrollTop, entryHeight);
 			previousRank.current = rank;
 			setStartingRank(rank);
 		},
-		[setStartingRank],
+		[entryHeight, setStartingRank],
 	);
 
+	const maxHeight = entryHeight
+		? entryHeight * visibleRanks + gap * (visibleRanks - 1)
+		: undefined;
+
 	const values = Object.values(entries);
+
 	return (
 		<>
 			<div
 				style={{ ["--legend-width" as string]: `${legendWidth}px` }}
 				className={cx("side-panel")}
-				ref={containerRef}
 			>
 				<div
 					className={cx("legend")}
-					style={{ maxHeight, gap: GAP }}
+					style={{ maxHeight, gap }}
 					ref={legendRef}
 					onScroll={onScroll}
 				>
 					{values.length > 0 ? (
-						values.map((user) => <LegendEntry key={user.id} {...user} />)
+						values.map((user, i) => (
+							<LegendEntry
+								key={user.id}
+								user={user}
+								ref={i === 0 ? entryRef : undefined}
+							/>
+						))
 					) : (
 						<LoadingSpinner size={36} />
 					)}
@@ -117,18 +135,28 @@ export function ChartLegend({ entries }: LegendProps) {
 	);
 }
 
-function LegendEntry({ id, count, rank, ...user }: RankingData[string]) {
+type LegendEntryProps = {
+	user: RankingData[string];
+	ref?: Ref<HTMLDivElement>;
+	style?: CSSProperties;
+};
+
+function LegendEntry({
+	user: { id, rank, count, ...user },
+	ref,
+	style,
+}: LegendEntryProps) {
 	const { isHighlighted, setHighlightedUser } = useChart();
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
 	return (
 		<div
+			ref={ref}
 			style={{
 				boxSizing: "border-box",
-				minHeight: `${ENTRY_HEIGHT}px`,
-				maxHeight: `${ENTRY_HEIGHT}px`,
 				["--series-color" as string]: getSeriesColor({ rank }),
+				...style,
 			}}
 			className={cx("info-box", { highlighted: isHighlighted(id) })}
 			onMouseEnter={() => {
@@ -151,10 +179,10 @@ function LegendEntry({ id, count, rank, ...user }: RankingData[string]) {
 	);
 }
 
-const ENTRY_HEIGHT = 54; // pre-measured based on current styles, not worth measuring at runtime
-const GAP = 24;
+const gap = 24;
 
-const calculateRank = (scrollTop: number) =>
-	Math.floor((scrollTop + GAP) / (ENTRY_HEIGHT + GAP)) + 1;
+const calculateRank = (scrollTop: number, entryHeight: number) =>
+	Math.floor((scrollTop + gap) / (entryHeight + gap)) + 1;
 
-const calculateScroll = (rank: number) => (rank - 1) * (ENTRY_HEIGHT + GAP);
+const calculateScroll = (rank: number, entryHeight: number) =>
+	(rank - 1) * (entryHeight + gap);
