@@ -207,15 +207,18 @@ function useVerticalScale() {
 	const [{ stacked }] = useChartControls();
 
 	return useMemo(() => {
-		const maxData = findMaxClamped(chartData, stacked, 8);
-		const max = maxData >= 2 ? ("auto" as const) : 2;
+		const maxClamped = findMaxClamped(chartData, stacked, 8);
+
+		const max = maxClamped >= 8 ? ("auto" as const) : maxClamped;
+		const min = stacked ? 0 : 1;
+
 		const tickValues =
-			maxData >= 8
+			maxClamped >= 8
 				? undefined
-				: Array.from({ length: Math.max(2, maxData) + 1 }, (_, i) => i);
+				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
 
 		return {
-			yScale: { ...configs.yScale, max, stacked },
+			yScale: { ...configs.yScale, min, max, stacked },
 			axisLeft: { ...configs.axisLeft, tickValues },
 			gridYValues: tickValues,
 		};
