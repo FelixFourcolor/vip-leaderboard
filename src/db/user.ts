@@ -7,14 +7,7 @@ export type UserData = typeof user.$inferInsert;
 
 export async function getUser(userId: string): Promise<UserData | undefined> {
 	const db = await loadDb();
-	
-	const rows = db
-		.select(userFields)
-		.from(user)
-		.where(eq(user.id, userId))
-		.all();
-
-	return rows[0];
+	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
 
 export const userFields = pick(user, ["id", "name", "avatarUrl", "color"]);
