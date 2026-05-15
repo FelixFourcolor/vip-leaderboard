@@ -14,7 +14,7 @@ export default {
 	enableCrosshair: false,
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time", useUTC: false },
-	yScale: { type: "linear", min: 0 },
+	yScale: { type: "linear" },
 	margin: { top: 24, right: 28, bottom: 28, left: 60 },
 	axisLeft: { legend: "Units of work", legendOffset: -42 },
 	axisBottom: { format: "%Y-%m" },

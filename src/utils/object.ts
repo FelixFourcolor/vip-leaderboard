@@ -11,3 +11,10 @@ export function pick<T, const K extends keyof T>(
 ): Pick<T, K> {
 	return Object.fromEntries(keys.map((key) => [key, obj[key]])) as Pick<T, K>;
 }
+
+export function filterObject<T>(
+	obj: Record<string, T>,
+	predicate: (kv: [string, T], index: number) => boolean,
+): Record<string, T> {
+	return Object.fromEntries(Object.entries(obj).filter(predicate));
+}

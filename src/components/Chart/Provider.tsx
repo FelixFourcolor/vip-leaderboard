@@ -1,7 +1,7 @@
 import { mapValues } from "es-toolkit";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { getMonthlyData, type MonthlyRanking } from "@/db/monthlyRanking";
-import { windows3 } from "@/utils/array";
+import { windowed } from "@/utils/array";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
 import { useChartControls } from "./Controls";
 import { colorsCount } from "./colors";
@@ -103,7 +103,7 @@ export function ChartProvider({ children: Chart }: Props) {
 				return new Set();
 			}
 			return new Set(
-				windows3(monthlyCount)
+				windowed(monthlyCount, 3)
 					.filter(
 						([pre, cur, nex]) =>
 							pre?.count == null && cur.count != null && nex?.count == null,

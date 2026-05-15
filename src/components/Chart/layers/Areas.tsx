@@ -3,6 +3,8 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
+import { zip } from "es-toolkit";
+import { windowed } from "@/utils/array";
 import type { ChartSeries } from "../Chart";
 import styles from "../Chart.module.css";
 import { useChartControls } from "../Controls";
@@ -28,19 +30,18 @@ export function ChartAreas({
 
 	return (
 		<g>
-			{series.map(({ id, data, color }, index) => {
+			{windowed(series, 2).map(([prev, { id, data, color }]) => {
 				const upper = data.map((d) => d.position);
-				const lower =
-					index === 0
-						? upper.map(({ x }) => ({ x, y: yScale(0) }))
-						: series[index - 1]!.data.map((d) => d.position);
+				const lower = prev
+					? prev.data.map((d) => d.position)
+					: upper.map(({ x }) => ({ x, y: yScale(0) }));
 
 				const path =
 					bandGenerator(
-						upper.map(({ x, y }, i) => ({
-							x,
-							y0: lower[i]!.y,
-							y1: y,
+						zip(lower, upper).map(([l, u]) => ({
+							x: l.x,
+							y0: l.y,
+							y1: u.y,
 						})),
 					) ?? "";
 
