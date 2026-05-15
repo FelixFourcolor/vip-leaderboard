@@ -1,20 +1,7 @@
-export function getAnyValue<T>(obj: Record<any, T>): T | undefined {
-	for (const key in obj) {
-		return obj[key];
-	}
-}
-
 // es-toolkit's pick doesn't work with drizzle's schema objects
 export function pick<T, const K extends keyof T>(
 	obj: T,
 	keys: readonly K[],
 ): Pick<T, K> {
 	return Object.fromEntries(keys.map((key) => [key, obj[key]])) as Pick<T, K>;
-}
-
-export function filterObject<T>(
-	obj: Record<string, T>,
-	predicate: (kv: [string, T], index: number) => boolean,
-): Record<string, T> {
-	return Object.fromEntries(Object.entries(obj).filter(predicate));
 }

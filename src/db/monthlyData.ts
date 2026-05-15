@@ -3,20 +3,17 @@ import { groupBy } from "es-toolkit";
 import { pick } from "@/utils/object";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
-import type { RankingData, RankingParams } from "./ranking";
+import type { RankingParams, UserRanking } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
 
-export type MonthlyCount = { month: YyyyMm; count: number | null }[];
-export type MonthlyRanking = Record<
-	string,
-	{ monthlyCount: MonthlyCount } & RankingData[string]
->;
+export type MonthlyCount = { x: YyyyMm; y: number | null }[];
+export type UserMonthlyData = { data: MonthlyCount } & UserRanking;
 
 export async function getMonthlyData({
 	since,
 	until,
-}: RankingParams): Promise<MonthlyRanking> {
+}: RankingParams): Promise<UserMonthlyData[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -63,26 +60,18 @@ export async function getMonthlyData({
 		.orderBy(desc(topUsers.total), asc(monthCount.month))
 		.all();
 
-	if (rows.length === 0) {
-		return {};
-	}
-
-	return Object.fromEntries(
-		Object.entries(groupBy(rows, (row) => row.id)).map(([id, rows], index) => {
+	return Object.entries(groupBy(rows, (row) => row.id)).map(
+		([id, rows], index) => {
 			const { name, color, avatarUrl, total: count } = rows[0]!;
-			const monthlyCount = rows.map(({ month, count }) => ({ month, count }));
-			return [
+			return {
 				id,
-				{
-					id,
-					name,
-					color,
-					avatarUrl,
-					count,
-					rank: index + 1,
-					monthlyCount,
-				},
-			];
-		}),
+				name,
+				color,
+				avatarUrl,
+				count,
+				rank: index + 1,
+				data: rows.map(({ month, count }) => ({ x: month, y: count })),
+			};
+		},
 	);
 }

@@ -2,17 +2,16 @@ import { useAnimatedPath } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
-import type { ChartSeries } from "../Chart";
-import styles from "../Chart.module.css";
-import { useChartControls } from "../Controls";
+import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
+import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export function ChartLines({
+export function Lines({
 	series,
 	lineGenerator,
-}: LineCustomSvgLayerProps<ChartSeries>) {
+}: LineCustomSvgLayerProps<NivoSeries>) {
 	return (
 		<g>
 			{series.map(({ id, data, color }) => (
@@ -33,8 +32,7 @@ type LineProps = {
 	color: string;
 };
 function Line({ id, path, color }: LineProps) {
-	const { isHighlighted, isMuted } = useChart();
-	const [{ stacked }] = useChartControls();
+	const { stacked, isHighlighted, isMuted } = useChart();
 	const animatedPath = useAnimatedPath(path);
 
 	return (

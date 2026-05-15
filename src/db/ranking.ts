@@ -5,15 +5,12 @@ import { activity, user } from "./schema";
 import { type UserData, userFields } from "./user";
 
 export type RankingParams = { since?: string; until?: string };
-export type RankingData = Record<
-	string,
-	{ rank: number; count: number } & UserData
->;
+export type UserRanking = { rank: number; count: number } & UserData;
 
 export async function getRanking({
 	since,
 	until,
-}: RankingParams): Promise<RankingData> {
+}: RankingParams): Promise<UserRanking[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -32,7 +29,5 @@ export async function getRanking({
 		.orderBy(desc(count(activity.date)), asc(user.id))
 		.all();
 
-	return Object.fromEntries(
-		rows.map((row, index) => [row.id, { ...row, rank: index + 1 }]),
-	);
+	return rows.map((row, index) => ({ ...row, rank: index + 1 }));
 }

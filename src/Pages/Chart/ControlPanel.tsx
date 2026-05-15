@@ -7,24 +7,17 @@ import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
-import styles from "./Chart.module.css";
+import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
 
-const defaultParams = {
-	until: toYyyyMm(lastUpdated),
-	since: offset(lastUpdated, { years: -2, months: 1 }),
-	cumulative: false,
-	stacked: false,
-};
-
 // Earliest month with meaningful data.
 // Kinda hard to define "meaningful",
-// so just hardcode a value instead of defining an api for it.
+// so just hardcode a value instead of querying it
 const startDate = "2020-01";
 const VALID_MONTHS = monthsInRange(startDate, lastUpdated);
 
-export function ChartControls() {
+export function ControlPanel() {
 	const [params, setParams] = useChartControls();
 	const { until, since, cumulative, stacked } = params;
 
@@ -34,7 +27,8 @@ export function ChartControls() {
 	);
 
 	return (
-		<div className={cx("bottom-panel")}>
+		<fieldset className={cx("control-panel")}>
+			<legend>controls</legend>
 			<div className={cx("toggles")}>
 				<Toggle
 					value={cumulative}
@@ -65,9 +59,16 @@ export function ChartControls() {
 			>
 				Reset
 			</Button>
-		</div>
+		</fieldset>
 	);
 }
+
+const defaultParams = {
+	until: toYyyyMm(lastUpdated),
+	since: offset(lastUpdated, { years: -2, months: 1 }),
+	cumulative: false,
+	stacked: false,
+};
 
 export function useChartControls() {
 	const search = Route.useSearch();

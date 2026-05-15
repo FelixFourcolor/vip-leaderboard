@@ -5,19 +5,18 @@ import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import { zip } from "es-toolkit";
 import { windowed } from "@/utils/array";
-import type { ChartSeries } from "../Chart";
-import styles from "../Chart.module.css";
-import { useChartControls } from "../Controls";
+import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
+import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export function ChartAreas({
+export function Areas({
 	series,
 	curve,
 	yScale,
-}: LineCustomSvgLayerProps<ChartSeries>) {
-	const [{ stacked }] = useChartControls();
+}: LineCustomSvgLayerProps<NivoSeries>) {
+	const { stacked } = useChart();
 	if (!stacked) {
 		return null;
 	}
@@ -38,10 +37,10 @@ export function ChartAreas({
 
 				const path =
 					bandGenerator(
-						zip(lower, upper).map(([l, u]) => ({
-							x: l.x,
-							y0: l.y,
-							y1: u.y,
+						zip(lower, upper).map(([L, U]) => ({
+							x: L.x,
+							y0: L.y,
+							y1: U.y,
 						})),
 					) ?? "";
 

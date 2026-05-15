@@ -1,29 +1,29 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
-import type { ChartSeries } from "../Chart";
-import { useChartControls } from "../Controls";
-import { type PointId, useChart } from "../context";
+import type { NivoSeries } from "../Chart";
+import { useChart } from "../context";
 
-export function ChartInteraction({
+export type InteractivePoint = { x: Date; seriesId: string };
+
+export function Interaction({
 	innerWidth,
 	innerHeight,
 	series,
 	yScale,
-}: LineCustomSvgLayerProps<ChartSeries>) {
-	const { setHighlightedUser, setHoveredPoint } = useChart();
-	const [{ stacked }] = useChartControls();
+}: LineCustomSvgLayerProps<NivoSeries>) {
+	const { setHighlightedSeries, setHoveredPoint, stacked } = useChart();
 
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
-	const highlight = (point: PointId) => {
-		setHighlightedUser(point.seriesId);
+	const highlight = (point: InteractivePoint) => {
+		setHighlightedSeries(point.seriesId);
 		setHoveredPoint(point);
 	};
 
 	const clearHighlight = () => {
-		setHighlightedUser(undefined);
+		setHighlightedSeries(undefined);
 		setHoveredPoint(undefined);
 	};
 
@@ -59,8 +59,8 @@ type XY = { x: number; y: number };
 
 function getClosestPoint(
 	mouse: XY,
-	series: LineCustomSvgLayerProps<ChartSeries>["series"],
-): PointId | null {
+	series: LineCustomSvgLayerProps<NivoSeries>["series"],
+): InteractivePoint | null {
 	const points = series.flatMap(({ data: seriesData, id: seriesId }) =>
 		seriesData
 			.filter(({ data }) => data.y)
@@ -72,16 +72,16 @@ function getClosestPoint(
 			const dist = Math.hypot(position.x - mouse.x, position.y - mouse.y);
 			return dist < best.dist ? { point: { seriesId, x: data.x }, dist } : best;
 		},
-		{ point: null as PointId | null, dist: Infinity },
+		{ point: null as InteractivePoint | null, dist: Infinity },
 	);
 	return point;
 }
 
 function getHoveredStackedSeries(
 	mouse: XY,
-	series: LineCustomSvgLayerProps<ChartSeries>["series"],
-	yScale: LineCustomSvgLayerProps<ChartSeries>["yScale"],
-): PointId | null {
+	series: LineCustomSvgLayerProps<NivoSeries>["series"],
+	yScale: LineCustomSvgLayerProps<NivoSeries>["yScale"],
+): InteractivePoint | null {
 	const xPoints = series[0]!.data.map(({ position, data }) => ({
 		data: data.x,
 		position: position.x,
