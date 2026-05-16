@@ -14,7 +14,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useChart } from "./context";
 import type { ChartSeries } from "./TimeChart";
 
-export type VisibleIndices = { from: number; to: number };
+export type VisibleIdx = { from: number; to: number };
 
 export type LegendContainerProps = {
 	style: CSSProperties;
@@ -39,30 +39,26 @@ export function Legend<S extends ChartSeries>({
 	Container = (props) => <div {...props} />,
 	Entry,
 }: Props<S>) {
-	const {
-		colors,
-		visibleIndices = defaultIndexRange(colors),
-		setVisibleIndices,
-	} = useChart();
+	const { colors, visibleIdx = colorRange(colors), setVisibleIdx } = useChart();
 
 	const setFromIndex = useCallback(
 		(index: number) =>
-			setVisibleIndices((current = defaultIndexRange(colors)) => {
+			setVisibleIdx((current = colorRange(colors)) => {
 				const delta = index - current.from;
 				return {
 					from: index,
 					to: current.to + delta,
 				};
 			}),
-		[colors, setVisibleIndices],
+		[colors, setVisibleIdx],
 	);
 	const setIndicesCount = useCallback(
 		(count: number) =>
-			setVisibleIndices((current = defaultIndexRange(colors)) => ({
+			setVisibleIdx((current = colorRange(colors)) => ({
 				...current,
 				to: current.from + count - 1,
 			})),
-		[colors, setVisibleIndices],
+		[colors, setVisibleIdx],
 	);
 
 	const [entryHeight, setEntryHeight] = useState<number | undefined>();
@@ -73,8 +69,8 @@ export function Legend<S extends ChartSeries>({
 		}
 	};
 	const maxHeight = entryHeight
-		? entryHeight * visibleCount(visibleIndices) +
-			gap * (visibleCount(visibleIndices) - 1)
+		? entryHeight * visibleCount(visibleIdx) +
+			gap * (visibleCount(visibleIdx) - 1)
 		: undefined;
 
 	const legendRef = useRef<HTMLElement>(null);
@@ -153,13 +149,13 @@ export function Legend<S extends ChartSeries>({
 	);
 }
 
-const defaultIndexRange = (colors: Record<string, string>) => ({
+const colorRange = (colors: Record<string, string>) => ({
 	from: 0,
 	to: Object.values(colors).length - 1,
 });
 
-const visibleCount = (visibleIndices: { from: number; to: number }) =>
-	visibleIndices.to - visibleIndices.from + 1;
+const visibleCount = (visibleIdx: { from: number; to: number }) =>
+	visibleIdx.to - visibleIdx.from + 1;
 
 const gap = 24;
 

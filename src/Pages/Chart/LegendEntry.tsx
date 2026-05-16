@@ -20,10 +20,7 @@ export function LegendEntry({
 	return (
 		<div
 			ref={ref}
-			style={{
-				boxSizing: "border-box",
-				["--series-color" as string]: seriesColor,
-			}}
+			style={{ ["--series-color" as string]: seriesColor }}
 			className={cx("info-box", { highlighted: isHighlighted(id) })}
 			onMouseEnter={() => {
 				if (!isResizing && !isGrabbing) {

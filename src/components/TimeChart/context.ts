@@ -1,7 +1,7 @@
 import { createContext, type ReactElement, use, useCallback } from "react";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
-import type { VisibleIndices } from "./Legend";
+import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 import type { ChartSeries } from "./TimeChart";
@@ -16,7 +16,7 @@ type ChartContextValue<S extends ChartSeries = ChartSeries> = {
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 } & State<"highlightedSeries", Maybe<string>> &
 	State<"hoveredPoint", Maybe<InteractivePoint>> &
-	State<"visibleIndices", Maybe<VisibleIndices>>;
+	State<"visibleIdx", Maybe<VisibleIdx>>;
 
 export const ChartContext = createContext<ChartContextValue | null>(null);
 

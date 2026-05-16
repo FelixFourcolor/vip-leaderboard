@@ -8,7 +8,7 @@ import {
 	Legend,
 	type LegendContainerProps,
 	type LegendEntryProps,
-	type VisibleIndices,
+	type VisibleIdx,
 } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
@@ -44,19 +44,13 @@ export function TimeChart<S extends ChartSeries>({
 	Container,
 	legend,
 }: Props<S>) {
-	const [visibleIndices, setVisibleIndices] = useState<VisibleIndices>();
-
+	const [visibleIdx, setVisibleIdx] = useState<VisibleIdx>();
 	const [highlightedSeries, setHighlightedSeries] = useState<string>();
-
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
+	const visibleData = useFilter(data, visibleIdx);
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
-
-	const chartData = useTransform(data, xValues, {
-		stacked,
-		cumulative,
-		visibleIndices,
-	});
+	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
 
 	return (
 		<ChartContext.Provider
@@ -72,8 +66,8 @@ export function TimeChart<S extends ChartSeries>({
 				setHighlightedSeries,
 				hoveredPoint,
 				setHoveredPoint,
-				visibleIndices,
-				setVisibleIndices,
+				visibleIdx,
+				setVisibleIdx,
 			}}
 		>
 			<Chart
@@ -86,94 +80,83 @@ export function TimeChart<S extends ChartSeries>({
 	);
 }
 
-type TransformOptions = {
-	stacked: boolean;
-	cumulative: boolean;
-	visibleIndices: VisibleIndices | undefined;
-};
-function useTransform<S extends ChartSeries>(
+function useFilter<S extends ChartSeries>(
 	data: S[],
-	xValues: YyyyMm[],
-	{ stacked, cumulative, visibleIndices }: TransformOptions,
+	visibleIdx: VisibleIdx | undefined,
 ): S[] {
-	const filteredData = useMemo(
-		() =>
-			visibleIndices
-				? data.filter(
-						(_, i) => visibleIndices.from <= i && i <= visibleIndices.to,
-					)
-				: data,
-		[data, visibleIndices],
-	);
+	return useMemo(() => {
+		return visibleIdx
+			? data.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
+			: data;
+	}, [data, visibleIdx]);
+}
 
+type TransformOptions = { stacked: boolean; cumulative: boolean };
+function useTransform<S extends ChartSeries>(
+	filteredData: S[],
+	xValues: YyyyMm[],
+	{ stacked, cumulative }: TransformOptions,
+): S[] {
 	type Accumulator = { data: ChartPoint[]; sum: number };
 
-	const transformedData = useMemo<ChartSeries[]>(
-		() =>
-			filteredData.map(({ data: points, ...rest }) => {
-				const pointMapping = Object.fromEntries(
-					points.map(({ x, y }) => [x, y]),
-				);
+	const transformedData = useMemo<ChartSeries[]>(() => {
+		return filteredData.map(({ data: points, ...rest }) => {
+			const pointMapping = Object.fromEntries(points.map(({ x, y }) => [x, y]));
 
-				if (!cumulative) {
-					const data = xValues.map((x) => ({
-						x,
-						y: pointMapping[x] ?? (stacked ? 0 : null),
-					}));
-					return { ...rest, data };
-				}
+			if (!cumulative) {
+				const data = xValues.map((x) => ({
+					x,
+					y: pointMapping[x] ?? (stacked ? 0 : null),
+				}));
+				return { ...rest, data };
+			}
 
-				if (stacked) {
-					const { data } = xValues.reduce<Accumulator>(
-						({ data, sum }, x) => {
-							const y = pointMapping[x] ?? 0;
-							sum += y;
-							data.push({ x, y: sum });
-							return { data, sum };
-						},
-						{ data: [], sum: 0 },
-					);
-					return { ...rest, data };
-				}
-
-				const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
-				const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
-				const continuousPoints = xValues.map((x, index) => {
-					// Only interpolate the points between the first and last non-null values
-					// to keep the graph clean
-					if (firstNonNull <= index && index <= lastNonNull) {
-						return { x, y: pointMapping[x] ?? 0 };
-					}
-					return { x, y: null };
-				});
-				const { data } = continuousPoints.reduce<Accumulator>(
-					({ data, sum }, { x, y }) => {
-						if (y !== null) {
-							sum += y;
-							data.push({ x, y: sum });
-						} else {
-							data.push({ x, y: null });
-						}
+			if (stacked) {
+				const { data } = xValues.reduce<Accumulator>(
+					({ data, sum }, x) => {
+						const y = pointMapping[x] ?? 0;
+						sum += y;
+						data.push({ x, y: sum });
 						return { data, sum };
 					},
 					{ data: [], sum: 0 },
 				);
 				return { ...rest, data };
-			}),
-		[filteredData, xValues, stacked, cumulative],
-	);
+			}
+
+			const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
+			const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
+			const continuousPoints = xValues.map((x, index) => {
+				// Only interpolate the points between the first and last non-null values
+				// to keep the graph clean
+				if (firstNonNull <= index && index <= lastNonNull) {
+					return { x, y: pointMapping[x] ?? 0 };
+				}
+				return { x, y: null };
+			});
+			const { data } = continuousPoints.reduce<Accumulator>(
+				({ data, sum }, { x, y }) => {
+					if (y !== null) {
+						sum += y;
+						data.push({ x, y: sum });
+					} else {
+						data.push({ x, y: null });
+					}
+					return { data, sum };
+				},
+				{ data: [], sum: 0 },
+			);
+			return { ...rest, data };
+		});
+	}, [filteredData, xValues, stacked, cumulative]);
 
 	return transformedData as S[];
 }
 
 function useColors(data: ChartSeries[], colors: readonly string[]) {
 	return useMemo(() => {
-		console.log("useColors");
 		return Object.fromEntries(
-			data.map(({ id }, index) => {
-				const color = colors[index % colors.length]!;
-				return [id, color];
-			}),
+			data.map(({ id }, index) => [id, colors[index % colors.length]!]),
 		);
 	}, [data, colors]);
 }
