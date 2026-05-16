@@ -54,7 +54,7 @@ export function TimeChart<S extends ChartSeries>({
 		cumulative,
 		visibleIndices,
 	});
-	const isolatedPoints = useIsolatedPoints(data);
+	const isolatedPoints = useIsolatedPoints(chartData);
 
 	return (
 		<ChartContext.Provider
