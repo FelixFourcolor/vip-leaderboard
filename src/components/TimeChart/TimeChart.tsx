@@ -24,7 +24,7 @@ type Props<S extends ChartSeries> = {
 	until: YyyyMm;
 	stacked?: boolean;
 	cumulative?: boolean;
-	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
+	PointTooltip?: (props: PointTooltipProps<ChartSeries>) => JSX.Element | null;
 	Renderer?: FC<ChartRendererProps>;
 	legend?: {
 		Renderer?: FC<LegendRendererProps>;
@@ -45,27 +45,29 @@ export function TimeChart<S extends ChartSeries>({
 	legend,
 }: Props<S>) {
 	const [visibleIndices, setVisibleIndices] = useState<VisibleIndices>();
+
 	const [highlightedSeries, setHighlightedSeries] = useState<string>();
+
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
+
 	const chartData = useTransform(data, xValues, {
 		stacked,
 		cumulative,
 		visibleIndices,
 	});
-	const isolatedPoints = useIsolatedPoints(chartData);
 
 	return (
 		<ChartContext.Provider
 			value={{
 				chartData,
 				xValues,
-				colors,
+				colors: useColors(data, colors),
 				stacked,
 				cumulative,
-				PointTooltip: PointTooltip as any, // generics
-				isolatedPoints,
+				PointTooltip,
+				isolatedPoints: useIsolatedPoints(chartData),
 				highlightedSeries,
 				setHighlightedSeries,
 				hoveredPoint,
@@ -162,6 +164,18 @@ function useTransform<S extends ChartSeries>(
 	);
 
 	return transformedData as S[];
+}
+
+function useColors(data: ChartSeries[], colors: readonly string[]) {
+	return useMemo(() => {
+		console.log("useColors");
+		return Object.fromEntries(
+			data.map(({ id }, index) => {
+				const color = colors[index % colors.length]!;
+				return [id, color];
+			}),
+		);
+	}, [data, colors]);
 }
 
 const useIsolatedPoints = (data: ChartSeries[]) =>

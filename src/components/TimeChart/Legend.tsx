@@ -143,7 +143,7 @@ export function Legend<S extends ChartSeries>({
 						key={series.id}
 						series={series}
 						ref={i === 0 ? entryRef : undefined}
-						seriesColor={colors[(i + visibleIndices.from) % colors.length]!}
+						seriesColor={colors[series.id]!}
 					/>
 				))
 			) : (
@@ -153,9 +153,9 @@ export function Legend<S extends ChartSeries>({
 	);
 }
 
-const defaultIndexRange = (colors: readonly string[]) => ({
+const defaultIndexRange = (colors: Record<string, string>) => ({
 	from: 0,
-	to: colors.length - 1,
+	to: Object.values(colors).length - 1,
 });
 
 const visibleCount = (visibleIndices: { from: number; to: number }) =>

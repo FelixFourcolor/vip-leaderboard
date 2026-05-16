@@ -5,7 +5,6 @@ import {
 	type FC,
 	type ReactNode,
 	type Ref,
-	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
@@ -43,9 +42,9 @@ export function Chart({
 	yAxisTitle,
 	Renderer = (props) => <div {...props} />,
 }: Props) {
+	const colors = useColors();
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale();
 	const { yScale, axisLeft, gridYValues } = useVerticalScale();
-	const colors = useColors();
 
 	return (
 		<Renderer ref={chartRef} className={cx("chart")}>
@@ -107,24 +106,16 @@ const configs = {
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
 function useColors() {
-	const { chartData, colors, isMuted, isHighlighted } = useChart();
-
-	const colorById = useMemo(() => {
-		return Object.fromEntries(
-			chartData.map(({ id }, index) => {
-				const color = colors[index % colors.length];
-				if (isHighlighted(id)) {
-					return [id, color];
-				}
-				if (isMuted(id)) {
-					return [id, `rgb(from ${color} r g b / 0.45)`];
-				}
-				return [id, `rgb(from ${color} r g b / 0.85)`];
-			}),
-		);
-	}, [chartData, colors, isMuted, isHighlighted]);
-
-	return useCallback(({ id }: { id: string }) => colorById[id]!, [colorById]);
+	const { colors, isMuted, isHighlighted } = useChart();
+	return ({ id }: { id: string }) => {
+		const color = colors[id]!;
+		if (isHighlighted(id)) {
+			return color;
+		} else if (isMuted(id)) {
+			return `rgb(from ${color} r g b / 0.45)`;
+		}
+		return `rgb(from ${color} r g b / 0.85)`;
+	};
 }
 
 const fontSize = 12;
