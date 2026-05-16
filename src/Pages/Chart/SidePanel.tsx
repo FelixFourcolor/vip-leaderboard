@@ -1,12 +1,12 @@
 import classNames from "classnames/bind";
 import { useCallback, useState } from "react";
 import { Resizer } from "@/components/Resizer";
-import type { LegendRendererProps } from "@/components/TimeChart";
+import type { LegendContainerProps } from "@/components/TimeChart";
 import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function SidePanel(props: LegendRendererProps) {
+export function SidePanel(props: LegendContainerProps) {
 	const [legendWidth, setLegendWidth] = useState(144);
 	const resizeWidth = useCallback((delta: number) => {
 		setLegendWidth((current) => Math.max(Math.min(current + delta, 260), 90));

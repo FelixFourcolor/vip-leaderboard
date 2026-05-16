@@ -2,7 +2,7 @@ import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
 import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
-import { Chart } from "./Chart";
+import { ChartContainer } from "./ChartContainer";
 import styles from "./ChartPage.module.css";
 import { ControlPanel, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
@@ -26,9 +26,9 @@ export function ChartPage() {
 				data={chartData}
 				yAxisTitle="Units of work"
 				{...controls}
-				Renderer={Chart}
+				Container={ChartContainer}
 				PointTooltip={PointTooltip}
-				legend={{ Renderer: SidePanel, Entry: LegendEntry }}
+				legend={{ Container: SidePanel, Entry: LegendEntry }}
 			/>
 			<ControlPanel />
 		</div>

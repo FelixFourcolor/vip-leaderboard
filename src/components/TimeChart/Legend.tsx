@@ -16,7 +16,7 @@ import type { ChartSeries } from "./TimeChart";
 
 export type VisibleIndices = { from: number; to: number };
 
-export type LegendRendererProps = {
+export type LegendContainerProps = {
 	style: CSSProperties;
 	ref: Ref<any>;
 	onScroll: UIEventHandler;
@@ -31,12 +31,12 @@ export type LegendEntryProps<S extends ChartSeries> = {
 
 type Props<S extends ChartSeries> = {
 	data: Omit<S, "data">[];
-	Renderer?: FC<LegendRendererProps>;
+	Container?: FC<LegendContainerProps>;
 	Entry: FC<LegendEntryProps<S>>;
 };
 export function Legend<S extends ChartSeries>({
 	data,
-	Renderer = (props) => <div {...props} />,
+	Container = (props) => <div {...props} />,
 	Entry,
 }: Props<S>) {
 	const {
@@ -132,7 +132,7 @@ export function Legend<S extends ChartSeries>({
 	);
 
 	return (
-		<Renderer
+		<Container
 			style={{ maxHeight, gap, overflowY: "auto" }}
 			ref={legendRef}
 			onScroll={onScroll}
@@ -149,7 +149,7 @@ export function Legend<S extends ChartSeries>({
 			) : (
 				<LoadingSpinner size={36} />
 			)}
-		</Renderer>
+		</Container>
 	);
 }
 

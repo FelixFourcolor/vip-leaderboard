@@ -26,7 +26,7 @@ const cx = classNames.bind(styles);
 export type NivoSeries = { id: string; data: NivoPoint[] };
 export type NivoPoint = { x: Date; y: number | null };
 
-export type ChartRendererProps = {
+export type ChartContainerProps = {
 	ref: Ref<any>;
 	className: string;
 	children: ReactNode;
@@ -35,19 +35,19 @@ export type ChartRendererProps = {
 type Props = {
 	data: NivoSeries[];
 	yAxisTitle: string;
-	Renderer?: FC<ChartRendererProps>;
+	Container?: FC<ChartContainerProps>;
 };
 export function Chart({
 	data,
 	yAxisTitle,
-	Renderer = (props) => <div {...props} />,
+	Container = (props) => <div {...props} />,
 }: Props) {
 	const colors = useColors();
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale();
 	const { yScale, axisLeft, gridYValues } = useVerticalScale();
 
 	return (
-		<Renderer ref={chartRef} className={cx("chart")}>
+		<Container ref={chartRef} className={cx("chart")}>
 			{data.length > 0 ? (
 				<ResponsiveLine
 					{...configs}
@@ -62,7 +62,7 @@ export function Chart({
 			) : (
 				<LoadingSpinner size={48} />
 			)}
-		</Renderer>
+		</Container>
 	);
 }
 

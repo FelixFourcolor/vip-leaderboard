@@ -1,13 +1,13 @@
 import { type FC, type JSX, useMemo, useState } from "react";
 import { windowed } from "@/utils/array";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
-import { Chart, type ChartRendererProps, type NivoSeries } from "./Chart";
+import { Chart, type ChartContainerProps, type NivoSeries } from "./Chart";
 import { category10 } from "./colors";
 import { ChartContext } from "./context";
 import {
 	Legend,
+	type LegendContainerProps,
 	type LegendEntryProps,
-	type LegendRendererProps,
 	type VisibleIndices,
 } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
@@ -24,10 +24,10 @@ type Props<S extends ChartSeries> = {
 	until: YyyyMm;
 	stacked?: boolean;
 	cumulative?: boolean;
-	PointTooltip?: (props: PointTooltipProps<ChartSeries>) => JSX.Element | null;
-	Renderer?: FC<ChartRendererProps>;
+	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
+	Container?: FC<ChartContainerProps>;
 	legend?: {
-		Renderer?: FC<LegendRendererProps>;
+		Container?: FC<LegendContainerProps>;
 		Entry: FC<LegendEntryProps<S>>;
 	};
 };
@@ -41,7 +41,7 @@ export function TimeChart<S extends ChartSeries>({
 	stacked = false,
 	cumulative = false,
 	PointTooltip,
-	Renderer,
+	Container,
 	legend,
 }: Props<S>) {
 	const [visibleIndices, setVisibleIndices] = useState<VisibleIndices>();
@@ -66,7 +66,7 @@ export function TimeChart<S extends ChartSeries>({
 				colors: useColors(data, colors),
 				stacked,
 				cumulative,
-				PointTooltip,
+				PointTooltip: PointTooltip as any, // generics
 				isolatedPoints: useIsolatedPoints(chartData),
 				highlightedSeries,
 				setHighlightedSeries,
@@ -79,7 +79,7 @@ export function TimeChart<S extends ChartSeries>({
 			<Chart
 				data={useNivoSeries(chartData, stacked)}
 				yAxisTitle={yAxisTitle}
-				Renderer={Renderer}
+				Container={Container}
 			/>
 			{legend && <Legend data={data} {...legend} />}
 		</ChartContext.Provider>
