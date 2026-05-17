@@ -12,7 +12,7 @@ type ChartContextValue<S extends TimeSeries = TimeSeries> = {
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
-	colors: Record<string, string>;
+	colorMapping: Record<string, string>;
 	isolatedPoints: Record<string, Set<string>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 } & State<"highlightedSeries", Maybe<string>> &

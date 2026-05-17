@@ -117,9 +117,9 @@ function useNivoData(): NivoSeries[] {
 }
 
 function useColors() {
-	const { colors, isMuted, isHighlighted } = useChart();
+	const { colorMapping, isMuted, isHighlighted } = useChart();
 	return ({ id }: { id: string }) => {
-		const color = colors[id]!;
+		const color = colorMapping[id]!;
 		if (isHighlighted(id)) {
 			return color;
 		} else if (isMuted(id)) {

@@ -5,6 +5,7 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -25,12 +26,12 @@ type Props<S extends TimeSeries> = {
 	className?: string;
 };
 export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
-	const {
-		data,
-		colors,
-		visibleIdx = colorRange(colors),
-		setVisibleIdx,
-	} = useChart<S>();
+	const { data, colorMapping } = useChart<S>();
+	const colors = useMemo(
+		() => [...new Set(Object.values(colorMapping))],
+		[colorMapping],
+	);
+	const { visibleIdx = colorRange(colors), setVisibleIdx } = useChart();
 
 	const setFromIndex = useCallback(
 		(index: number) =>
@@ -77,12 +78,17 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 				return;
 			}
 			const containerHeight = entry.contentRect.height;
-			setIndicesCount(Math.floor(containerHeight / (entryHeight + gap)));
+			setIndicesCount(
+				Math.min(
+					Math.floor(containerHeight / (entryHeight + gap)),
+					colors.length,
+				),
+			);
 		});
 
 		observer.observe(container);
 		return () => observer.disconnect();
-	}, [entryHeight, setIndicesCount]);
+	}, [colors, entryHeight, setIndicesCount]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIndex = useRef(0);
@@ -131,7 +137,7 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 						key={series.id}
 						series={series}
 						ref={i === 0 ? entryRef : undefined}
-						seriesColor={colors[series.id]!}
+						seriesColor={colorMapping[series.id]!}
 					/>
 				))
 			) : (
@@ -141,9 +147,9 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 	);
 }
 
-const colorRange = (colors: Record<string, string>) => ({
+const colorRange = (colors: readonly string[]) => ({
 	from: 0,
-	to: Object.values(colors).length - 1,
+	to: colors.length - 1,
 });
 
 const visibleCount = (visibleIdx: { from: number; to: number }) =>

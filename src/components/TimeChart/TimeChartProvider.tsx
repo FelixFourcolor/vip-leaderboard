@@ -45,7 +45,7 @@ export function TimeChartContext<S extends TimeSeries>({
 				data,
 				chartData,
 				xValues,
-				colors: useColors(data, colors),
+				colorMapping: useColorMapping(data, colors),
 				stacked,
 				cumulative,
 				PointTooltip: PointTooltip as any, // generics
@@ -136,7 +136,7 @@ function useTransform<S extends TimeSeries>(
 	return transformedData as S[];
 }
 
-function useColors(data: TimeSeries[], colors: readonly string[]) {
+function useColorMapping(data: TimeSeries[], colors: readonly string[]) {
 	return useMemo(() => {
 		return Object.fromEntries(
 			data.map(({ id }, index) => [id, colors[index % colors.length]!]),
