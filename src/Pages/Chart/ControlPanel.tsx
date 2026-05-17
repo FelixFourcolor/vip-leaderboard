@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
 import { Route } from "@/routes/index";
-import { monthsInRange, offset, toYyyyMm } from "@/utils/time";
+import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
@@ -22,7 +22,7 @@ export function ControlPanel() {
 	const { until, since, cumulative, stacked } = params;
 
 	const onDateChange = useCallback(
-		([since, until]: readonly [string, string]) => setParams({ since, until }),
+		([since, until]: readonly [YyyyMm, YyyyMm]) => setParams({ since, until }),
 		[setParams],
 	);
 

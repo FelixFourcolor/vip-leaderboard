@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
+		"tscheck": "tsc --noEmit -p tsconfig.proj.json ; tsc --noEmit -p tsconfig.app.json",
 		"init-db": "rm public/db.sqlite; drizzle-kit push && tsx --tsconfig tsconfig.proj.json loader/main.ts init",
 		"update-db": "tsx --tsconfig tsconfig.proj.json loader/main.ts"
 	},

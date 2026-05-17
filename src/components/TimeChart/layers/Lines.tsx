@@ -2,8 +2,8 @@ import { useAnimatedPath } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
-import type { NivoSeries } from "../TimeChart";
 import { useChart } from "../context";
+import type { NivoSeries } from "../TimeChart";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
