@@ -38,7 +38,6 @@
 
 		.label {
 			color: var(--accent);
-			font-weight: bold;
 			top: 23px;
 			left: 50%;
 			transform: translateX(-50%);
@@ -67,7 +66,8 @@
 		cursor: default;
 		position: absolute;
 		white-space: nowrap;
-		font-size: var(--text-mini);
+		font-size: var(--text-small);
+		color: var(--text-secondary);
 		top: -15px;
 
 		&.min {

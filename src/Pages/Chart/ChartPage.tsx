@@ -36,6 +36,6 @@ export function ChartPage() {
 }
 
 const configs = {
-	margin: { top: 20, right: 28, bottom: 28, left: 70 },
+	margin: { top: 18, right: 28, bottom: 28, left: 64 },
 	axisLeft: { legendOffset: -50, legend: "Activities" },
 };

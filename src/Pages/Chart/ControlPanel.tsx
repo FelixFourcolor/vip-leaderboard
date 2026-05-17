@@ -27,38 +27,40 @@ export function ControlPanel() {
 	);
 
 	return (
-		<fieldset className={cx("control-panel")}>
+		<fieldset>
 			<legend>controls</legend>
-			<div className={cx("toggles")}>
-				<Toggle
-					value={cumulative}
-					onChange={(cumulative) => setParams({ cumulative })}
-					className={cx("toggle")}
-				>
-					Cumulative
-				</Toggle>
-				<Toggle
-					value={stacked}
-					onChange={(stacked) => setParams({ stacked })}
-					className={cx("toggle")}
-				>
-					Stacked
-				</Toggle>
-			</div>
+			<div className={cx("control-panel")}>
+				<div className={cx("toggles")}>
+					<Toggle
+						value={cumulative}
+						onChange={(cumulative) => setParams({ cumulative })}
+						className={cx("toggle")}
+					>
+						Cumulative
+					</Toggle>
+					<Toggle
+						value={stacked}
+						onChange={(stacked) => setParams({ stacked })}
+						className={cx("toggle")}
+					>
+						Stacked
+					</Toggle>
+				</div>
 
-			<RangeSlider
-				className={cx("slider")}
-				domain={VALID_MONTHS}
-				selected={[since, until]}
-				onChange={onDateChange}
-				minDistance={1}
-			/>
-			<Button
-				onClick={() => setParams(defaultParams)}
-				disabled={isEqual(params, defaultParams)}
-			>
-				Reset
-			</Button>
+				<RangeSlider
+					className={cx("slider")}
+					domain={VALID_MONTHS}
+					selected={[since, until]}
+					onChange={onDateChange}
+					minDistance={1}
+				/>
+				<Button
+					onClick={() => setParams(defaultParams)}
+					disabled={isEqual(params, defaultParams)}
+				>
+					Reset
+				</Button>
+			</div>
 		</fieldset>
 	);
 }

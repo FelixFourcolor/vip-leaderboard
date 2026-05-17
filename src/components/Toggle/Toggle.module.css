@@ -3,20 +3,19 @@
 	align-items: center;
 	gap: 8px;
 	cursor: pointer;
+	user-select: none;
 
 	.toggle {
 		width: 40px;
 		height: 20px;
-		border-radius: 10px;
 		display: inline-flex;
 		align-items: center;
-		transition: background 0.4s ease;
+		transition: background 0.3s ease;
 		background: var(--text-tertiary);
 
 		.slider {
-			width: 16px;
-			height: 16px;
-			border-radius: 50%;
+			width: 15px;
+			height: 15px;
 			transition: background 0.4s ease;
 
 			background: var(--text-primary);
@@ -27,7 +26,7 @@
 
 		.dummy {
 			flex: 0.1;
-			transition: flex 0.4s ease;
+			transition: flex 0.3s ease;
 		}
 
 		&.isOn {

@@ -72,14 +72,14 @@
 		[data-is-zack="true"] & {
 			fill: black;
 		}
-		font-size: 13px;
+		font-size: var(--text-small);
 		text-anchor: middle;
 		dominant-baseline: central;
 	}
 
 	circle {
 		&.point {
-			r: 3px;
+			r: 3.5px;
 			&.highlighted {
 				r: 4px;
 			}
@@ -91,7 +91,7 @@
 			fill: var(--series-color);
 			filter: blur(3px);
 
-			opacity: 0.5;
+			opacity: 0.55;
 			[data-is-zack="true"] & {
 				opacity: 0.35;
 			}

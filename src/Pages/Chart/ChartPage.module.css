@@ -8,30 +8,25 @@
 
 	fieldset {
 		background-color: var(--bg-secondary);
-		border-style: dashed;
+		border-color: var(--text-tertiary);
 
+		border-style: solid;
 		border-width: 1px;
-		[data-is-zack="true"] & {
-			border-width: 2px;
-		}
+		padding: 0;
 
-		border-color: var(--text-secondary);
-		[data-is-zack="true"] & {
-			border-color: var(--text-tertiary);
+		legend {
+			margin-left: 16px;
+			font-size: var(--text-large);
+			color: var(--text-secondary);
 		}
 
 		:root:not([data-is-resizing]) &:hover {
-			border-style: solid;
 			border-color: var(--accent);
 			legend {
 				color: var(--accent);
 			}
-		}
-
-		&:not(.control-panel) {
-			padding: 0;
-			legend {
-				margin-left: 16px;
+			[data-is-zack="true"] & {
+				box-shadow: 0 0 2px var(--accent);
 			}
 		}
 	}
@@ -55,7 +50,7 @@
 		width: calc(var(--legend-width) + var(--legend-padding) * 2);
 
 		.legend {
-			padding: 8px var(--legend-padding);
+			padding: 6px var(--legend-padding);
 			display: flex;
 			flex-direction: column;
 			overflow-y: auto;
@@ -69,32 +64,30 @@
 			display: flex;
 			justify-content: center;
 
-			> div {
+			hr {
 				width: 2px;
 				height: 100%;
 			}
-			&:is(:hover, [data-is-active="true"]) > div {
+			&:is(:hover, [data-is-active="true"]) > hr {
 				background-color: var(--text-secondary);
 			}
 		}
 	}
 
+	fieldset:has(.control-panel) {
+		grid-column: 1;
+		grid-row: 3;
+	}
 	.control-panel {
 		display: flex;
-		padding: 12px 16px 20px 16px;
+		padding: 10px 16px 20px 16px;
 		gap: 48px;
 		align-items: center;
 		justify-content: space-between;
-		grid-column: 1;
-		grid-row: 3;
 
 		.toggles {
 			display: flex;
 			gap: 16px;
-
-			.toggle {
-				font-size: var(--text-small);
-			}
 		}
 
 		.slider {
@@ -107,7 +100,6 @@
 
 .info-box {
 	padding: 6px 6px 4px 6px;
-	border-radius: 4px;
 	border: 2px dashed var(--series-color);
 	width: fit-content;
 	white-space: nowrap;
@@ -118,11 +110,6 @@
 	gap: 4px;
 
 	table {
-		font-size: 14.5px;
-		[data-is-zack="true"] & {
-			font-size: 14px; /* smaller because bold */
-		}
-
 		border-spacing: 0;
 
 		th,
@@ -134,12 +121,6 @@
 			color: var(--text-secondary);
 			&::after {
 				content: " |";
-			}
-		}
-		td {
-			[data-is-zack="true"] & {
-				color: var(--text-secondary);
-				font-weight: bold;
 			}
 		}
 	}
@@ -155,10 +136,7 @@
 		width: var(--legend-width);
 
 		&.highlighted {
-			box-shadow: 0 0 12px var(--series-color);
-			[data-is-zack="true"] & {
-				box-shadow: 0 0 10px var(--series-color);
-			}
+			box-shadow: 0 0 10px var(--series-color);
 		}
 	}
 }

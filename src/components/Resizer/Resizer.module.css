@@ -1,7 +1,25 @@
-.row {
-	cursor: row-resize;
-}
+.resizer {
+	&.row {
+		cursor: row-resize;
+		hr {
+			width: 100%;
+			height: 2px;
+		}
+	}
 
-.column {
-	cursor: col-resize;
+	&.column {
+		cursor: col-resize;
+		hr {
+			width: 2px;
+			height: 100%;
+		}
+	}
+
+	hr {
+		border: none;
+		margin: 0;
+	}
+	&:is(:hover, [data-is-active="true"]) > hr {
+		background-color: var(--text-secondary);
+	}
 }

@@ -72,7 +72,7 @@ const CONFIGS = {
 	layers: ["grid", "axes", Areas, Lines, Points, Labels, Interaction],
 	theme: {
 		background: "var(--bg-secondary)",
-		text: { fill: "var(--text-primary)" },
+		text: { fontFamily: "inherit" },
 		axis: {
 			ticks: {
 				line: {
@@ -81,11 +81,14 @@ const CONFIGS = {
 				},
 				text: {
 					fill: "var(--text-secondary)",
-					fontWeight: "bold",
+					fontSize: "var(--text-mini)",
 				},
 			},
 			legend: {
-				text: { fontSize: "var(--text-normal)" },
+				text: {
+					fill: "var(--text-primary)",
+					fontSize: "var(--text-large)",
+				},
 			},
 		},
 		grid: {

@@ -1,11 +1,12 @@
 :root {
-	--text-normal: 16px;
-	--text-small: 14px;
+	--text-large: 15px;
+	--text-normal: 14px;
+	--text-small: 13px;
 	--text-mini: 12px;
 
-	--bg-primary: #1f1d2e;
+	--bg-primary: #21202e;
 	--bg-secondary: #191724;
-	--bg-tertiary: #403d52;
+	--bg-tertiary: #26233a;
 
 	--text-primary: #e0def4;
 	--text-secondary: #908caa;
@@ -16,7 +17,7 @@
 	&[data-is-zack="true"] {
 		--bg-primary: #faf4ed;
 		--bg-secondary: #f2e9e1;
-		--bg-tertiary: #cecacd;
+		--bg-tertiary: #dfdad9;
 
 		--text-primary: #575279;
 		--text-secondary: #797593;
@@ -45,10 +46,18 @@
 }
 
 body {
-	font-family: sans-serif;
+	font-family: "Cascadia Code", monospace;
+	letter-spacing: -0.05ch;
 	font-size: var(--text-normal);
+
+	font-weight: 400;
+	[data-is-zack="true"] & {
+		font-weight: 500;
+	}
+
 	background-color: var(--bg-primary);
 	color: var(--text-primary);
+
 	margin: 0;
 	height: 100vh;
 

@@ -7,16 +7,6 @@
 
 	.avatar {
 		align-self: stretch;
-		border-radius: 50%;
 		margin-right: 6px;
-	}
-
-	.name {
-		font-size: 14.5px;
-
-		[data-is-zack="true"] & {
-			font-weight: bold;
-			font-size: 14px;
-		}
 	}
 }

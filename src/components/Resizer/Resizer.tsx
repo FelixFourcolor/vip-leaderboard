@@ -1,11 +1,5 @@
 import classNames from "classnames/bind";
-import {
-	type CSSProperties,
-	type MouseEvent,
-	type ReactNode,
-	useEffect,
-	useRef,
-} from "react";
+import { type MouseEvent, useEffect, useRef } from "react";
 import { useResizePrivate } from "./Manager";
 import styles from "./Resizer.module.css";
 
@@ -14,12 +8,10 @@ const cx = classNames.bind(styles);
 type Props = {
 	side: "left" | "right" | "top" | "bottom";
 	onChange: (delta: number) => void;
-	style?: CSSProperties;
 	className?: string;
-	children?: ReactNode;
 };
 
-export function Resizer({ side, onChange, className, ...rest }: Props) {
+export function Resizer({ side, onChange, className }: Props) {
 	const type = side === "left" || side === "right" ? "column" : "row";
 	const direction =
 		side === "right" || side === "bottom" ? "positive" : "negative";
@@ -48,8 +40,9 @@ export function Resizer({ side, onChange, className, ...rest }: Props) {
 		<div
 			data-is-active={isResizingRef.current && isResizing != null}
 			onMouseDown={onMouseDown}
-			className={cx(type, className)}
-			{...rest}
-		/>
+			className={cx("resizer", type, className)}
+		>
+			<hr />
+		</div>
 	);
 }

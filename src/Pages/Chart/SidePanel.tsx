@@ -6,7 +6,7 @@ import styles from "./ChartPage.module.css";
 const cx = classNames.bind(styles);
 
 export function SidePanel({ children }: { children: ReactNode }) {
-	const [legendWidth, setLegendWidth] = useState(144);
+	const [legendWidth, setLegendWidth] = useState(139);
 	const resizeWidth = useCallback((delta: number) => {
 		setLegendWidth((current) => Math.max(Math.min(current + delta, 260), 90));
 	}, []);
@@ -24,9 +24,7 @@ export function SidePanel({ children }: { children: ReactNode }) {
 				side="left"
 				onChange={resizeWidth}
 				className={cx("legend-resizer")}
-			>
-				<div />
-			</Resizer>
+			/>
 		</>
 	);
 }
