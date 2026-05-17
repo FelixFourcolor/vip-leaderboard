@@ -46,17 +46,17 @@
 }
 
 body {
-	font-family: "Cascadia Code", monospace;
+	font-family: "Cascadia Code", sans-serif;
 	letter-spacing: -0.05ch;
+
 	font-size: var(--text-normal);
-
-	font-weight: 400;
-	[data-is-zack="true"] & {
-		font-weight: 500;
-	}
-
 	background-color: var(--bg-primary);
 	color: var(--text-primary);
+
+	font-weight: 375;
+	[data-is-zack="true"] & {
+		font-weight: 400;
+	}
 
 	margin: 0;
 	height: 100vh;
