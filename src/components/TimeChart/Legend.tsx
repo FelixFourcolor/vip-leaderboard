@@ -1,7 +1,5 @@
 import {
-	type CSSProperties,
 	type FC,
-	type ReactNode,
 	type Ref,
 	type UIEventHandler,
 	useCallback,
@@ -12,34 +10,27 @@ import {
 } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useChart } from "./context";
-import type { ChartSeries } from "./TimeChart";
+import type { TimeSeries } from "./TimeChartProvider";
 
 export type VisibleIdx = { from: number; to: number };
 
-export type LegendContainerProps = {
-	style: CSSProperties;
-	ref: Ref<any>;
-	onScroll: UIEventHandler;
-	children: ReactNode;
-};
-
-export type LegendEntryProps<S extends ChartSeries> = {
+export type LegendEntryProps<S extends TimeSeries> = {
 	series: Omit<S, "data">;
 	seriesColor: string;
 	ref?: Ref<any>;
 };
 
-type Props<S extends ChartSeries> = {
-	data: Omit<S, "data">[];
-	Container?: FC<LegendContainerProps>;
+type Props<S extends TimeSeries> = {
 	Entry: FC<LegendEntryProps<S>>;
+	className?: string;
 };
-export function Legend<S extends ChartSeries>({
-	data,
-	Container = (props) => <div {...props} />,
-	Entry,
-}: Props<S>) {
-	const { colors, visibleIdx = colorRange(colors), setVisibleIdx } = useChart();
+export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
+	const {
+		data,
+		colors,
+		visibleIdx = colorRange(colors),
+		setVisibleIdx,
+	} = useChart<S>();
 
 	const setFromIndex = useCallback(
 		(index: number) =>
@@ -73,7 +64,7 @@ export function Legend<S extends ChartSeries>({
 			gap * (visibleCount(visibleIdx) - 1)
 		: undefined;
 
-	const legendRef = useRef<HTMLElement>(null);
+	const legendRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		const container = legendRef.current?.parentElement;
 		if (!container || !entryHeight) {
@@ -128,10 +119,11 @@ export function Legend<S extends ChartSeries>({
 	);
 
 	return (
-		<Container
+		<div
 			style={{ maxHeight, gap, overflowY: "auto" }}
 			ref={legendRef}
 			onScroll={onScroll}
+			className={className}
 		>
 			{data.length > 0 ? (
 				data.map((series, i) => (
@@ -145,7 +137,7 @@ export function Legend<S extends ChartSeries>({
 			) : (
 				<LoadingSpinner size={36} />
 			)}
-		</Container>
+		</div>
 	);
 }
 

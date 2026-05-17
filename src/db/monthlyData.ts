@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
+import type { TimePoint } from "@/components/TimeChart";
 import { pick } from "@/utils/object";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
@@ -7,8 +8,9 @@ import type { RankingParams, UserRanking } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
 
-export type MonthlyCount = { x: YyyyMm; y: number | null }[];
-export type UserMonthlyData = { data: MonthlyCount } & UserRanking;
+export interface UserMonthlyData extends UserRanking {
+	data: TimePoint[];
+}
 
 export async function getMonthlyData({
 	since,
@@ -70,7 +72,7 @@ export async function getMonthlyData({
 				avatarUrl,
 				count,
 				rank: index + 1,
-				data: rows.map(({ month, count }) => ({ x: month, y: count })),
+				data: rows.map((r) => ({ x: r.month as YyyyMm, y: r.count })),
 			};
 		},
 	);

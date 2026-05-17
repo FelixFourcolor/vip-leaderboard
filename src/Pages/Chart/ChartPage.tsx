@@ -1,8 +1,7 @@
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
-import { TimeChart } from "@/components/TimeChart";
+import { Legend, TimeChart, TimeChartProvider } from "@/components/TimeChart";
 import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
-import { ChartContainer } from "./ChartContainer";
 import styles from "./ChartPage.module.css";
 import { ControlPanel, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
@@ -15,22 +14,28 @@ export function ChartPage() {
 	const [controls] = useChartControls();
 	const { since, until } = controls;
 
-	const [chartData, setChartData] = useState<UserMonthlyData[]>([]);
+	const [data, setData] = useState<UserMonthlyData[]>([]);
 	useEffect(() => {
-		getMonthlyData({ since, until }).then(setChartData);
+		getMonthlyData({ since, until }).then(setData);
 	}, [since, until]);
 
 	return (
 		<div className={cx("chart-page")}>
-			<TimeChart
-				data={chartData}
-				yAxisTitle="Units of work"
-				{...controls}
-				Container={ChartContainer}
-				PointTooltip={PointTooltip}
-				legend={{ Container: SidePanel, Entry: LegendEntry }}
-			/>
+			<TimeChartProvider data={data} {...controls} PointTooltip={PointTooltip}>
+				<fieldset className={cx("chart")}>
+					<legend>chart</legend>
+					<TimeChart {...configs} />
+				</fieldset>
+				<SidePanel>
+					<Legend Entry={LegendEntry} className={cx("legend")} />
+				</SidePanel>
+			</TimeChartProvider>
 			<ControlPanel />
 		</div>
 	);
 }
+
+const configs = {
+	margin: { top: 20, right: 28, bottom: 28, left: 70 },
+	axisLeft: { legendOffset: -50, legend: "Activities" },
+};

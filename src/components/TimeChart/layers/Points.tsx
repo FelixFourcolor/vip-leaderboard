@@ -3,10 +3,10 @@ import classNames from "classnames/bind";
 import { type CSSProperties, type Ref, useMemo } from "react";
 import { Tooltip } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
-import type { NivoPoint, NivoSeries } from "../Chart";
 import { useChart } from "../context";
-import type { ChartPoint, ChartSeries } from "../TimeChart";
+import type { NivoPoint, NivoSeries } from "../TimeChart";
 import styles from "../TimeChart.module.css";
+import type { TimePoint, TimeSeries } from "../TimeChartProvider";
 
 const cx = classNames.bind(styles);
 
@@ -35,7 +35,7 @@ export function Points({ series }: LineCustomSvgLayerProps<NivoSeries>) {
 }
 
 type PointProps = {
-	series: ChartSeries;
+	series: TimeSeries;
 	color: string;
 	data: NivoPoint;
 };
@@ -67,8 +67,8 @@ function IsolatedPoint({ series, color, data: { x } }: PointProps) {
 	);
 }
 
-export type PointTooltipProps<S extends ChartSeries> = {
-	data: ChartPoint;
+export type PointTooltipProps<S extends TimeSeries> = {
+	data: TimePoint;
 	series: Omit<S, "data">;
 	seriesColor: string;
 	ref: Ref<any>;

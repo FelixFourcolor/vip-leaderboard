@@ -37,6 +37,7 @@
 	}
 
 	.chart {
+		display: grid; /* to center the loading spinner */
 		grid-column: 1;
 		grid-row: 1;
 	}

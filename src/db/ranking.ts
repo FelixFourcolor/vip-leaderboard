@@ -1,11 +1,15 @@
 import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
-import { offset } from "@/utils/time";
+import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
 import { activity, user } from "./schema";
 import { type UserData, userFields } from "./user";
 
-export type RankingParams = { since?: string; until?: string };
-export type UserRanking = { rank: number; count: number } & UserData;
+export type RankingParams = { since?: YyyyMm; until?: YyyyMm };
+
+export interface UserRanking extends UserData {
+	rank: number;
+	count: number;
+}
 
 export async function getRanking({
 	since,

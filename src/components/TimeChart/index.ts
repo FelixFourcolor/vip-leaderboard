@@ -1,5 +1,8 @@
-export type { ChartContainerProps } from "./Chart";
 export { useChart } from "./context";
-export type { LegendContainerProps, LegendEntryProps } from "./Legend";
-export type { PointTooltipProps as TooltipProps } from "./layers/Points.tsx";
-export { type ChartPoint, TimeChart } from "./TimeChart";
+export { Legend, type LegendEntryProps } from "./Legend";
+export type { PointTooltipProps } from "./layers/Points.tsx";
+export { TimeChart } from "./TimeChart";
+export {
+	TimeChartContext as TimeChartProvider,
+	type TimePoint,
+} from "./TimeChartProvider";

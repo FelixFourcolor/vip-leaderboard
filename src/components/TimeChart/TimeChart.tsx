@@ -1,186 +1,105 @@
-import { type FC, type JSX, useMemo, useState } from "react";
-import { windowed } from "@/utils/array";
-import { monthsInRange, type YyyyMm } from "@/utils/time";
-import { Chart, type ChartContainerProps, type NivoSeries } from "./Chart";
-import { category10 } from "./colors";
-import { ChartContext } from "./context";
+import { ResponsiveLine } from "@nivo/line";
+import classNames from "classnames/bind";
 import {
-	Legend,
-	type LegendContainerProps,
-	type LegendEntryProps,
-	type VisibleIdx,
-} from "./Legend";
-import type { InteractivePoint } from "./layers/Interaction";
-import type { PointTooltipProps } from "./layers/Points";
+	type ComponentProps,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { toDate } from "@/utils/time";
+import { useChart } from "./context";
+import { Areas } from "./layers/Areas";
+import { Interaction } from "./layers/Interaction";
+import { Labels } from "./layers/Labels";
+import { Lines } from "./layers/Lines";
+import { Points } from "./layers/Points";
+import styles from "./TimeChart.module.css";
+import type { TimeSeries } from "./TimeChartProvider";
 
-export type ChartSeries = { id: string; data: readonly ChartPoint[] };
-export type ChartPoint = { x: YyyyMm; y: number | null };
+const cx = classNames.bind(styles);
 
-type Props<S extends ChartSeries> = {
-	data: S[];
-	colors?: readonly string[];
-	yAxisTitle: string;
-	since: YyyyMm;
-	until: YyyyMm;
-	stacked?: boolean;
-	cumulative?: boolean;
-	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
-	Container?: FC<ChartContainerProps>;
-	legend?: {
-		Container?: FC<LegendContainerProps>;
-		Entry: FC<LegendEntryProps<S>>;
-	};
+export type NivoSeries = { id: string; data: NivoPoint[] };
+export type NivoPoint = { x: Date; y: number | null };
+
+type NivoProps = ComponentProps<typeof ResponsiveLine<NivoSeries>>;
+
+type TimeChartProps = {
+	margin?: NivoProps["margin"];
+	axisLeft?: Pick<
+		NonNullable<NivoProps["axisLeft"]>,
+		"legendOffset" | "legendPosition"
+	>;
+	className?: string;
 };
-
-export function TimeChart<S extends ChartSeries>({
-	data,
-	yAxisTitle,
-	since,
-	until,
-	colors = category10,
-	stacked = false,
-	cumulative = false,
-	PointTooltip,
-	Container,
-	legend,
-}: Props<S>) {
-	const [visibleIdx, setVisibleIdx] = useState<VisibleIdx>();
-	const [highlightedSeries, setHighlightedSeries] = useState<string>();
-	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
-
-	const visibleData = useFilter(data, visibleIdx);
-	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
-	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
+export function TimeChart({ className, ...configs }: TimeChartProps) {
+	const data = useNivoData();
+	const colors = useColors();
+	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(configs);
+	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
 
 	return (
-		<ChartContext.Provider
-			value={{
-				chartData,
-				xValues,
-				colors: useColors(data, colors),
-				stacked,
-				cumulative,
-				PointTooltip: PointTooltip as any, // generics
-				isolatedPoints: useIsolatedPoints(chartData),
-				highlightedSeries,
-				setHighlightedSeries,
-				hoveredPoint,
-				setHoveredPoint,
-				visibleIdx,
-				setVisibleIdx,
-			}}
-		>
-			<Chart
-				data={useNivoSeries(chartData, stacked)}
-				yAxisTitle={yAxisTitle}
-				Container={Container}
-			/>
-			{legend && <Legend data={data} {...legend} />}
-		</ChartContext.Provider>
+		<div ref={chartRef} className={cx("chart", className)}>
+			{data.length > 0 ? (
+				<ResponsiveLine
+					{...CONFIGS}
+					margin={{ ...CONFIGS.margin, ...configs.margin }}
+					data={data}
+					colors={colors}
+					gridXValues={gridXValues}
+					axisBottom={axisBottom}
+					yScale={yScale}
+					axisLeft={axisLeft}
+					gridYValues={gridYValues}
+				/>
+			) : (
+				<LoadingSpinner size={48} />
+			)}
+		</div>
 	);
 }
 
-function useFilter<S extends ChartSeries>(
-	data: S[],
-	visibleIdx: VisibleIdx | undefined,
-): S[] {
-	return useMemo(() => {
-		return visibleIdx
-			? data.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
-			: data;
-	}, [data, visibleIdx]);
-}
-
-type TransformOptions = { stacked: boolean; cumulative: boolean };
-function useTransform<S extends ChartSeries>(
-	filteredData: S[],
-	xValues: YyyyMm[],
-	{ stacked, cumulative }: TransformOptions,
-): S[] {
-	type Accumulator = { data: ChartPoint[]; sum: number };
-
-	const transformedData = useMemo<ChartSeries[]>(() => {
-		return filteredData.map(({ data: points, ...rest }) => {
-			const pointMapping = Object.fromEntries(points.map(({ x, y }) => [x, y]));
-
-			if (!cumulative) {
-				const data = xValues.map((x) => ({
-					x,
-					y: pointMapping[x] ?? (stacked ? 0 : null),
-				}));
-				return { ...rest, data };
-			}
-
-			if (stacked) {
-				const { data } = xValues.reduce<Accumulator>(
-					({ data, sum }, x) => {
-						const y = pointMapping[x] ?? 0;
-						sum += y;
-						data.push({ x, y: sum });
-						return { data, sum };
-					},
-					{ data: [], sum: 0 },
-				);
-				return { ...rest, data };
-			}
-
-			const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
-			const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
-			const continuousPoints = xValues.map((x, index) => {
-				// Only interpolate the points between the first and last non-null values
-				// to keep the graph clean
-				if (firstNonNull <= index && index <= lastNonNull) {
-					return { x, y: pointMapping[x] ?? 0 };
-				}
-				return { x, y: null };
-			});
-			const { data } = continuousPoints.reduce<Accumulator>(
-				({ data, sum }, { x, y }) => {
-					if (y !== null) {
-						sum += y;
-						data.push({ x, y: sum });
-					} else {
-						data.push({ x, y: null });
-					}
-					return { data, sum };
+const CONFIGS = {
+	curve: "monotoneX",
+	useMesh: false,
+	enableCrosshair: false,
+	xFormat: "time:%Y-%m",
+	xScale: { type: "time", useUTC: false },
+	yScale: { type: "linear" },
+	axisBottom: { format: "%Y-%m" },
+	margin: { top: 28, right: 28, bottom: 28, left: 28 },
+	layers: ["grid", "axes", Areas, Lines, Points, Labels, Interaction],
+	theme: {
+		background: "var(--bg-secondary)",
+		text: { fill: "var(--text-primary)" },
+		axis: {
+			ticks: {
+				line: {
+					stroke: "var(--text-tertiary)",
+					strokeWidth: 0.5,
 				},
-				{ data: [], sum: 0 },
-			);
-			return { ...rest, data };
-		});
-	}, [filteredData, xValues, stacked, cumulative]);
+				text: {
+					fill: "var(--text-secondary)",
+					fontWeight: "bold",
+				},
+			},
+			legend: {
+				text: { fontSize: "var(--text-normal)" },
+			},
+		},
+		grid: {
+			line: {
+				stroke: "var(--text-tertiary)",
+				strokeWidth: 0.5,
+			},
+		},
+	},
+} satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
-	return transformedData as S[];
-}
+function useNivoData(): NivoSeries[] {
+	const { chartData, stacked } = useChart();
 
-function useColors(data: ChartSeries[], colors: readonly string[]) {
-	return useMemo(() => {
-		return Object.fromEntries(
-			data.map(({ id }, index) => [id, colors[index % colors.length]!]),
-		);
-	}, [data, colors]);
-}
-
-const useIsolatedPoints = (data: ChartSeries[]) =>
-	useMemo(() => {
-		return Object.fromEntries(
-			data.map(({ id, data }) => {
-				const isolatedXValues = new Set(
-					windowed(data, 3)
-						.filter(([prev, curr, next]) => {
-							return prev?.y == null && curr.y != null && next?.y == null;
-						})
-						.map(([, { x }]) => x),
-				);
-				return [id, isolatedXValues];
-			}),
-		);
-	}, [data]);
-
-function useNivoSeries(
-	chartData: ChartSeries[],
-	stacked: boolean,
-): NivoSeries[] {
 	const nivoData = useMemo(() => {
 		return chartData.map(({ id, data }) => ({
 			id: String(id),
@@ -188,13 +107,134 @@ function useNivoSeries(
 		}));
 	}, [chartData]);
 
-	const sortedData = useMemo(() => {
+	return useMemo(() => {
 		if (!stacked) {
 			return nivoData;
 		}
 		// to draw higher-ranked series above (idk why nivo does it reversed)
 		return [...nivoData].reverse();
 	}, [nivoData, stacked]);
+}
 
-	return sortedData;
+function useColors() {
+	const { colors, isMuted, isHighlighted } = useChart();
+	return ({ id }: { id: string }) => {
+		const color = colors[id]!;
+		if (isHighlighted(id)) {
+			return color;
+		} else if (isMuted(id)) {
+			return `rgb(from ${color} r g b / 0.45)`;
+		}
+		return `rgb(from ${color} r g b / 0.85)`;
+	};
+}
+
+const fontSize = 12;
+const gap = 12;
+const labelWidth = 7 * fontSize * 0.6 + gap;
+function useHorizontalScale({ margin }: TimeChartProps) {
+	const { xValues } = useChart();
+
+	const chartRef = useRef<HTMLDivElement | null>(null);
+	const [width, setWidth] = useState(0);
+
+	useEffect(() => {
+		const chart = chartRef.current;
+		if (!chart) {
+			return;
+		}
+		setWidth(chart.clientWidth);
+		const observer = new ResizeObserver(
+			([entry]) => entry && setWidth(entry.contentRect.width),
+		);
+		observer.observe(chart);
+		return () => observer.disconnect();
+	}, []);
+
+	return useMemo(() => {
+		const count = xValues.length;
+		const innerWidth = Math.max(
+			0,
+			width - (margin?.left ?? 0) - (margin?.right ?? 0),
+		);
+		const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
+		const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
+
+		const tickValues = xValues
+			.filter((_, index) => (count - 1 - index) % interval === 0)
+			.map(toDate);
+
+		return {
+			chartRef,
+			xLabels: xValues,
+			axisBottom: { ...CONFIGS.axisBottom, tickValues },
+			gridXValues: tickValues,
+		};
+	}, [margin, xValues, width]);
+}
+
+function findMaxClamped(
+	chartData: readonly TimeSeries[],
+	stacked: boolean,
+	threshold: number,
+) {
+	function whenStacked() {
+		let max = 0;
+
+		const seriesLength = chartData[0]?.data.length ?? 0;
+		for (let i = 0; i < seriesLength; ++i) {
+			const count = chartData
+				.map(({ data }) => data[i]?.y ?? 0)
+				.reduce((acc, n) => acc + n, 0);
+			if (count >= threshold) {
+				return threshold;
+			}
+			if (count > max) {
+				max = count;
+			}
+		}
+
+		return max;
+	}
+
+	function whenNotStacked() {
+		let max = 0;
+		for (const { data } of chartData) {
+			for (const { y } of data) {
+				if (y == null) {
+					continue;
+				}
+				if (y >= threshold) {
+					return threshold;
+				}
+				if (y > max) {
+					max = y;
+				}
+			}
+		}
+		return max;
+	}
+
+	return stacked ? whenStacked() : whenNotStacked();
+}
+function useVerticalScale({ axisLeft }: TimeChartProps) {
+	const { chartData, stacked } = useChart();
+
+	return useMemo(() => {
+		const maxClamped = findMaxClamped(chartData, stacked, 8);
+
+		const max = maxClamped >= 8 ? ("auto" as const) : maxClamped;
+		const min = stacked ? 0 : 1;
+
+		const tickValues =
+			maxClamped >= 8
+				? undefined
+				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
+
+		return {
+			yScale: { ...CONFIGS.yScale, min, max, stacked },
+			axisLeft: { ...axisLeft, tickValues },
+			gridYValues: tickValues,
+		};
+	}, [chartData, stacked, axisLeft]);
 }

@@ -1,8 +1,8 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
-import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
+import type { NivoSeries } from "../TimeChart";
 
 export type InteractivePoint = { x: Date; seriesId: string };
 

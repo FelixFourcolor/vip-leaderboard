@@ -1,8 +1,8 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useMemo } from "react";
-import type { NivoPoint, NivoSeries } from "../Chart";
 import { useChart } from "../context";
+import type { NivoPoint, NivoSeries } from "../TimeChart";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);

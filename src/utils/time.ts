@@ -1,7 +1,7 @@
-export type YyyyMm = string;
+export type YyyyMm = `${number}-${number}`;
 
 export function toYyyyMm(date: Date): YyyyMm {
-	return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+	return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}` as YyyyMm;
 }
 
 export function toDate(yyyyMm: YyyyMm): Date {

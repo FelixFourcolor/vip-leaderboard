@@ -4,10 +4,11 @@ import type { Maybe, State } from "@/utils/types";
 import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
-import type { ChartSeries } from "./TimeChart";
+import type { TimeSeries } from "./TimeChartProvider";
 
-type ChartContextValue<S extends ChartSeries = ChartSeries> = {
-	chartData: S[];
+type ChartContextValue<S extends TimeSeries = TimeSeries> = {
+	data: readonly S[];
+	chartData: readonly S[];
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
@@ -20,7 +21,7 @@ type ChartContextValue<S extends ChartSeries = ChartSeries> = {
 
 export const ChartContext = createContext<ChartContextValue | null>(null);
 
-export function useChart<S extends ChartSeries = ChartSeries>() {
+export function useChart<S extends TimeSeries = TimeSeries>() {
 	const context = use(ChartContext) as ChartContextValue<S> | null;
 	if (!context) {
 		throw new Error("useChart must be used within ChartContext");

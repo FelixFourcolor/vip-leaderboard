@@ -5,8 +5,8 @@ import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import { zip } from "es-toolkit";
 import { windowed } from "@/utils/array";
-import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
+import type { NivoSeries } from "../TimeChart";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
