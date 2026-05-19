@@ -1,6 +1,4 @@
 import classNames from "classnames/bind";
-import { useGrab } from "@/components/RangeSlider";
-import { useResize } from "@/components/Resizer";
 import { type LegendEntryProps, useChart } from "@/components/TimeChart";
 import { UserHeader } from "@/components/UserHeader";
 import type { UserMonthlyData } from "@/db/monthlyData";
@@ -11,23 +9,16 @@ const cx = classNames.bind(styles);
 export function LegendEntry({
 	series: { id, rank, count, ...user },
 	seriesColor,
-	ref,
+	...nativeProps
 }: LegendEntryProps<UserMonthlyData>) {
-	const { isHighlighted, setHighlightedSeries } = useChart();
-	const { isGrabbing } = useGrab();
-	const { isResizing } = useResize();
+	const { isHighlighted } = useChart();
 
 	return (
 		<div
-			ref={ref}
+			tabIndex={0}
 			style={{ ["--series-color" as string]: seriesColor }}
 			className={cx("info-box", { highlighted: isHighlighted(id) })}
-			onMouseEnter={() => {
-				if (!isResizing && !isGrabbing) {
-					setHighlightedSeries(id);
-				}
-			}}
-			onMouseLeave={() => setHighlightedSeries(undefined)}
+			{...nativeProps}
 		>
 			<UserHeader {...user} />
 			<table>

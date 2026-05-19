@@ -11,7 +11,7 @@ import type { TimePoint, TimeSeries } from "../TimeChartProvider";
 const cx = classNames.bind(styles);
 
 export function Points({ series }: LineCustomSvgLayerProps<NivoSeries>) {
-	const { chartData } = useChart();
+	const { chartData = [] } = useChart();
 	const seriesMap = useMemo(() => {
 		return Object.fromEntries(chartData.map((series) => [series.id, series]));
 	}, [chartData]);

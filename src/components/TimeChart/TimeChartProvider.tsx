@@ -32,7 +32,7 @@ export function TimeChartContext<S extends TimeSeries>({
 	children,
 }: Props<S>) {
 	const [visibleIdx, setVisibleIdx] = useState<VisibleIdx>();
-	const [highlightedSeries, setHighlightedSeries] = useState<string>();
+	const [focusedSeries, setFocusedSeries] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
 	const visibleData = useFilter(data, visibleIdx);
@@ -50,8 +50,8 @@ export function TimeChartContext<S extends TimeSeries>({
 				cumulative,
 				PointTooltip: PointTooltip as any, // generics
 				isolatedPoints: useIsolatedPoints(chartData),
-				highlightedSeries,
-				setHighlightedSeries,
+				focusedSeries,
+				setFocusedSeries,
 				hoveredPoint,
 				setHoveredPoint,
 				visibleIdx,

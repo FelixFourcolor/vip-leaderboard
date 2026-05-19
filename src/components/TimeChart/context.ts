@@ -15,7 +15,7 @@ type ChartContextValue<S extends TimeSeries = TimeSeries> = {
 	colorMapping: Record<string, string>;
 	isolatedPoints: Record<string, Set<string>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
-} & State<"highlightedSeries", Maybe<string>> &
+} & State<"focusedSeries", Maybe<string>> &
 	State<"hoveredPoint", Maybe<InteractivePoint>> &
 	State<"visibleIdx", Maybe<VisibleIdx>>;
 
@@ -27,7 +27,7 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 		throw new Error("useChart must be used within ChartContext");
 	}
 
-	const { hoveredPoint, isolatedPoints, highlightedSeries, ...rest } = context;
+	const { hoveredPoint, isolatedPoints, focusedSeries, ...rest } = context;
 
 	const isPointHovered = useCallback(
 		(point: InteractivePoint) =>
@@ -43,13 +43,13 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 	);
 
 	const isHighlighted = useCallback(
-		(seriesId: string) => highlightedSeries === seriesId,
-		[highlightedSeries],
+		(seriesId: string) => focusedSeries === seriesId,
+		[focusedSeries],
 	);
 
 	const isMuted = useCallback(
-		(seriesId: string) => highlightedSeries && highlightedSeries !== seriesId,
-		[highlightedSeries],
+		(seriesId: string) => focusedSeries && focusedSeries !== seriesId,
+		[focusedSeries],
 	);
 
 	return {

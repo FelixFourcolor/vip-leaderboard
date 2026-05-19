@@ -27,7 +27,7 @@ export function ControlPanel() {
 	);
 
 	return (
-		<fieldset>
+		<fieldset tabIndex={0}>
 			<legend>controls</legend>
 			<div className={cx("control-panel")}>
 				<div className={cx("toggles")}>

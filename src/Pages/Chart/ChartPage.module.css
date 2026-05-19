@@ -7,6 +7,7 @@
 	user-select: none;
 
 	fieldset {
+		outline: none;
 		background-color: var(--bg-secondary);
 		border-color: var(--text-tertiary);
 
@@ -20,7 +21,8 @@
 			color: var(--text-secondary);
 		}
 
-		:root:not([data-is-resizing]) &:hover {
+		:root:not([data-is-resizing]) &:hover,
+		&:focus-within {
 			border-color: var(--accent);
 			legend {
 				color: var(--accent);
@@ -50,6 +52,7 @@
 		width: calc(var(--legend-width) + var(--legend-padding) * 2);
 
 		.legend {
+			outline: none;
 			padding: 6px var(--legend-padding);
 			display: flex;
 			flex-direction: column;
@@ -85,6 +88,7 @@
 }
 
 .info-box {
+	outline: none;
 	padding: 6px 6px 4px 6px;
 	border: 2px dashed var(--series-color);
 	width: fit-content;

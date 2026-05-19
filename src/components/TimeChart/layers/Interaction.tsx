@@ -12,18 +12,18 @@ export function Interaction({
 	series,
 	yScale,
 }: LineCustomSvgLayerProps<NivoSeries>) {
-	const { setHighlightedSeries, setHoveredPoint, stacked } = useChart();
+	const { setFocusedSeries, setHoveredPoint, stacked } = useChart();
 
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
-	const highlight = (point: InteractivePoint) => {
-		setHighlightedSeries(point.seriesId);
+	const focus = (point: InteractivePoint) => {
+		setFocusedSeries(point.seriesId);
 		setHoveredPoint(point);
 	};
 
-	const clearHighlight = () => {
-		setHighlightedSeries(undefined);
+	const unfocus = () => {
+		setFocusedSeries(undefined);
 		setHoveredPoint(undefined);
 	};
 
@@ -45,12 +45,12 @@ export function Interaction({
 					: getClosestPoint(mouse, series);
 
 				if (result) {
-					highlight(result);
+					focus(result);
 				} else {
-					clearHighlight();
+					unfocus();
 				}
 			}}
-			onMouseLeave={clearHighlight}
+			onMouseLeave={unfocus}
 		/>
 	);
 }

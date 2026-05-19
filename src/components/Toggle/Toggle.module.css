@@ -1,9 +1,17 @@
-.container {
+label {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	cursor: pointer;
 	user-select: none;
+
+	&:has(input:focus-visible) {
+		outline-offset: 2px;
+		outline: 1px solid var(--accent);
+		[data-is-zack="true"] & {
+			outline-width: 2px;
+		}
+	}
 
 	.toggle {
 		width: 40px;
@@ -42,6 +50,10 @@
 	}
 
 	input {
-		display: none;
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		/* don't do `display: none` so that keyboard interaction works */
 	}
 }

@@ -21,11 +21,13 @@ export function Toggle({
 	...props
 }: ToggleProps) {
 	return (
-		<label {...props} className={cx("container", className)}>
+		<label {...props} className={cx(className)}>
 			<input
 				type="checkbox"
 				checked={isOn}
-				onChange={({ target: { checked } }) => onChange(checked)}
+				onChange={({ target: { checked } }) => {
+					onChange(checked);
+				}}
 			/>
 			<div className={cx("toggle", { isOn })} style={customStyles.container}>
 				<div className={cx("dummy")} />

@@ -4,21 +4,25 @@
 	font: inherit;
 
 	cursor: pointer;
-	border: 1px solid var(--text-secondary);
+	outline: 1px solid var(--text-secondary);
+
 	color: var(--text-primary);
 	background-color: var(--bg-primary);
 
 	&:disabled {
 		cursor: default;
-		border-color: var(--text-tertiary);
+		outline-color: var(--text-tertiary);
 		color: var(--text-tertiary);
 		background-color: var(--bg-secondary);
 	}
 
 	&:not(:disabled) {
-		&:hover {
-			border-color: var(--accent);
+		&:is(:hover, :focus-visible) {
+			outline-color: var(--accent);
 			background-color: var(--bg-secondary);
+			[data-is-zack="true"] & {
+				outline-width: 2px;
+			}
 		}
 		&:active {
 			background-color: var(--bg-tertiary);

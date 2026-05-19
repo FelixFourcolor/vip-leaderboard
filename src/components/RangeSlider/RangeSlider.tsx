@@ -40,6 +40,22 @@ export function RangeSlider<Value>({
 	// biome-ignore format: one line
 	const dragTimeoutRef = useRef<Pair<number | undefined>>([undefined, undefined]);
 
+	const activateThumb = useCallback((index: number) => {
+		setIsActive((current) => {
+			const updated = [...current] as Pair<boolean>;
+			updated[index] = true;
+			return updated;
+		});
+		clearTimeout(dragTimeoutRef.current[index]);
+		dragTimeoutRef.current[index] = setTimeout(() => {
+			setIsActive((current) => {
+				const updated = [...current] as Pair<boolean>;
+				updated[index] = false;
+				return updated;
+			});
+		}, 2000);
+	}, []);
+
 	const setValues = useCallback(
 		(updater: (_: Pair<number>) => Pair<number>) => {
 			_setValues((current) => {
@@ -54,29 +70,16 @@ export function RangeSlider<Value>({
 				} else {
 					setIsDragging([false, false]);
 				}
-
 				updated.forEach((value, i) => {
 					if (value !== current[i]) {
-						setIsActive((current) => {
-							const updated = [...current] as Pair<boolean>;
-							updated[i] = true;
-							return updated;
-						});
-						clearTimeout(dragTimeoutRef.current[i]);
-						dragTimeoutRef.current[i] = setTimeout(() => {
-							setIsActive((current) => {
-								const updated = [...current] as Pair<boolean>;
-								updated[i] = false;
-								return updated;
-							});
-						}, 2000);
+						activateThumb(i);
 					}
 				});
 
 				return updated;
 			});
 		},
-		[_setValues],
+		[activateThumb, _setValues],
 	);
 
 	const onValueChange = useCallback(
@@ -222,6 +225,7 @@ export function RangeSlider<Value>({
 				<Thumb
 					{...thumbProps}
 					key={index}
+					onFocus={() => activateThumb(index)}
 					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
 					hideLabel={!isActive[index] || (labelsOverlap && !isDragging[index])}
