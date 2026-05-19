@@ -131,7 +131,7 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 			onScroll={onScroll}
 			className={className}
 		>
-			{data.length > 0 ? (
+			{data ? (
 				data.map((series, i) => (
 					<Entry
 						key={series.id}

@@ -7,8 +7,8 @@ import type { PointTooltipProps } from "./layers/Points";
 import type { TimeSeries } from "./TimeChartProvider";
 
 type ChartContextValue<S extends TimeSeries = TimeSeries> = {
-	data: readonly S[];
-	chartData: readonly S[];
+	data: readonly S[] | undefined;
+	chartData: readonly S[] | undefined;
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;

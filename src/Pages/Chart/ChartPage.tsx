@@ -14,7 +14,7 @@ export function ChartPage() {
 	const [controls] = useChartControls();
 	const { since, until } = controls;
 
-	const [data, setData] = useState<UserMonthlyData[]>([]);
+	const [data, setData] = useState<UserMonthlyData[]>();
 	useEffect(() => {
 		getMonthlyData({ since, until }).then(setData);
 	}, [since, until]);

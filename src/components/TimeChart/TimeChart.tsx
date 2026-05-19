@@ -41,7 +41,7 @@ export function TimeChart({ className, ...configs }: TimeChartProps) {
 
 	return (
 		<div ref={chartRef} className={cx("chart", className)}>
-			{data.length > 0 ? (
+			{data ? (
 				<ResponsiveLine
 					{...CONFIGS}
 					margin={{ ...CONFIGS.margin, ...configs.margin }}
@@ -101,18 +101,18 @@ const CONFIGS = {
 	},
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
-function useNivoData(): NivoSeries[] {
+function useNivoData(): NivoSeries[] | undefined {
 	const { chartData, stacked } = useChart();
 
 	const nivoData = useMemo(() => {
-		return chartData.map(({ id, data }) => ({
+		return chartData?.map(({ id, data }) => ({
 			id: String(id),
 			data: data.map(({ x, y }) => ({ x: new Date(x), y })),
 		}));
 	}, [chartData]);
 
 	return useMemo(() => {
-		if (!stacked) {
+		if (!stacked || !nivoData) {
 			return nivoData;
 		}
 		// to draw higher-ranked series above (idk why nivo does it reversed)
@@ -222,7 +222,7 @@ function findMaxClamped(
 	return stacked ? whenStacked() : whenNotStacked();
 }
 function useVerticalScale({ axisLeft }: TimeChartProps) {
-	const { chartData, stacked } = useChart();
+	const { chartData = [], stacked } = useChart();
 
 	return useMemo(() => {
 		const maxClamped = findMaxClamped(chartData, stacked, 8);

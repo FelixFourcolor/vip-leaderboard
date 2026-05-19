@@ -11,7 +11,7 @@ export type TimeSeries = { id: string; data: readonly TimePoint[] };
 export type TimePoint = { x: YyyyMm; y: number | null };
 
 type Props<S extends TimeSeries> = {
-	data: S[];
+	data: S[] | undefined;
 	since: YyyyMm;
 	until: YyyyMm;
 	stacked?: boolean;
@@ -64,11 +64,11 @@ export function TimeChartContext<S extends TimeSeries>({
 }
 
 function useFilter<S extends TimeSeries>(
-	data: S[],
+	data: S[] | undefined,
 	visibleIdx: VisibleIdx | undefined,
-): S[] {
+): S[] | undefined {
 	return useMemo(() => {
-		return visibleIdx
+		return data && visibleIdx
 			? data.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
 			: data;
 	}, [data, visibleIdx]);
@@ -76,14 +76,14 @@ function useFilter<S extends TimeSeries>(
 
 type TransformOptions = { stacked: boolean; cumulative: boolean };
 function useTransform<S extends TimeSeries>(
-	filteredData: S[],
+	filteredData: S[] | undefined,
 	xValues: YyyyMm[],
 	{ stacked, cumulative }: TransformOptions,
-): S[] {
+): S[] | undefined {
 	type Accumulator = { data: TimePoint[]; sum: number };
 
-	const transformedData = useMemo<TimeSeries[]>(() => {
-		return filteredData.map(({ data: points, ...rest }) => {
+	const transformedData = useMemo<TimeSeries[] | undefined>(() => {
+		return filteredData?.map(({ data: points, ...rest }) => {
 			const pointMapping = Object.fromEntries(points.map(({ x, y }) => [x, y]));
 
 			if (!cumulative) {
@@ -133,10 +133,10 @@ function useTransform<S extends TimeSeries>(
 		});
 	}, [filteredData, xValues, stacked, cumulative]);
 
-	return transformedData as S[];
+	return transformedData as S[] | undefined;
 }
 
-function useColorMapping(data: TimeSeries[], colors: readonly string[]) {
+function useColorMapping(data: TimeSeries[] = [], colors: readonly string[]) {
 	return useMemo(() => {
 		return Object.fromEntries(
 			data.map(({ id }, index) => [id, colors[index % colors.length]!]),
@@ -144,7 +144,7 @@ function useColorMapping(data: TimeSeries[], colors: readonly string[]) {
 	}, [data, colors]);
 }
 
-const useIsolatedPoints = (data: TimeSeries[]) =>
+const useIsolatedPoints = (data: TimeSeries[] = []) =>
 	useMemo(() => {
 		return Object.fromEntries(
 			data.map(({ id, data }) => {
