@@ -1,13 +1,14 @@
 import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
 import { Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
+import type { Pair } from "@/utils/types";
 import { Thumb } from "./Thumb";
 import { Track } from "./Track";
 
 type SliderProps<Value> = {
 	domain: readonly Value[];
-	selected: readonly [Value, Value];
-	onChange: Dispatch<readonly [Value, Value]>;
+	selected: Pair<Value>;
+	onChange: Dispatch<Pair<Value>>;
 	className?: string;
 	minDistance?: number;
 	maxDistance?: number;
@@ -21,8 +22,8 @@ export function RangeSlider<Value>({
 	maxDistance = domain.length - 1,
 	className,
 }: SliderProps<Value>) {
-	const [values, setValues] = useControlled(
-		useCallback((): [number, number] => {
+	const [values, _setValues] = useControlled(
+		useCallback((): Pair<number> => {
 			const fromIndex = domain.indexOf(selectedFrom);
 			const toIndex = domain.indexOf(selectedTo);
 			return [
@@ -32,6 +33,52 @@ export function RangeSlider<Value>({
 		}, [domain, selectedFrom, selectedTo]),
 	);
 
+	// dragging = actually dragging
+	// active = either dragging or recently dragged
+	const [isDragging, setIsDragging] = useState<Pair<boolean>>([false, false]);
+	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
+	// biome-ignore format: one line
+	const dragTimeoutRef = useRef<Pair<number | undefined>>([undefined, undefined]);
+
+	const setValues = useCallback(
+		(updater: (_: Pair<number>) => Pair<number>) => {
+			_setValues((current) => {
+				const updated = updater(current);
+
+				if (updated[0] !== current[0] && updated[1] !== current[1]) {
+					setIsDragging([true, true]);
+				} else if (updated[0] !== current[0]) {
+					setIsDragging([true, false]);
+				} else if (updated[1] !== current[1]) {
+					setIsDragging([false, true]);
+				} else {
+					setIsDragging([false, false]);
+				}
+
+				updated.forEach((value, i) => {
+					if (value !== current[i]) {
+						setIsActive((current) => {
+							const updated = [...current] as Pair<boolean>;
+							updated[i] = true;
+							return updated;
+						});
+						clearTimeout(dragTimeoutRef.current[i]);
+						dragTimeoutRef.current[i] = setTimeout(() => {
+							setIsActive((current) => {
+								const updated = [...current] as Pair<boolean>;
+								updated[i] = false;
+								return updated;
+							});
+						}, 2000);
+					}
+				});
+
+				return updated;
+			});
+		},
+		[_setValues],
+	);
+
 	const onValueChange = useCallback(
 		(values: number[]) => {
 			let [from, to] = values as [number, number];
@@ -39,18 +86,17 @@ export function RangeSlider<Value>({
 				const distance = to - from;
 				if (distance < minDistance) {
 					if (from === currentFrom) {
-						from = to - minDistance;
-					} else {
 						to = from + minDistance;
+					} else {
+						from = to - minDistance;
 					}
 				} else if (distance > maxDistance) {
 					if (from === currentFrom) {
-						from = to - maxDistance;
-					} else {
 						to = from + maxDistance;
+					} else {
+						from = to - maxDistance;
 					}
 				}
-
 				if (from < 0 || to >= domain.length) {
 					return [currentFrom, currentTo];
 				}
@@ -124,7 +170,7 @@ export function RangeSlider<Value>({
 		const fromLabel = fromLabelRef.current;
 		const toLabel = toLabelRef.current;
 
-		if (!fromLabel || !toLabel) {
+		if (!fromLabel || !toLabel || isActive.some(not)) {
 			setLabelsOverlap(false);
 			return;
 		}
@@ -133,7 +179,7 @@ export function RangeSlider<Value>({
 		const toRect = toLabel.getBoundingClientRect();
 		const overlap = fromRect.right > toRect.left;
 		setLabelsOverlap(overlap);
-	}, []);
+	}, [isActive]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: values change = thumbs move = re-check for overlap
 	useEffect(updateLabelOverlap, [updateLabelOverlap, values]);
@@ -178,10 +224,12 @@ export function RangeSlider<Value>({
 					key={index}
 					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
-					hideLabel={index === 0 && labelsOverlap}
+					hideLabel={!isActive[index] || (labelsOverlap && !isDragging[index])}
 					kind={index === 0 ? "from" : "to"}
 				/>
 			)}
 		/>
 	);
 }
+
+const not = (value: boolean) => !value;

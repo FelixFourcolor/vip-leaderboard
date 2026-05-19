@@ -1,8 +1,19 @@
+.container {
+	display: flex;
+	container-type: inline-size;
+	min-width: 60px;
+}
+
 .track {
 	display: flex;
 	align-items: center;
 	flex-direction: row;
 	height: 12px;
+	flex: 1;
+
+	@container (width > 350px) {
+		margin: 0 60px;
+	}
 
 	[data-is-grabbing="false"] & {
 		&,
@@ -39,10 +50,9 @@
 
 		.label {
 			color: var(--accent);
-			top: 18px;
+			top: -20px;
 			left: 50%;
 			transform: translateX(-50%);
-
 			&.hidden {
 				visibility: hidden;
 			}
@@ -52,14 +62,13 @@
 	.limit {
 		position: absolute;
 		background-color: var(--text-tertiary);
-		z-index: -1;
 		height: 12px;
 
 		&.from {
-			left: 0px;
+			left: -1px;
 		}
 		&.to {
-			right: 0px;
+			right: -1px;
 		}
 	}
 
@@ -69,8 +78,9 @@
 		white-space: nowrap;
 		font-size: var(--text-small);
 		color: var(--text-secondary);
-		top: -20px;
+		font-weight: var(--weight-semibold);
 
+		top: 18px;
 		&.min {
 			left: 0;
 			transform: translateX(-50%);
@@ -78,6 +88,18 @@
 		&.max {
 			right: 0;
 			transform: translateX(50%);
+		}
+
+		@container (width > 350px) {
+			top: inherit;
+			&.min {
+				transform: none;
+				left: -60px;
+			}
+			&.max {
+				transform: none;
+				right: -60px;
+			}
 		}
 	}
 }

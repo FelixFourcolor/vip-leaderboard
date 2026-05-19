@@ -82,7 +82,7 @@ const CONFIGS = {
 				text: {
 					fill: "var(--text-secondary)",
 					fontSize: "var(--text-mini)",
-					fontWeight: 500,
+					fontWeight: "var(--weight-bold)",
 				},
 			},
 			legend: {

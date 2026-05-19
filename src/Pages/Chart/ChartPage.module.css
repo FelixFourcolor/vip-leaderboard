@@ -53,24 +53,11 @@
 			padding: 6px var(--legend-padding);
 			display: flex;
 			flex-direction: column;
-			overflow-y: auto;
-			overflow-x: hidden;
 		}
 
 		+ .legend-resizer {
 			grid-row: 1 / -1;
 			grid-column: 2;
-
-			display: flex;
-			justify-content: center;
-
-			hr {
-				width: 2px;
-				height: 100%;
-			}
-			&:is(:hover, [data-is-active="true"]) > hr {
-				background-color: var(--text-secondary);
-			}
 		}
 	}
 
@@ -92,7 +79,6 @@
 
 		.slider {
 			flex: 1;
-			min-width: 50px;
 			max-width: 750px;
 		}
 	}
@@ -112,15 +98,14 @@
 	table {
 		border-spacing: 0;
 
-		th,
-		td {
-			padding: 1px 2px;
-		}
 		th {
-			font-weight: normal;
+			font-weight: inherit;
 			color: var(--text-secondary);
 			&::after {
-				content: " |";
+				content: "|";
+				padding-left: 5px;
+				padding-right: 2px;
+				color: var(--text-tertiary);
 			}
 		}
 	}

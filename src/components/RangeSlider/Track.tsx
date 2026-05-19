@@ -32,22 +32,24 @@ export function Track({
 	const selected = ((to - from) / total) * 100;
 
 	return (
-		<div {...divProps} className={cx("track", className)}>
-			{from !== 0 && <Thumb className={cx("limit")} kind="from" />}
-			<span className={cx("label", "min")}>{String(domain[min])}</span>
-			{children}
-			<div
-				className={cx("bar")}
-				style={{
-					["--pre" as string]: `${pre}%`,
-					["--selected" as string]: `${selected}%`,
-				}}
-			>
-				<div className={cx("pre")} />
-				<div className={cx("selected")} />
+		<div className={cx("container", className)}>
+			<div {...divProps} className={cx("track")}>
+				{from !== 0 && <Thumb className={cx("limit")} kind="from" />}
+				<span className={cx("label", "min")}>{String(domain[min])}</span>
+				{children}
+				<div
+					className={cx("bar")}
+					style={{
+						["--pre" as string]: `${pre}%`,
+						["--selected" as string]: `${selected}%`,
+					}}
+				>
+					<div className={cx("pre")} />
+					<div className={cx("selected")} />
+				</div>
+				{to !== max && <Thumb className={cx("limit")} kind="to" />}
+				<span className={cx("label", "max")}>{String(domain[max])}</span>
 			</div>
-			{to !== max && <Thumb className={cx("limit")} kind="to" />}
-			<span className={cx("label", "max")}>{String(domain[max])}</span>
 		</div>
 	);
 }

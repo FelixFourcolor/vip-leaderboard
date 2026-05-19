@@ -7,3 +7,5 @@ export type State<Name extends string, Value> = {
 } & {
 	[K in `set${Capitalize<Name>}`]: Dispatch<SetStateAction<Value>>;
 };
+
+export type Pair<T> = [T, T];

@@ -5,6 +5,10 @@
 	overflow: hidden;
 	height: 1lh;
 
+	[data-is-zack="true"] & {
+		font-weight: var(--weight-semibold);
+	}
+
 	.avatar {
 		align-self: stretch;
 		margin-right: 6px;

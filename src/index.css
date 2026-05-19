@@ -8,11 +8,15 @@
 	--bg-secondary: #191724;
 	--bg-tertiary: #26233a;
 
-	--text-primary: #e0def4;
-	--text-secondary: #908caa;
+	--text-primary: #d7d5f1;
+	--text-secondary: #9692af;
 	--text-tertiary: #605d74;
 
 	--accent: #ebbcba;
+
+	--weight-normal: 375;
+	--weight-semibold: 400;
+	--weight-bold: 475;
 
 	&[data-is-zack="true"] {
 		--bg-primary: #faf4ed;
@@ -24,6 +28,10 @@
 		--text-tertiary: #b5afba;
 
 		--accent: #eb6f92;
+
+		--weight-normal: 400;
+		--weight-semibold: 425;
+		--weight-bold: 500;
 	}
 
 	&[data-is-grabbing="true"] * {
@@ -52,11 +60,7 @@ body {
 	font-size: var(--text-normal);
 	background-color: var(--bg-primary);
 	color: var(--text-primary);
-
-	font-weight: 375;
-	[data-is-zack="true"] & {
-		font-weight: 400;
-	}
+	font-weight: var(--weight-normal);
 
 	margin: 0;
 	height: 100vh;
