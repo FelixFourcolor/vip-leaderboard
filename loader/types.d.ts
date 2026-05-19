@@ -9,15 +9,17 @@ export type User = {
 	color: string | null;
 };
 
+type Reaction = {
+	emoji: { code: string };
+	users: User[];
+};
+
 export type Message = {
 	id: MessageId;
 	timestamp: string;
 	author: User;
 	content: string;
-	reactions: {
-		emoji: { code: string };
-		users: User[];
-	}[];
+	reactions: Reaction[];
 };
 
 export type Data = {

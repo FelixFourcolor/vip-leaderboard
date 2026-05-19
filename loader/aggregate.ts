@@ -29,7 +29,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 		return id;
 	}
 
-	const countReactions = (messages: Message[]) =>
+	const countTickets = (messages: Message[]) =>
 		messages
 			.map(modReactionsOnly)
 			.filter(hasReactions)
@@ -42,7 +42,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 						activitiesMap.set(`${timestamp}-${userId}`, {
 							date,
 							userId,
-							type: "reaction",
+							type: "ticket",
 						}),
 					);
 			});
@@ -70,7 +70,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 		if (id === WARNINGS_CHANNEL_ID) {
 			countWarnings(messages);
 		} else {
-			countReactions(messages);
+			countTickets(messages);
 		}
 	});
 	return {
