@@ -128,9 +128,11 @@ export function useChartControls() {
 export const categoryLabels = {
 	ticket: "Tickets",
 	warning: "Warnings",
+	ban: "Bans",
 } satisfies Record<ActivityType, string>;
 
 const categoryIcons = {
 	ticket: "✅",
 	warning: "⚠️",
+	ban: "🔨",
 } satisfies Record<ActivityType, string>;
