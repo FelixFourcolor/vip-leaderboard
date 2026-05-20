@@ -12,12 +12,12 @@ const cx = classNames.bind(styles);
 
 export function ChartPage() {
 	const [controls] = useChartControls();
-	const { since, until } = controls;
+	const { since, until, types } = controls;
 
 	const [data, setData] = useState<UserMonthlyData[]>();
 	useEffect(() => {
-		getMonthlyData({ since, until }).then(setData);
-	}, [since, until]);
+		getMonthlyData({ since, until, types }).then(setData);
+	}, [since, until, types]);
 
 	return (
 		<div className={cx("chart-page")}>

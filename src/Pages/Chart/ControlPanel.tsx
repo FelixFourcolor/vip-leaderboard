@@ -5,6 +5,7 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { RangeSlider } from "@/components/RangeSlider";
 import { Toggle } from "@/components/Toggle";
+import { activityTypes } from "@/db/schema";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import styles from "./ChartPage.module.css";
@@ -54,6 +55,7 @@ export function ControlPanel() {
 					onChange={onDateChange}
 					minDistance={1}
 				/>
+
 				<Button
 					onClick={() => setParams(defaultParams)}
 					disabled={isEqual(params, defaultParams)}
@@ -70,6 +72,7 @@ const defaultParams = {
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
+	types: activityTypes,
 };
 
 export function useChartControls() {

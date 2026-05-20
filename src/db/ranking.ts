@@ -1,10 +1,14 @@
-import { and, asc, count, desc, eq, gte, lt } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
-import { activity, user } from "./schema";
+import { type ActivityType, activity, user } from "./schema";
 import { type UserData, userFields } from "./user";
 
-export type RankingParams = { since?: YyyyMm; until?: YyyyMm };
+export type RankingParams = {
+	since?: YyyyMm;
+	until?: YyyyMm;
+	types?: ActivityType[];
+};
 
 export interface UserRanking extends UserData {
 	rank: number;
@@ -14,6 +18,7 @@ export interface UserRanking extends UserData {
 export async function getRanking({
 	since,
 	until,
+	types,
 }: RankingParams): Promise<UserRanking[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
@@ -25,8 +30,9 @@ export async function getRanking({
 		.innerJoin(user, eq(user.id, activity.userId))
 		.where(
 			and(
-				...(since ? [gte(activity.date, new Date(since))] : []),
-				...(until ? [lt(activity.date, new Date(until))] : []),
+				since ? gte(activity.date, new Date(since)) : undefined,
+				until ? lt(activity.date, new Date(until)) : undefined,
+				types ? inArray(activity.type, types) : undefined,
 			),
 		)
 		.groupBy(user.id)

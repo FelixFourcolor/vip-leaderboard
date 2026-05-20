@@ -1,6 +1,7 @@
 import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { type } from "arktype";
 import { isEmptyObject, mapValues } from "es-toolkit";
+import { activityTypes } from "@/db/schema";
 import { ChartPage } from "@/Pages/Chart";
 
 const validate = type({
@@ -8,8 +9,9 @@ const validate = type({
 	"since?": "string | undefined",
 	"cumulative?": "boolean | undefined",
 	"stacked?": "boolean | undefined",
-}).narrow(({ until, since, cumulative, stacked, ...unknown }) => {
-	if (!isEmptyObject(unknown)) {
+	"types?": "string[]",
+}).narrow(({ until, since, cumulative, stacked, types, ...extraneous }) => {
+	if (!isEmptyObject(extraneous)) {
 		return false;
 	}
 	if (until) {
@@ -26,6 +28,11 @@ const validate = type({
 	}
 	if (since && until && new Date(since) > new Date(until)) {
 		return false;
+	}
+	for (const t of types ?? []) {
+		if (!activityTypes.includes(t as any)) {
+			return false;
+		}
 	}
 	return true;
 });

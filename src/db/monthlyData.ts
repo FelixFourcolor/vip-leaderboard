@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
 import type { TimePoint } from "@/components/TimeChart";
 import { pick } from "@/utils/object";
@@ -15,6 +15,7 @@ export interface UserMonthlyData extends UserRanking {
 export async function getMonthlyData({
 	since,
 	until,
+	types,
 }: RankingParams): Promise<UserMonthlyData[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
@@ -31,8 +32,9 @@ export async function getMonthlyData({
 			.from(activity)
 			.where(
 				and(
-					...(since ? [gte(activity.date, new Date(since))] : []),
-					...(until ? [lt(activity.date, new Date(until))] : []),
+					since ? gte(activity.date, new Date(since)) : undefined,
+					until ? lt(activity.date, new Date(until)) : undefined,
+					types ? inArray(activity.type, types) : undefined,
 				),
 			)
 			.groupBy(activity.userId, sql`month`),
