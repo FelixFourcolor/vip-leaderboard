@@ -45,13 +45,15 @@ export function ControlPanel() {
 					</PopupMenu.Trigger>
 					<PopupMenu.Menu>
 						<PopupMenu.Group title="Filter">
-							{activityTypes.map((t) => (
+							{activityTypes.map((t, i) => (
 								<PopupMenu.Item
 									key={t}
 									selected={types.includes(t)}
 									setSelected={(selected) => {
 										if (selected) {
-											setParams({ types: [...types, t] });
+											// insert t back to its original position, the order matters because
+											// "reset" relies on it to determine whether there are changes
+											setParams({ types: types.toSpliced(i, 0, t) });
 										} else {
 											setParams({ types: types.filter((x) => x !== t) });
 										}
@@ -66,7 +68,6 @@ export function ControlPanel() {
 						<hr />
 						<PopupMenu.Group title="View">
 							<PopupMenu.Item
-								disabled={types.length === 0}
 								selected={cumulative}
 								setSelected={(cumulative) => setParams({ cumulative })}
 								className={cx("menu-item")}
@@ -74,7 +75,6 @@ export function ControlPanel() {
 								Cumulative
 							</PopupMenu.Item>
 							<PopupMenu.Item
-								disabled={types.length === 0}
 								selected={stacked}
 								setSelected={(stacked) => setParams({ stacked })}
 								className={cx("menu-item")}
@@ -85,8 +85,8 @@ export function ControlPanel() {
 						<hr />
 						<PopupMenu.Item
 							disabled={isEqual(params, defaultParams)}
-							selected={isEqual(params, defaultParams)}
-							setSelected={() => setParams(defaultParams)}
+							onClick={() => setParams(defaultParams)}
+							stayOpenOnClick
 							className={cx("menu-item")}
 						>
 							Reset
@@ -103,7 +103,7 @@ const defaultParams = {
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
-	types: activityTypes as ActivityType[],
+	types: [] as ActivityType[],
 };
 
 export function useChartControls() {

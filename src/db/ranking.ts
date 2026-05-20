@@ -32,7 +32,7 @@ export async function getRanking({
 			and(
 				since ? gte(activity.date, new Date(since)) : undefined,
 				until ? lt(activity.date, new Date(until)) : undefined,
-				types ? inArray(activity.type, types) : undefined,
+				types?.length ? inArray(activity.type, types) : undefined,
 			),
 		)
 		.groupBy(user.id)
