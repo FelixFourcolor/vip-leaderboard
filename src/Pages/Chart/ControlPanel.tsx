@@ -45,15 +45,13 @@ export function ControlPanel() {
 					</PopupMenu.Trigger>
 					<PopupMenu.Menu>
 						<PopupMenu.Group title="Filter">
-							{activityTypes.map((t, i) => (
+							{activityTypes.map((t) => (
 								<PopupMenu.Item
 									key={t}
 									selected={types.includes(t)}
 									setSelected={(selected) => {
 										if (selected) {
-											// insert t back to its original position, the order matters because
-											// "reset" relies on it to determine whether there are changes
-											setParams({ types: types.toSpliced(i, 0, t) });
+											setParams({ types: [...types, t] });
 										} else {
 											setParams({ types: types.filter((x) => x !== t) });
 										}
@@ -129,10 +127,10 @@ export const categoryLabels = {
 	ticket: "Tickets",
 	warning: "Warnings",
 	ban: "Bans",
-} satisfies Record<ActivityType, string>;
+} as const satisfies Record<ActivityType, string>;
 
 const categoryIcons = {
 	ticket: "✅",
 	warning: "⚠️",
 	ban: "🔨",
-} satisfies Record<ActivityType, string>;
+} as const satisfies Record<ActivityType, string>;

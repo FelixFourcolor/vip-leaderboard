@@ -69,7 +69,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 
 	const countBans = (messages: Message[]) =>
 		messages.forEach(({ author, content, reactions, timestamp }) => {
-			// Count the :verified: reactions on auto ban announcements, +1 to each reactor
+			// Count the :verified: reactions on auto ban announcements
 			if (author.name === "Auto ban announcement") {
 				reactions
 					.filter((r) => r.emoji.code === "verified")
@@ -87,7 +87,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 			}
 
 			// Normal bans: count the message's author and those reacting with BAN_SUPPORT_REACTIONS
-			// It doesn't matter whether the recipient was actually banned. A ban message == +1 score.
+			// It doesn't matter whether the recipient was actually banned.
 
 			const recipientIds = content.match(USER_ID_REGEX);
 			if (!recipientIds?.length) {
@@ -95,6 +95,8 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 			}
 
 			const date = new Date(timestamp);
+			// Before this date, bans and warnings were in the same channel.
+			// So only count if the post contains the word "ban"
 			if (date < bansChannelCreationDate && !content.match(/ban/i)) {
 				return;
 			}
@@ -147,10 +149,9 @@ const TICKET_RESOLVED_REACTIONS = new Set([
 const BAN_SUPPORT_REACTIONS = new Set([
 	"thumbsup",
 	"thumbsdown",
-	"x",
-	"white_check_mark",
-	"warning",
 	"hammer",
+	"white_check_mark",
+	"x",
 ]);
 
 const WARNINGS_CHANNEL_ID = "614936519710605408";

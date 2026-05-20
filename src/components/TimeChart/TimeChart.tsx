@@ -1,5 +1,6 @@
 import { ResponsiveLine } from "@nivo/line";
 import classNames from "classnames/bind";
+import { partition } from "es-toolkit";
 import {
 	type ComponentProps,
 	useEffect,
@@ -102,9 +103,9 @@ const CONFIGS = {
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
 function useNivoData(): NivoSeries[] | undefined {
-	const { chartData, stacked } = useChart();
+	const { focusedSeries, chartData, stacked } = useChart();
 
-	const nivoData = useMemo(() => {
+	const data = useMemo(() => {
 		return chartData?.map(({ id, data }) => ({
 			id: String(id),
 			data: data.map(({ x, y }) => ({ x: new Date(x), y })),
@@ -112,12 +113,20 @@ function useNivoData(): NivoSeries[] | undefined {
 	}, [chartData]);
 
 	return useMemo(() => {
-		if (!stacked || !nivoData) {
-			return nivoData;
+		if (!data) {
+			return;
 		}
-		// to draw higher-ranked series above (idk why nivo does it reversed)
-		return [...nivoData].reverse();
-	}, [nivoData, stacked]);
+		if (stacked) {
+			// to draw higher-ranked series above (idk why nivo does it reversed)
+			return [...data].reverse();
+		}
+		if (focusedSeries) {
+			// to draw the focused series on top
+			const [focused, others] = partition(data, (s) => s.id === focusedSeries);
+			return [...others, ...focused];
+		}
+		return data;
+	}, [data, stacked, focusedSeries]);
 }
 
 function useColors() {

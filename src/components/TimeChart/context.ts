@@ -55,6 +55,7 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 
 	return {
 		...rest,
+		focusedSeries,
 		isPointHovered,
 		isPointIsolated,
 		isHighlighted,

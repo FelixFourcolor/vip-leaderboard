@@ -1,7 +1,7 @@
-import { Legend, TimeChart, TimeChartProvider } from "@/components/TimeChart";
-import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
+import { Legend, TimeChart, TimeChartProvider } from "@/components/TimeChart";
+import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
 import styles from "./ChartPage.module.css";
 import { ControlPanel, categoryLabels, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
@@ -29,7 +29,7 @@ export function ChartPage() {
 						axisLeft={{
 							legendOffset: -50,
 							legend:
-								types.length === 1 ? categoryLabels[types[0]!] : "Activities",
+								types.map((t) => categoryLabels[t]).join(" + ") || "Activities",
 						}}
 					/>
 				</fieldset>
