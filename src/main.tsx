@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { GrabManager } from "./components/RangeSlider";
 import { ResizeManager } from "./components/Resizer";
 import { routeTree } from "./routeTree.gen";
+import "@/main.css";
 
 const router = createRouter({
 	routeTree,
