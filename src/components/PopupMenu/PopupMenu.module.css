@@ -1,0 +1,70 @@
+.popup-menu {
+	background-color: var(--bg-primary);
+	border: 1px solid var(--text-secondary);
+
+	width: fit-content;
+	min-width: 100px;
+	padding: 6px 0;
+
+	display: flex;
+	flex-direction: column;
+	list-style-type: none;
+	margin: 0;
+
+	.title {
+		color: var(--text-secondary);
+		margin: 4px 10px;
+		font: inherit;
+		user-select: none;
+	}
+
+	hr {
+		border: none;
+		border-top: 1px solid var(--text-tertiary);
+		margin: 4px 8px;
+	}
+
+	.item {
+		padding: 0px 6px;
+		margin: 1px;
+
+		display: flex;
+		align-items: center;
+		gap: 2px;
+
+		.icon:not(.selected) {
+			visibility: hidden;
+		}
+
+		color: var(--text-primary);
+		&.disabled {
+			color: var(--text-tertiary);
+		}
+
+		background-color: var(--bg-primary);
+		&:not(.disabled) {
+			&:hover {
+				background-color: var(--bg-secondary);
+			}
+			&:has(button:focus-visible) {
+				background-color: var(--bg-secondary);
+				outline: 1px solid var(--accent);
+			}
+		}
+
+		button {
+			padding: 6px;
+			outline: none;
+			border: none;
+			font: inherit;
+			color: inherit;
+			width: 100%;
+			text-align: left;
+			background-color: inherit;
+
+			&:not(:disabled) {
+				cursor: pointer;
+			}
+		}
+	}
+}

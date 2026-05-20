@@ -12,22 +12,20 @@ type Props = {
 	element: (props: { ref: Ref<any> }) => JSX.Element | null;
 	content: (props: { ref: Ref<any>; style: CSSProperties }) => JSX.Element;
 	offset?: number;
-	padding?: number;
 };
 
 export function Tooltip({
 	element: Element,
 	content: Content,
 	offset = 4,
-	padding = 8,
 }: Props) {
 	const { refs, floatingStyles } = useFloating({
 		placement: "top",
-		strategy: "fixed",
+		strategy: "absolute",
 		middleware: [
 			offsetMiddleware(offset),
-			flip({ padding }),
-			shift({ padding }),
+			flip({ padding: 8 }),
+			shift({ padding: 8 }),
 		],
 		whileElementsMounted: autoUpdate,
 	});

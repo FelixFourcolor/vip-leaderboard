@@ -49,7 +49,7 @@ function useVisibility() {
 	} = useChart();
 
 	const lastIndex = useMemo(() => {
-		if (!cumulative || stacked) {
+		if (!cumulative || stacked || !chartData) {
 			return null;
 		}
 		return Object.fromEntries(

@@ -3,9 +3,9 @@ import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
+import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { Toggle } from "@/components/Toggle";
-import { activityTypes } from "@/db/schema";
+import { type ActivityType, activityTypes } from "@/db/schema";
 import { Route } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import styles from "./ChartPage.module.css";
@@ -20,7 +20,7 @@ const VALID_MONTHS = monthsInRange(startDate, lastUpdated);
 
 export function ControlPanel() {
 	const [params, setParams] = useChartControls();
-	const { until, since, cumulative, stacked } = params;
+	const { until, since, cumulative, stacked, types } = params;
 
 	const onDateChange = useCallback(
 		([since, until]: readonly [YyyyMm, YyyyMm]) => setParams({ since, until }),
@@ -31,23 +31,6 @@ export function ControlPanel() {
 		<fieldset tabIndex={0}>
 			<legend>controls</legend>
 			<div className={cx("control-panel")}>
-				<div className={cx("toggles")}>
-					<Toggle
-						value={cumulative}
-						onChange={(cumulative) => setParams({ cumulative })}
-						className={cx("toggle")}
-					>
-						Cumulative
-					</Toggle>
-					<Toggle
-						value={stacked}
-						onChange={(stacked) => setParams({ stacked })}
-						className={cx("toggle")}
-					>
-						Stacked
-					</Toggle>
-				</div>
-
 				<RangeSlider
 					className={cx("slider")}
 					domain={VALID_MONTHS}
@@ -56,12 +39,60 @@ export function ControlPanel() {
 					minDistance={1}
 				/>
 
-				<Button
-					onClick={() => setParams(defaultParams)}
-					disabled={isEqual(params, defaultParams)}
-				>
-					Reset
-				</Button>
+				<PopupMenu>
+					<PopupMenu.Trigger>
+						{(props) => <Button {...props}>Options</Button>}
+					</PopupMenu.Trigger>
+					<PopupMenu.Menu>
+						<PopupMenu.Group title="Filter">
+							{activityTypes.map((t) => (
+								<PopupMenu.Item
+									key={t}
+									selected={types.includes(t)}
+									setSelected={(selected) => {
+										if (selected) {
+											setParams({ types: [...types, t] });
+										} else {
+											setParams({ types: types.filter((x) => x !== t) });
+										}
+									}}
+									className={cx("menu-item")}
+								>
+									<span className={cx("label")}>{categoryLabels[t]}</span>
+									<span className={cx("icon")}>{categoryIcons[t]}</span>
+								</PopupMenu.Item>
+							))}
+						</PopupMenu.Group>
+						<hr />
+						<PopupMenu.Group title="View">
+							<PopupMenu.Item
+								disabled={types.length === 0}
+								selected={cumulative}
+								setSelected={(cumulative) => setParams({ cumulative })}
+								className={cx("menu-item")}
+							>
+								Cumulative
+							</PopupMenu.Item>
+							<PopupMenu.Item
+								disabled={types.length === 0}
+								selected={stacked}
+								setSelected={(stacked) => setParams({ stacked })}
+								className={cx("menu-item")}
+							>
+								Stacked
+							</PopupMenu.Item>
+						</PopupMenu.Group>
+						<hr />
+						<PopupMenu.Item
+							disabled={isEqual(params, defaultParams)}
+							selected={isEqual(params, defaultParams)}
+							setSelected={() => setParams(defaultParams)}
+							className={cx("menu-item")}
+						>
+							Reset
+						</PopupMenu.Item>
+					</PopupMenu.Menu>
+				</PopupMenu>
 			</div>
 		</fieldset>
 	);
@@ -72,7 +103,7 @@ const defaultParams = {
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
-	types: activityTypes,
+	types: activityTypes as ActivityType[],
 };
 
 export function useChartControls() {
@@ -93,3 +124,13 @@ export function useChartControls() {
 
 	return [params, setParams] as const;
 }
+
+export const categoryLabels = {
+	ticket: "Tickets",
+	warning: "Warnings",
+} satisfies Record<ActivityType, string>;
+
+const categoryIcons = {
+	ticket: "✅",
+	warning: "⚠️",
+} satisfies Record<ActivityType, string>;

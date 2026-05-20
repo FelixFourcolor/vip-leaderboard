@@ -5,6 +5,7 @@ import { GrabManager } from "./components/RangeSlider";
 import { ResizeManager } from "./components/Resizer";
 import { routeTree } from "./routeTree.gen";
 import "@/main.css";
+import { PopupMenu } from "./components/PopupMenu";
 
 const router = createRouter({
 	routeTree,
@@ -16,11 +17,13 @@ const router = createRouter({
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<GrabManager>
-			<ResizeManager>
-				<RouterProvider router={router} />
-			</ResizeManager>
-		</GrabManager>
+		<PopupMenu.Manager>
+			<GrabManager>
+				<ResizeManager>
+					<RouterProvider router={router} />
+				</ResizeManager>
+			</GrabManager>
+		</PopupMenu.Manager>
 	</StrictMode>,
 );
 

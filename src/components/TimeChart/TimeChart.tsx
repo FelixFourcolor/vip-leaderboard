@@ -29,7 +29,7 @@ type TimeChartProps = {
 	margin?: NivoProps["margin"];
 	axisLeft?: Pick<
 		NonNullable<NivoProps["axisLeft"]>,
-		"legendOffset" | "legendPosition"
+		"legendOffset" | "legend"
 	>;
 	className?: string;
 };

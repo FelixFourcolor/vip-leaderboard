@@ -6,7 +6,10 @@ import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 import type { TimeSeries } from "./TimeChartProvider";
 
-type ChartContextValue<S extends TimeSeries = TimeSeries> = {
+interface ChartContextValue<S extends TimeSeries = TimeSeries>
+	extends State<"focusedSeries", Maybe<string>>,
+		State<"hoveredPoint", Maybe<InteractivePoint>>,
+		State<"visibleIdx", Maybe<VisibleIdx>> {
 	data: readonly S[] | undefined;
 	chartData: readonly S[] | undefined;
 	xValues: readonly YyyyMm[];
@@ -15,9 +18,7 @@ type ChartContextValue<S extends TimeSeries = TimeSeries> = {
 	colorMapping: Record<string, string>;
 	isolatedPoints: Record<string, Set<string>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
-} & State<"focusedSeries", Maybe<string>> &
-	State<"hoveredPoint", Maybe<InteractivePoint>> &
-	State<"visibleIdx", Maybe<VisibleIdx>>;
+}
 
 export const ChartContext = createContext<ChartContextValue | null>(null);
 

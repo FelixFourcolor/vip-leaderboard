@@ -3,9 +3,7 @@
 	border: none;
 	font: inherit;
 
-	cursor: pointer;
 	outline: 1px solid var(--text-secondary);
-
 	color: var(--text-primary);
 	background-color: var(--bg-primary);
 
@@ -17,12 +15,15 @@
 	}
 
 	&:not(:disabled) {
-		&:is(:hover, :focus-visible) {
+		cursor: pointer;
+		&:is(:hover, :focus-visible, .focused) {
 			outline-color: var(--accent);
-			background-color: var(--bg-secondary);
 			[data-is-zack="true"] & {
 				outline-width: 2px;
 			}
+		}
+		&:hover {
+			background-color: var(--bg-secondary);
 		}
 		&:active {
 			background-color: var(--bg-tertiary);

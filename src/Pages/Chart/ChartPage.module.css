@@ -70,19 +70,28 @@
 	}
 	.control-panel {
 		display: flex;
-		padding: 10px 16px 20px 16px;
+		padding: 10px 30px 20px 30px;
 		gap: 48px;
 		align-items: center;
-		justify-content: space-between;
-
-		.toggles {
-			display: flex;
-			gap: 16px;
-		}
+		justify-content: space-evenly;
 
 		.slider {
 			flex: 1;
-			max-width: 750px;
+			max-width: 800px;
+		}
+
+		.menu-item {
+			display: flex;
+			gap: 8px;
+			justify-content: space-between;
+			align-items: center;
+
+			.label {
+				font-size: var(--text-normal);
+			}
+			.icon {
+				font-size: var(--text-small);
+			}
 		}
 	}
 }
@@ -123,6 +132,7 @@
 	.legend & {
 		background-color: var(--bg-primary);
 		width: var(--legend-width);
+		box-sizing: border-box;
 
 		&.highlighted {
 			box-shadow: 0 0 10px var(--series-color);
