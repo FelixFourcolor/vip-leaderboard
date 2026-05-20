@@ -30,45 +30,104 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 	}
 
 	const countTickets = (messages: Message[]) =>
-		messages
-			.map(modReactionsOnly)
-			.filter(hasReactions)
-			.forEach(({ reactions, timestamp }) => {
-				const date = new Date(timestamp);
-				reactions
-					.flatMap((r) => r.users)
-					.map(getOrCreateUser)
-					.forEach((userId) =>
-						activitiesMap.set(`${timestamp}-${userId}`, {
-							date,
-							userId,
-							type: "ticket",
-						}),
-					);
-			});
+		messages.forEach(({ reactions, timestamp }) =>
+			reactions
+				.filter((r) => TICKET_RESOLVED_REACTIONS.has(r.emoji.code))
+				.flatMap((r) => r.users)
+				.map(getOrCreateUser)
+				.forEach((userId) =>
+					activitiesMap.set(`${timestamp}-${userId}`, {
+						userId,
+						date: new Date(timestamp),
+						type: "ticket",
+					}),
+				),
+		);
 
 	const countWarnings = (messages: Message[]) =>
 		messages.forEach(({ author, content, timestamp }) => {
-			const recipientIds = content.match(USER_ID_REGEX) ?? [];
-			if (recipientIds.length === 0) {
+			const recipientIds = content.match(USER_ID_REGEX);
+			if (!recipientIds?.length) {
 				return;
 			}
 
-			const userId = getOrCreateUser(author);
 			const date = new Date(timestamp);
+			// Before this date, bans and warnings were in the same channel.
+			// So only count if the post contains the word "warn"
+			if (date < bansChannelCreationDate && !content.match(/warn/i)) {
+				return;
+			}
 
 			recipientIds.forEach((recipientId) =>
 				activitiesMap.set(`${timestamp}-${recipientId}`, {
 					date,
-					userId,
+					userId: getOrCreateUser(author),
 					type: "warning",
 				}),
 			);
 		});
 
+	const countBans = (messages: Message[]) =>
+		messages.forEach(({ author, content, reactions, timestamp }) => {
+			// Count the :verified: reactions on auto ban announcements, +1 to each reactor
+			if (author.name === "Auto ban announcement") {
+				reactions
+					.filter((r) => r.emoji.code === "verified")
+					.flatMap((r) => r.users)
+					.map(getOrCreateUser)
+					.forEach((userId) =>
+						activitiesMap.set(`${timestamp}-${userId}`, {
+							date: new Date(timestamp),
+							userId,
+							type: "ban",
+						}),
+					);
+
+				return;
+			}
+
+			// Normal bans: count the message's author and those reacting with BAN_SUPPORT_REACTIONS
+			// It doesn't matter whether the recipient was actually banned. A ban message == +1 score.
+
+			const recipientIds = content.match(USER_ID_REGEX);
+			if (!recipientIds?.length) {
+				return;
+			}
+
+			const date = new Date(timestamp);
+			if (date < bansChannelCreationDate && !content.match(/ban/i)) {
+				return;
+			}
+
+			const authorId = getOrCreateUser(author);
+
+			recipientIds.forEach((recipientId) =>
+				activitiesMap.set(`${timestamp}-${recipientId}`, {
+					date,
+					userId: authorId,
+					type: "ban",
+				}),
+			);
+
+			reactions
+				.filter((r) => BAN_SUPPORT_REACTIONS.has(r.emoji.code))
+				.flatMap((r) => r.users)
+				.map(getOrCreateUser)
+				.filter((userId) => userId !== authorId)
+				.forEach((userId) =>
+					activitiesMap.set(`${timestamp}-${userId}`, {
+						date,
+						userId,
+						type: "ban",
+					}),
+				);
+		});
+
 	channels.forEach(({ id, messages }) => {
 		if (id === WARNINGS_CHANNEL_ID) {
 			countWarnings(messages);
+		} else if (id === BANS_CHANNEL_ID) {
+			countBans(messages);
 		} else {
 			countTickets(messages);
 		}
@@ -79,18 +138,23 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 	};
 }
 
-const MOD_REACTIONS = new Set([
+const TICKET_RESOLVED_REACTIONS = new Set([
 	"white_check_mark",
 	"x",
-	"hammer",
 	"wastebasket",
 	"lock",
 ]);
-const modReactionsOnly = ({ reactions, ...rest }: Message) => {
-	reactions = reactions.filter((r) => MOD_REACTIONS.has(r.emoji.code));
-	return { ...rest, reactions };
-};
-const hasReactions = ({ reactions }: Message) => reactions.length > 0;
+const BAN_SUPPORT_REACTIONS = new Set([
+	"thumbsup",
+	"thumbsdown",
+	"x",
+	"white_check_mark",
+	"warning",
+	"hammer",
+]);
 
 const WARNINGS_CHANNEL_ID = "614936519710605408";
+const BANS_CHANNEL_ID = "875213677530320897";
 const USER_ID_REGEX = /(?<![a-z0-9])[a-z0-9]{64}(?![a-z0-9])/g;
+
+const bansChannelCreationDate = new Date("2021-08-11T20:07:10.447-07:00");
