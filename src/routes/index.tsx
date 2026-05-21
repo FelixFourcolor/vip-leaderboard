@@ -1,7 +1,7 @@
 import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { mapValues } from "es-toolkit";
 import { type ActivityType, activityTypes } from "@/db/schema";
-import { ChartPage } from "@/Pages/Chart";
+import { ChartPage } from "@/pages/Chart";
 import type { YyyyMm } from "@/utils/time";
 
 export type SearchParams = {
