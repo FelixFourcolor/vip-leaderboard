@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
 import { type ActivityType, activityTypes } from "@/db/schema";
-import { Route } from "@/routes/index";
+import { Route, type SearchParams } from "@/routes/index";
 import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import styles from "./ChartPage.module.css";
 
@@ -101,20 +101,19 @@ const defaultParams = {
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
-	types: [] as ActivityType[],
-};
+	types: [],
+} satisfies Required<SearchParams>;
 
 export function useChartControls() {
 	const search = Route.useSearch();
 	const params = useMemo(() => ({ ...defaultParams, ...search }), [search]);
 
 	const navigate = Route.useNavigate();
-
 	const setParams = useCallback(
-		(update: Partial<typeof params>) => {
-			const search = mapValues(update, (v, k) =>
-				v !== defaultParams[k] ? v : undefined,
-			) as typeof update;
+		(params: SearchParams) => {
+			const search = mapValues(params, (v, k) =>
+				isEqual(v, defaultParams[k]) ? undefined : v,
+			) as SearchParams;
 			navigate({ search, replace: true });
 		},
 		[navigate],
