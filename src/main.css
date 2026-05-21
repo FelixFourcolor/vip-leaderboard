@@ -4,9 +4,8 @@
 	--text-small: 13px;
 	--text-mini: 12px;
 
-	--bg-primary: #21202e;
+	--bg-primary: #21202f;
 	--bg-secondary: #181622;
-	--bg-tertiary: #26233a;
 
 	--text-primary: #e0def4;
 	--text-secondary: #a5a1ba;
@@ -20,8 +19,7 @@
 
 	&[data-is-zack="true"] {
 		--bg-primary: #faf4ed;
-		--bg-secondary: #f2e9e1;
-		--bg-tertiary: #dfdad9;
+		--bg-secondary: #f1e7df;
 
 		--text-primary: #534e73;
 		--text-secondary: #797593;
