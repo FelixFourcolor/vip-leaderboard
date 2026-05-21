@@ -15,6 +15,7 @@ export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
 					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}
 					onError={() => setImgError(true)}
 					className={cx("avatar")}
+					alt={`${name}'s avatar`}
 				/>
 			)}
 			<div style={{ color: color ?? undefined }} className={cx("name")}>
