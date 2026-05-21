@@ -15,9 +15,10 @@ export function Header() {
 		<header className={cx("header")}>
 			<div className={cx("left")}>
 				<h1>VIP leaderboard</h1>
-				<span className={cx("last-updated")}>
-					last update: {lastUpdated.toLocaleDateString()}
-				</span>
+				<dl>
+					<dt>Last update</dt>
+					<dd>{lastUpdated.toLocaleDateString()}</dd>
+				</dl>
 			</div>
 			<nav className={cx("nav")}>
 				<Link

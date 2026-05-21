@@ -16,7 +16,7 @@
 		white-space: nowrap;
 
 		flex-direction: row;
-		gap: 16px;
+		gap: 20px;
 		@container (max-width: 950px) {
 			flex-direction: column;
 			gap: 6px;
@@ -28,14 +28,30 @@
 			margin: 0;
 		}
 
-		.last-updated {
+		dl {
+			display: flex;
+			gap: 6px;
+			margin: 0;
+
 			font-size: var(--text-mini);
 			color: var(--text-secondary);
+
 			&::before {
 				content: "(";
+				margin-right: -5px;
 			}
 			&::after {
 				content: ")";
+				margin-left: -5px;
+			}
+
+			dt {
+				&::after {
+					content: ":";
+				}
+			}
+			dd {
+				margin: 0;
 			}
 		}
 	}
