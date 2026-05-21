@@ -47,9 +47,10 @@
 		flex-direction: column;
 		justify-content: center;
 
-		/* fix width to prevent layout shift on load */
+		/* pre-set width to prevent layout shift on load */
 		--legend-padding: 16px;
-		width: calc(var(--legend-width) + var(--legend-padding) * 2);
+		min-width: calc(var(--legend-width) + var(--legend-padding) * 2);
+		/* use min-width instead of width just in case somehow the content overflows */
 
 		.legend {
 			outline: none;

@@ -1,3 +1,4 @@
+import classNames from "classnames/bind";
 import {
 	type ComponentProps,
 	type FC,
@@ -13,7 +14,10 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
 import { useChart } from "./context";
+import styles from "./TimeChart.module.css";
 import type { TimeSeries } from "./TimeChartProvider";
+
+const cx = classNames.bind(styles);
 
 export type VisibleIdx = { from: number; to: number };
 
@@ -21,15 +25,20 @@ export type LegendEntryProps<S extends TimeSeries> = {
 	series: Omit<S, "data">;
 	seriesColor: string;
 } & Pick<
-	ComponentProps<"div">,
+	ComponentProps<"li">,
 	"onFocus" | "onBlur" | "onKeyDown" | "onMouseEnter" | "onMouseLeave" | "ref"
 >;
 
 type Props<S extends TimeSeries> = {
 	Entry: FC<LegendEntryProps<S>>;
+	gap?: number;
 	className?: string;
 };
-export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
+export function Legend<S extends TimeSeries>({
+	Entry,
+	gap = 24,
+	className,
+}: Props<S>) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
@@ -65,7 +74,7 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 	);
 
 	const [entryHeight, setEntryHeight] = useState<number | undefined>();
-	const entryRef = (entry: HTMLDivElement | null) => {
+	const entryRef = (entry: HTMLLIElement | null) => {
 		if (entry && !entryHeight) {
 			const { height } = entry.getBoundingClientRect();
 			setEntryHeight(height);
@@ -73,10 +82,10 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 	};
 	const maxHeight = entryHeight
 		? entryHeight * visibleCount(visibleIdx) +
-			GAP * (visibleCount(visibleIdx) - 1)
+			gap * (visibleCount(visibleIdx) - 1)
 		: undefined;
 
-	const legendRef = useRef<HTMLDivElement>(null);
+	const legendRef = useRef<HTMLOListElement>(null);
 	useEffect(() => {
 		const container = legendRef.current?.parentElement;
 		if (!container || !entryHeight) {
@@ -91,7 +100,7 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 			const containerHeight = entry.contentRect.height;
 			setVisibleCount(
 				Math.min(
-					Math.floor(containerHeight / (entryHeight + GAP)),
+					Math.floor(containerHeight / (entryHeight + gap)),
 					colors.length,
 				),
 			);
@@ -99,7 +108,7 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 
 		observer.observe(container);
 		return () => observer.disconnect();
-	}, [colors, entryHeight, setVisibleCount]);
+	}, [colors, gap, entryHeight, setVisibleCount]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
@@ -112,10 +121,10 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 
 		// ignore scrolls triggered by re-rendering the legend
 		ignoreScroll.current = true;
-		legend.scrollTo(calculateScroll(prevFromIdx.current, entryHeight));
+		legend.scrollTo(calculateScroll(prevFromIdx.current, { entryHeight, gap }));
 		// If out of bound, the browser will clamp it.
 		// So read back the value for the actual rank
-		const index = calculateIdx(legend.scrollTop, entryHeight);
+		const index = calculateIdx(legend.scrollTop, { entryHeight, gap });
 		setVisibleFrom(index);
 		prevFromIdx.current = index;
 
@@ -128,21 +137,21 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 			if (ignoreScroll.current || !entryHeight) {
 				return;
 			}
-			const index = calculateIdx(scrollTop, entryHeight);
+			const index = calculateIdx(scrollTop, { entryHeight, gap });
 			prevFromIdx.current = index;
 			setVisibleFrom(index);
 		},
-		[setVisibleFrom, entryHeight],
+		[setVisibleFrom, entryHeight, gap],
 	);
 
 	const isEntryFocusedRef = useRef(false);
 
 	return (
-		<div
-			style={{ maxHeight, gap: GAP, overflowY: "auto" }}
+		<ol
+			style={{ maxHeight, gap }}
 			ref={legendRef}
 			onScroll={onScroll}
-			className={className}
+			className={cx("legend", className)}
 			onKeyDown={(e) => {
 				if (
 					isEntryFocusedRef.current &&
@@ -174,12 +183,12 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 							}
 
 							if (i > visibleIdx.to) {
-								legend.scrollTo(calculateScroll(i, entryHeight));
+								legend.scrollTo(calculateScroll(i, { entryHeight, gap }));
 							} else if (i < visibleIdx.from) {
 								legend.scrollTo(
 									calculateScroll(
 										Math.max(0, i - visibleCount(visibleIdx) + 1),
-										entryHeight,
+										{ entryHeight, gap },
 									),
 								);
 							}
@@ -207,23 +216,21 @@ export function Legend<S extends TimeSeries>({ Entry, className }: Props<S>) {
 			) : (
 				<LoadingSpinner size={36} />
 			)}
-		</div>
+		</ol>
 	);
 }
 
-const colorRange = (colors: readonly string[]) => ({
-	from: 0,
-	to: colors.length - 1,
-});
+const colorRange = (colors: string[]) => ({ from: 0, to: colors.length - 1 });
 
 const visibleCount = (visibleIdx: { from: number; to: number }) =>
 	visibleIdx.to - visibleIdx.from + 1;
 
-const GAP = 24;
+const calculateIdx = (
+	scrollTop: number,
+	{ entryHeight, gap }: { entryHeight: number; gap: number },
+) => Math.floor((scrollTop + gap) / (entryHeight + gap));
 
-const calculateIdx = (scrollTop: number, entryHeight: number) =>
-	Math.floor((scrollTop + GAP) / (entryHeight + GAP));
-
-const calculateScroll = (index: number, entryHeight: number) => ({
-	top: index * (entryHeight + GAP),
-});
+const calculateScroll = (
+	index: number,
+	{ entryHeight, gap }: { entryHeight: number; gap: number },
+) => ({ top: index * (entryHeight + gap) });

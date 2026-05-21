@@ -9,16 +9,16 @@ const cx = classNames.bind(styles);
 export function LegendEntry({
 	series: { id, rank, count, ...user },
 	seriesColor,
-	...nativeProps
+	...props
 }: LegendEntryProps<UserMonthlyData>) {
 	const { isHighlighted } = useChart();
 
 	return (
-		<div
+		<li
 			tabIndex={0}
 			style={{ ["--series-color" as string]: seriesColor }}
 			className={cx("info-box", { highlighted: isHighlighted(id) })}
-			{...nativeProps}
+			{...props}
 		>
 			<UserHeader {...user} />
 			<table>
@@ -29,6 +29,6 @@ export function LegendEntry({
 					</tr>
 				</tbody>
 			</table>
-		</div>
+		</li>
 	);
 }

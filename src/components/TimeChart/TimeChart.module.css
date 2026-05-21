@@ -117,3 +117,8 @@
 		}
 	}
 }
+
+.legend {
+	margin: 0;
+	overflow-y: auto;
+}
