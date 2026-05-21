@@ -53,7 +53,7 @@ export function Item({
 function CheckIcon({ className }: { className?: string }) {
 	return (
 		<svg
-			aria-hidden="true"
+			aria-hidden
 			viewBox="0 0 24 24"
 			className={className}
 			width="1em"

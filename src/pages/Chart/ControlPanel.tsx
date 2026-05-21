@@ -58,8 +58,10 @@ export function ControlPanel() {
 									}}
 									className={cx("menu-item")}
 								>
-									<span className={cx("label")}>{categoryLabels[t]}</span>
-									<span className={cx("icon")}>{categoryIcons[t]}</span>
+									<span>{categoryLabels[t]}</span>
+									<span aria-hidden className={cx("icon")}>
+										{categoryIcons[t]}
+									</span>
 								</PopupMenu.Item>
 							))}
 						</PopupMenu.Group>
