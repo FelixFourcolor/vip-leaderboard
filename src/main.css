@@ -14,8 +14,8 @@
 	--accent: #ebbcba;
 
 	--weight-normal: 375;
-	--weight-semibold: 400;
-	--weight-bold: 475;
+	--weight-semi-bold: 425;
+	--weight-bold: 450;
 
 	&[data-is-zack="true"] {
 		--bg-primary: #faf4ed;
@@ -28,7 +28,7 @@
 		--accent: #eb6f92;
 
 		--weight-normal: 400;
-		--weight-semibold: 425;
+		--weight-semi-bold: 450;
 		--weight-bold: 500;
 	}
 

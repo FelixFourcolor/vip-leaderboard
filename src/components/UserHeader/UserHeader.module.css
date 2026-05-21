@@ -7,7 +7,7 @@
 	white-space: nowrap;
 
 	[data-is-zack="true"] & {
-		font-weight: var(--weight-semibold);
+		font-weight: var(--weight-semi-bold);
 	}
 
 	.avatar {
