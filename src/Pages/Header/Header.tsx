@@ -1,4 +1,5 @@
 import { lastUpdated } from "virtual:db/last-updated";
+import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { Toggle } from "@/components/Toggle";
@@ -6,22 +7,39 @@ import { UserHeader } from "@/components/UserHeader";
 import type { UserData } from "@/db/user";
 import { getUser } from "@/db/user";
 import { setIsZack, useIsZack } from "@/hooks/useIsZack";
-import styles from "./Footer.module.css";
+import styles from "./Header.module.css";
 
 const cx = classNames.bind(styles);
 
-export function Footer() {
-	const lastUpdatedStr = lastUpdated.toLocaleString(undefined, {
-		timeZone: "UTC",
-	});
+export function Header() {
 	return (
-		<footer>
-			<hr />
-			<div className={cx("container")}>
-				<span>Last update: {lastUpdatedStr} (UTC)</span>
+		<header className={cx("header")}>
+			<div className={cx("left")}>
+				<h1>VIP leaderboard</h1>
+				<span className={cx("last-updated")}>
+					last update: {lastUpdated.toLocaleDateString()}
+				</span>
+			</div>
+			<nav className={cx("nav")}>
+				<Link
+					className={cx("link")}
+					activeProps={{ className: cx("active") }}
+					to="/"
+				>
+					Home
+				</Link>
+				<Link
+					className={cx("link")}
+					activeProps={{ className: cx("active") }}
+					to="/about"
+				>
+					About
+				</Link>
+			</nav>
+			<div className={cx("right")}>
 				<ZackToggle />
 			</div>
-		</footer>
+		</header>
 	);
 }
 
@@ -59,3 +77,5 @@ function ZackToggle() {
 		</Toggle>
 	);
 }
+
+export default Header;

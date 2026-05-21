@@ -1,4 +1,5 @@
 .chart-page {
+	margin-top: -5px; /* compensate for fieldset legend */
 	flex: 1;
 	min-height: 0;
 	display: grid;
