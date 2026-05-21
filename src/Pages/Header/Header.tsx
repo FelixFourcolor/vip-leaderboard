@@ -1,9 +1,8 @@
 import { lastUpdated } from "virtual:db/last-updated";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Toggle } from "@/components/Toggle";
-import { UserHeader } from "@/components/UserHeader";
 import type { UserData } from "@/db/user";
 import { getUser } from "@/db/user";
 import { setIsZack, useIsZack } from "@/hooks/useIsZack";
@@ -45,37 +44,46 @@ export function Header() {
 
 function ZackToggle() {
 	const isZack = useIsZack();
+
 	const [zackData, setZackData] = useState<UserData | undefined>();
 	useEffect(() => {
 		getUser("zackwb").then(setZackData);
 	}, []);
 
-	const avatarUrl = zackData
+	const zackAvatarUrl = zackData
 		? `https://cdn.discordapp.com/${zackData.avatarUrl}?size=16`
 		: undefined;
-	// prefetch avatar to avoid delay when toggling
-	useEffect(() => {
-		if (avatarUrl) {
-			const img = new Image();
-			img.src = avatarUrl;
-		}
-	}, [avatarUrl]);
 
-	const color = isZack ? (zackData?.color ?? undefined) : undefined;
-	const image = isZack && avatarUrl ? `url("${avatarUrl}")` : undefined;
+	// prefetch image to avoid delay when toggling
+	const fetchedRef = useRef(false);
+	useEffect(() => {
+		if (zackAvatarUrl && !fetchedRef.current) {
+			const img = new Image();
+			img.src = zackAvatarUrl;
+			fetchedRef.current = true;
+		}
+	}, [zackAvatarUrl]);
 
 	return (
 		<Toggle
 			value={isZack}
 			onChange={setIsZack}
 			customStyles={{
-				container: { backgroundColor: color },
-				slider: { backgroundImage: image },
+				container: {
+					backgroundColor: isZack ? (zackData?.color ?? undefined) : undefined,
+				},
+				slider: {
+					backgroundImage: isZack
+						? zackAvatarUrl
+							? `url("${zackAvatarUrl}")`
+							: undefined
+						: `url("${moonSvg}")`,
+				},
 			}}
-		>
-			<UserHeader name="Light mode" color={color} />
-		</Toggle>
+		/>
 	);
 }
 
-export default Header;
+const moonSvg = `data:image/svg+xml,${encodeURIComponent(
+	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#21202f"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+)}`;
