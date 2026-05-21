@@ -20,14 +20,12 @@ export function PointTooltip({
 			className={cx("info-box", "tooltip")}
 		>
 			<UserHeader {...series} />
-			<table>
-				<tbody>
-					<tr>
-						<th>{x}</th>
-						<td>{y}</td>
-					</tr>
-				</tbody>
-			</table>
+			<dl>
+				<dt className={"sr-only"}>Month</dt>
+				<dd>{x}</dd>
+				<dt className={"sr-only"}>Count</dt>
+				<dd>{y}</dd>
+			</dl>
 		</div>
 	);
 }

@@ -21,14 +21,12 @@ export function LegendEntry({
 			{...props}
 		>
 			<UserHeader {...user} />
-			<table>
-				<tbody>
-					<tr>
-						<th>#{rank}</th>
-						<td>{count}</td>
-					</tr>
-				</tbody>
-			</table>
+			<dl>
+				<dt className={"sr-only"}>Rank</dt>
+				<dd className={cx("rank")}>{rank}</dd>
+				<dt className={"sr-only"}>Count</dt>
+				<dd>{count}</dd>
+			</dl>
 		</li>
 	);
 }

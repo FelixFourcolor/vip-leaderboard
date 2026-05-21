@@ -109,17 +109,24 @@
 	align-items: center;
 	gap: 4px;
 
-	table {
-		border-spacing: 0;
+	dl {
+		margin: 0;
+		display: flex;
+		gap: 4px;
 
-		th {
-			font-weight: inherit;
-			color: var(--text-secondary);
-			&::after {
-				content: "|";
-				padding-left: 5px;
-				padding-right: 2px;
-				color: var(--text-tertiary);
+		dd {
+			margin: 0;
+
+			&:nth-of-type(1) {
+				color: var(--text-secondary);
+				&.rank::before {
+					content: "#";
+				}
+				&::after {
+					content: "|";
+					padding-left: 4px;
+					color: var(--text-tertiary);
+				}
 			}
 		}
 	}
