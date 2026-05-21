@@ -28,7 +28,7 @@ export function ControlPanel() {
 	);
 
 	return (
-		<fieldset tabIndex={0}>
+		<fieldset>
 			<legend>controls</legend>
 			<div className={cx("control-panel")}>
 				<RangeSlider
