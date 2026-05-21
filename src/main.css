@@ -1,8 +1,8 @@
 :root {
-	--text-large: 15px;
-	--text-normal: 14px;
-	--text-small: 13px;
-	--text-mini: 12px;
+	--text-large: 18px;
+	--text-normal: 16px;
+	--text-small: 15px;
+	--text-mini: 13px;
 
 	--bg-primary: #21202f;
 	--bg-secondary: #181622;
@@ -68,12 +68,12 @@ body {
 		flex-direction: column;
 		height: 100%;
 
-		#main {
+		main {
 			display: flex;
 			flex-direction: column;
 			flex: 1;
 			min-height: 0;
-			padding: 1rem;
+			padding: 16px;
 		}
 	}
 }

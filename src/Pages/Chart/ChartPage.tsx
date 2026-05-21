@@ -25,9 +25,9 @@ export function ChartPage() {
 				<fieldset className={cx("chart")}>
 					<legend>chart</legend>
 					<TimeChart
-						margin={{ top: 18, right: 28, bottom: 28, left: 64 }}
+						margin={{ top: 22, right: 34, bottom: 30, left: 70 }}
 						axisLeft={{
-							legendOffset: -50,
+							legendOffset: -54,
 							legend:
 								types.map((t) => categoryLabels[t]).join(" + ") || "Activities",
 						}}

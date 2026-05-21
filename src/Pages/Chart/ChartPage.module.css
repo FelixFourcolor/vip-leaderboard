@@ -5,6 +5,7 @@
 	grid-template-columns: 1fr 12px auto;
 	grid-template-rows: 1fr 8px auto;
 	user-select: none;
+	font-size: var(--text-small);
 
 	fieldset {
 		outline: none;
@@ -17,7 +18,7 @@
 
 		legend {
 			margin-left: 16px;
-			font-size: var(--text-large);
+			font-size: var(--text-normal);
 			color: var(--text-secondary);
 		}
 
@@ -71,7 +72,7 @@
 	}
 	.control-panel {
 		display: flex;
-		padding: 10px 30px 20px 30px;
+		padding: 12px 32px 22px 32px;
 		gap: 48px;
 		align-items: center;
 		justify-content: space-evenly;
@@ -102,7 +103,6 @@
 	padding: 6px 6px 4px 6px;
 	border: 2px dashed var(--series-color);
 	width: fit-content;
-	white-space: nowrap;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;

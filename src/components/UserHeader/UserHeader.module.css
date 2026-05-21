@@ -4,8 +4,8 @@
 	max-width: 100%;
 	overflow: hidden;
 	height: 1lh;
+	white-space: nowrap;
 
-	font-size: var(--text-normal);
 	[data-is-zack="true"] & {
 		font-weight: var(--weight-semibold);
 	}

@@ -6,9 +6,9 @@ import styles from "./ChartPage.module.css";
 const cx = classNames.bind(styles);
 
 export function SidePanel({ children }: { children: ReactNode }) {
-	const [legendWidth, setLegendWidth] = useState(154);
+	const [legendWidth, setLegendWidth] = useState(165);
 	const resizeWidth = useCallback((delta: number) => {
-		setLegendWidth((current) => Math.max(Math.min(current + delta, 290), 90));
+		setLegendWidth((current) => Math.max(Math.min(current + delta, 310), 100));
 	}, []);
 
 	return (

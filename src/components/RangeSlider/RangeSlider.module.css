@@ -1,7 +1,6 @@
 .container {
 	display: flex;
 	container-type: inline-size;
-	min-width: 60px;
 }
 
 .track {
@@ -9,10 +8,12 @@
 	align-items: center;
 	flex-direction: row;
 	height: 12px;
+	min-width: 64px;
 	flex: 1;
 
-	@container (width > 350px) {
-		margin: 0 60px;
+	margin: 0 27px;
+	@container (width > 375px) {
+		margin: 0 68px;
 	}
 
 	[data-is-grabbing="false"] & {
@@ -23,7 +24,7 @@
 	}
 
 	.bar {
-		background-color: var(--text-tertiary);
+		background-color: var(--text-secondary);
 		display: flex;
 		height: 2px;
 		width: 100%;
@@ -50,7 +51,7 @@
 
 		.label {
 			color: var(--accent);
-			top: -20px;
+			top: -24px;
 			left: 50%;
 			transform: translateX(-50%);
 			&.hidden {
@@ -61,7 +62,7 @@
 
 	.limit {
 		position: absolute;
-		background-color: var(--text-tertiary);
+		background-color: var(--text-secondary);
 		height: 12px;
 
 		&.from {
@@ -77,8 +78,6 @@
 		position: absolute;
 		white-space: nowrap;
 		font-size: var(--text-small);
-		color: var(--text-secondary);
-		font-weight: var(--weight-semibold);
 
 		top: 18px;
 		&.min {
@@ -90,15 +89,15 @@
 			transform: translateX(50%);
 		}
 
-		@container (width > 350px) {
+		@container (width > 375px) {
 			top: inherit;
 			&.min {
 				transform: none;
-				left: -60px;
+				left: -68px;
 			}
 			&.max {
 				transform: none;
-				right: -60px;
+				right: -68px;
 			}
 		}
 	}

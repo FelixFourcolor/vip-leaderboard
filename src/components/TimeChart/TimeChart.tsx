@@ -89,7 +89,7 @@ const CONFIGS = {
 			legend: {
 				text: {
 					fill: "var(--text-primary)",
-					fontSize: "var(--text-large)",
+					fontSize: "var(--text-normal)",
 				},
 			},
 		},
