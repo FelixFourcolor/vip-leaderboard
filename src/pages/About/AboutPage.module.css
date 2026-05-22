@@ -1,0 +1,76 @@
+.about {
+	line-height: 1.5;
+	font-size: var(--text-small);
+	max-width: 800px;
+	align-self: center;
+	margin: 12px;
+
+	ol,
+	ul {
+		margin-top: -8px;
+		margin-bottom: 14px;
+
+		li {
+			margin: 4px 0;
+		}
+	}
+
+	a {
+		color: var(--accent);
+		text-decoration: none;
+
+		&:hover:not(.discord-link) {
+			text-decoration: underline;
+		}
+	}
+
+	img {
+		vertical-align: middle;
+	}
+
+	h2 {
+		font-weight: var(--weight-bold);
+		font-size: var(--text-huge);
+		padding: 4px 12px;
+		margin-left: -12px;
+		background: var(--bg-secondary);
+		margin-top: 24px;
+		&:first-child {
+			margin-top: 0;
+		}
+		margin-bottom: 0;
+	}
+	h3 {
+		font-weight: var(--weight-semi-bold);
+		font-size: var(--text-large);
+		text-decoration: underline;
+		text-decoration-color: var(--text-secondary);
+		text-underline-offset: 2px;
+		margin-bottom: 0;
+		margin-top: 24px;
+		h2 + & {
+			margin-top: 16px;
+		}
+	}
+	p2 {
+		margin: 14px 0;
+	}
+}
+
+.discord-link {
+	color: var(--accent);
+	text-decoration: none;
+
+	&::before {
+		content: "#";
+		margin-right: 4px;
+	}
+
+	padding: 0 4px;
+	background: rgb(from var(--accent) r g b / 0.1);
+
+	&:hover {
+		background: rgb(from var(--accent) r g b / 0.9);
+		color: var(--bg-primary);
+	}
+}
