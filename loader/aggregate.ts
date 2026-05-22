@@ -30,19 +30,21 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 	}
 
 	const countTickets = (messages: Message[]) =>
-		messages.forEach(({ reactions, timestamp }) =>
+		messages.forEach(({ author, reactions, timestamp }) => {
+			const authorId = getOrCreateUser(author);
 			reactions
 				.filter((r) => TICKET_RESOLVED_REACTIONS.has(r.emoji.code))
 				.flatMap((r) => r.users)
 				.map(getOrCreateUser)
+				.filter((userId) => userId !== authorId)
 				.forEach((userId) =>
 					activitiesMap.set(`${timestamp}-${userId}`, {
 						userId,
 						date: new Date(timestamp),
 						type: "ticket",
 					}),
-				),
-		);
+				);
+		});
 
 	const countWarnings = (messages: Message[]) =>
 		messages.forEach(({ author, content, timestamp }) => {
