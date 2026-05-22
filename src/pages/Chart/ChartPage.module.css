@@ -6,7 +6,6 @@
 	grid-template-columns: 1fr 12px auto;
 	grid-template-rows: 1fr 8px auto;
 	user-select: none;
-	font-size: var(--text-small);
 
 	fieldset {
 		outline: none;
@@ -19,7 +18,6 @@
 
 		legend {
 			margin-left: 16px;
-			font-size: var(--text-normal);
 			color: var(--text-secondary);
 		}
 
@@ -90,7 +88,7 @@
 			align-items: center;
 
 			.icon {
-				font-size: var(--text-mini);
+				font-size: var(--text-small);
 			}
 		}
 	}

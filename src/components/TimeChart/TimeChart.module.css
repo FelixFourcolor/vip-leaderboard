@@ -72,7 +72,6 @@
 		[data-is-zack="true"] & {
 			fill: black;
 		}
-		font-size: var(--text-small);
 		text-anchor: middle;
 		dominant-baseline: central;
 	}

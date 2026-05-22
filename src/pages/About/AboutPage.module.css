@@ -1,17 +1,16 @@
 .about {
 	line-height: 1.5;
-	font-size: var(--text-small);
 	max-width: 800px;
 	align-self: center;
 	margin: 12px;
 
 	ol,
 	ul {
-		margin-top: -8px;
-		margin-bottom: 14px;
+		margin-top: -9px;
+		margin-bottom: 15px;
 
 		li {
-			margin: 4px 0;
+			margin: 6px 0;
 		}
 	}
 
@@ -30,7 +29,7 @@
 
 	h2 {
 		font-weight: var(--weight-bold);
-		font-size: var(--text-huge);
+		font-size: var(--text-very-large);
 		padding: 4px 12px;
 		margin-left: -12px;
 		background: var(--bg-secondary);

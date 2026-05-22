@@ -77,7 +77,6 @@
 		cursor: default;
 		position: absolute;
 		white-space: nowrap;
-		font-size: var(--text-small);
 
 		top: 18px;
 		&.min {

@@ -82,14 +82,14 @@ const CONFIGS = {
 				},
 				text: {
 					fill: "var(--text-secondary)",
-					fontSize: "var(--text-mini)",
+					fontSize: "var(--text-small)",
 					fontWeight: "var(--weight-semi-bold)",
 				},
 			},
 			legend: {
 				text: {
 					fill: "var(--text-primary)",
-					fontSize: "var(--text-normal)",
+					fontSize: "var(--text-semi-large)",
 				},
 			},
 		},

@@ -1,9 +1,9 @@
 :root {
-	--text-huge: 22px;
+	--text-very-large: 22px;
 	--text-large: 18px;
-	--text-normal: 16px;
-	--text-small: 15px;
-	--text-mini: 13px;
+	--text-semi-large: 16px;
+	--text-normal: 15px;
+	--text-small: 13px;
 
 	--bg-primary: #222130;
 	--bg-secondary: #181622;
