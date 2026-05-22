@@ -1,10 +1,11 @@
 :root {
+	--text-huge: 22px;
 	--text-large: 18px;
 	--text-normal: 16px;
 	--text-small: 15px;
 	--text-mini: 13px;
 
-	--bg-primary: #21202f;
+	--bg-primary: #222130;
 	--bg-secondary: #181622;
 
 	--text-primary: #e0def4;
@@ -28,8 +29,8 @@
 		--accent: #eb6f92;
 
 		--weight-normal: 400;
-		--weight-semi-bold: 450;
-		--weight-bold: 500;
+		--weight-semi-bold: 475;
+		--weight-bold: 550;
 	}
 
 	&[data-is-grabbing="true"] * {

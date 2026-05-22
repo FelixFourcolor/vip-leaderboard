@@ -18,7 +18,7 @@ export function Header() {
 			</div>
 			<nav>
 				<Link activeProps={{ className: cx("active") }} to="/">
-					Home
+					Main
 				</Link>
 				<Link activeProps={{ className: cx("active") }} to="/about">
 					About
