@@ -61,6 +61,7 @@
 		display: flex;
 		gap: 32px;
 		align-items: center;
+		font-weight: var(--weight-semi-bold);
 
 		a {
 			text-decoration: none;
@@ -72,18 +73,32 @@
 			&.active {
 				color: var(--text-primary);
 			}
-
-			&:focus-visible {
-				outline-offset: 2px;
-				outline: 1px solid var(--accent);
-				[data-is-zack="true"] & {
-					outline-width: 2px;
-				}
-			}
 		}
 	}
 
 	> :last-child {
 		justify-self: end;
+		display: flex;
+		gap: 24px;
+
+		img {
+			width: 19px;
+			vertical-align: middle;
+
+			[data-is-zack="false"] & {
+				filter: invert(100%) opacity(0.9);
+			}
+			[data-is-zack="true"] & {
+				filter: opacity(0.9);
+			}
+		}
+	}
+
+	a:focus-visible {
+		outline-offset: 2px;
+		outline: 1px solid var(--accent);
+		[data-is-zack="true"] & {
+			outline-width: 2px;
+		}
 	}
 }

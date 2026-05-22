@@ -24,7 +24,19 @@ export function Header() {
 					About
 				</Link>
 			</nav>
-			<ZackToggle />
+			<div>
+				<ZackToggle />
+				<a
+					href="https://github.com/felixfourcolor/vip-leaderboard"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<img
+						src="https://unpkg.com/@lobehub/icons-static-svg@1.90.0/icons/github.svg"
+						alt="GitHub"
+					/>
+				</a>
+			</div>
 		</header>
 	);
 }
