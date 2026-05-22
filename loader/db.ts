@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { isNull, notInArray, or, sql } from "drizzle-orm";
+import { eq, isNull, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { activity, user } from "@/db/schema";
 import { pick } from "@/utils/object";
@@ -36,7 +36,14 @@ export function writeToDB(data: {
 
 		const activeUserIds = tx.select(pick(activity, ["userId"])).from(activity);
 		tx.delete(user)
-			.where(or(isNull(user.color), notInArray(user.id, activeUserIds)))
+			.where(
+				or(
+					// to only keep users ranked Cool People or higher
+					isNull(user.color),
+					eq(user.color, "#A08AC6"),
+					notInArray(user.id, activeUserIds),
+				),
+			)
 			.run();
 	});
 
