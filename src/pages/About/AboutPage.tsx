@@ -16,16 +16,15 @@ export function AboutPage() {
 				</a>
 				.
 			</p>
-
-			<h2>Purpose</h2>
 			<p>
-				The VIP who ranks top each month will get 2x the regular pay rate.
-				(Which is still $0, but it&apos;s the thought that counts.)
+				Whoever ranks top each month will get 2x the regular VIP payout. (Which
+				is still $0, but it&apos;s the thought that counts.)
 			</p>
 
 			<h2>How work is counted</h2>
+			<p>Work is tracked separately in three categories:</p>
 
-			<h3>Resolved tickets</h3>
+			<h3>1. Resolved tickets</h3>
 			<p>Tracked channels:</p>
 			<ul>
 				<li>
@@ -49,24 +48,29 @@ export function AboutPage() {
 				everyone involved earns 1 point.
 			</p>
 			<p>
-				⚠️ and 🔨, although frequently used to resolve tickets, are not counted
-				to avoid double counting warnings and bans.
+				(⚠️ 🔨 are not counted to avoid double counting with warnings and bans.)
 			</p>
 
-			<h3>Warnings</h3>
+			<h3>2. Warnings</h3>
 			<p>
 				Tracked channel: <DiscordLink warning-log />
 			</p>
 			<p>
-				Warnings are detected by the presence of a user ID in the message&apos;s
-				content.
+				Warnings are detected by the presence of a user ID in the message
+				content. (Oops{" "}
+				<img
+					src="https://cdn.discordapp.com/emojis/1269432955059568710.png"
+					width="16"
+					alt="mschae restaurant"
+				/>
+				)
 			</p>
 			<p>
 				Each VIP earns 1 point for each warning. Batch warnings count multiple
 				times, once for each recipient.
 			</p>
 
-			<h3>Bans</h3>
+			<h3>3. Bans</h3>
 			<p>Tracked channels:</p>
 			<ul>
 				<li>
@@ -78,54 +82,46 @@ export function AboutPage() {
 				</li>
 			</ul>
 			<p>
-				Bans are detected by the presence of a user ID in the message&apos;s
-				content.
+				Bans are detected by the presence of a user ID in the message content.
 			</p>
 			<p>
 				Each VIP earns 1 point for each ban. Batch bans count multiple times,
 				once for each recipient.
 			</p>
 			<p>
-				Any other VIP who reacts to a ban message with 👍 👎 🔨 ✅ ❌ (to
-				indicate support or opposition) also earns 1 point, but only 1 even if
-				it&apos;s a batch ban.
+				Any other VIP who reacts to a ban message with 👍 👎 🔨 ✅ ❌ also earns
+				1 point, but only 1 even if it&apos;s a batch ban.
 			</p>
-			<p>
-				Even if a ban proposal is rejected, it&apos;s still counted the same.
-			</p>
+			<p>Approved and rejected bans are counted the same.</p>
 			<p>
 				Reacting <img src="./icon.png" width="16" alt="verified" /> to an auto
 				ban announcement earns 1 point, but only 1 even if it&apos;s a batch
 				ban.
 			</p>
 
-			<h2>Limitations</h2>
+			<h3>Caveats</h3>
 			<p>
-				The biggest issue is that <DiscordLink warning-log /> used to serve
-				multiple purpose. There are ways to guess for each message whether
-				it&apos;s a ticket/warning/ban, but all data before August 11 2021 (and
-				to a lesser extent, June 14 2024) is less reliable.
-			</p>
-			<p>
-				Actually, all of these scoring methods are guess-based. Many other
-				things could go wrong such as:
+				All of these scoring methods are based on educated guesses. For instance
 			</p>
 			<ul>
 				<li>
-					✅ ❌ etc. might be used for purposes other than resolving a ticket.
+					It&apos;s unlikely that you would react ✅ ❌ to something other than
+					a ticket.
 				</li>
 				<li>
-					A message might contain a user ID but is neither a ban nor a warning
-					(just a discussion about that user)
+					It&apos;s unlikely that a message would contain 64 consecutive
+					alphanumeric characters but it would not be a warning or ban.
 				</li>
 				<li>
-					A message might contain what looks like a user ID (64 consecutive
-					alphanumeric characters) but isn&apos;t.
+					For <DiscordLink warning-log /> before the ban/warning/report split,
+					if the message contains the word &quot;warn&quot; it&apos;s probably a
+					warning, likewise for &quot;ban&quot;, and otherwise it&apos;s
+					probably a ticket.
 				</li>
 			</ul>
 			<p>
-				So <em>all</em> data is inherently unreliable. It&apos;s just for
-				funsies.
+				So don&apos;t take the data too seriously, it&apos;s just for funsies.
+				(The VIP payout multiplier is definitely real though.)
 			</p>
 
 			<h2>FAQs</h2>
@@ -140,43 +136,29 @@ export function AboutPage() {
 				It&apos;s not worth scraping and processing a huge amount of data to add
 				a relatively small number of points.
 			</p>
-			<p>
-				But there's also an increased risk of errors. ✅ ❌ 🔒 🗑️ have
-				well-defined meanings in the chosen channels, but less so for others.
-				Tracking other channels will increase the ratio of false positives.
-			</p>
 
-			<h3>Why are reactions to batch bans only counted once?</h3>
+			<h3>How did you come up with these scoring methods?</h3>
 			<p>
-				The rationale behind all these scoring methods is to approximate the
-				amount of effort each action takes: 1 point = 1 unit of work. It&apos;s
-				much easier to react 👍 to a ban proposal than to come up with the
-				proposed list.
+				I want to approximate the amount of effort each action takes, with 1
+				unit of work = 1 point. For example, it takes the same effort to propose
+				a ban regardless of whether it&apos;s approved, that&apos;s why approved
+				and rejected bans are counted the same.
 			</p>
-
-			<h3>Can I customize how points are counted?</h3>
 			<p>
-				Technically yes, but adding such customizations will make the app
-				slower, and I also prefer keeping the UI simple. If you want any
-				changes, let&apos;s talk about it in the server and I&apos;ll follow the
-				consensus opinion.{" "}
+				If you have other ideas for how to count points, let&apos;s talk about
+				it in the server and I&apos;ll follow the majority opinion.{" "}
 				<img
 					src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
 					alt="interaction reminder"
 				/>
 			</p>
 
-			<h3>How frequently is the data updated?</h3>
+			<h3>How often is the data updated?</h3>
 			<p>
-				I scrape the server once at the end of each month. That means if you
-				change/delete your reactions/messages within the same month, the change
-				will be counted; but if you resolve a ticket from a previous month, it
-				will not be counted.
+				I scrape the server once at the end of each month. But that also means
+				if you resolve a ticket from a previous month, it will not be counted.
 			</p>
-			<p>
-				Bad, I know. But as I said, the data is already unreliable in other
-				ways. 😅
-			</p>
+			<p>Bad, I know. But the data is already unreliable in other ways.</p>
 
 			<h3>Can I opt out?</h3>
 			<p>Of course, let me know.</p>
