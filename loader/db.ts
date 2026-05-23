@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { eq, isNull, notInArray, or, sql } from "drizzle-orm";
+import { inArray, isNull, notInArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { activity, user } from "@/db/schema";
 import { pick } from "@/utils/object";
@@ -40,7 +40,7 @@ export function writeToDB(data: {
 				or(
 					// to only keep users ranked Cool People or higher
 					isNull(user.color),
-					eq(user.color, "#A08AC6"),
+					inArray(user.color, ["#A08AC6", "#ECF1F8"]),
 					notInArray(user.id, activeUserIds),
 				),
 			)
