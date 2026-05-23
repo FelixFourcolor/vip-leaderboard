@@ -1,19 +1,30 @@
 import { spawn } from "node:child_process";
-import type { Data, LastUpdateData } from "./types";
-import { ls, objMap, readJson, relativePath, rm, writeJson } from "./utils";
+import { ls, readJson, relativePath, rm, writeJson } from "./file-utils";
+import type { Channel } from "./types";
 
-export const fetchInitialData = () =>
+const dataDir = "data-repo/data";
+
+export const getCurrentData = () =>
 	Promise.all(
-		ls("data").map((file) => readJson<Data>(`data/${file}`).then(logUpdate)),
+		ls(dataDir).map((file) => readJson<Channel>(`${dataDir}/${file}`)),
 	);
 
-export const fetchUpdates = () =>
-	readJson<LastUpdateData>("last-update.json").then((channels) =>
-		Promise.all(
-			objMap(channels, (channelId, messageId) =>
-				fetch(channelId, messageId).then(logUpdate),
-			),
-		),
+export const getUpdates = () =>
+	Promise.all(
+		ls(dataDir).map(async (file) => {
+			const { channel, messages } = await readJson<Channel>(
+				`${dataDir}/${file}`,
+			);
+			const lastUpdate = messages[messages.length - 1]!.id;
+
+			const update = await fetch(channel.id, lastUpdate);
+			await writeJson(`${dataDir}/${file}`, {
+				channel: { id: channel.id },
+				messages: [...messages, ...update.messages],
+			} satisfies Channel);
+
+			return update;
+		}),
 	);
 
 async function fetch(channelId: string, afterMessageId: string) {
@@ -37,22 +48,7 @@ async function fetch(channelId: string, afterMessageId: string) {
 			resolve();
 		});
 	});
-	const data = await readJson<Data>(dataFile);
+	const data = await readJson<Channel>(dataFile);
 	rm(dataFile);
 	return data;
-}
-
-async function logUpdate({ channel: { id }, messages }: Data) {
-	const latest = messages[messages.length - 1];
-	if (!latest) {
-		return { id, messages };
-	}
-
-	const lastUpdateData = await readJson<LastUpdateData>(
-		"last-update.json",
-	).catch(() => ({}) as LastUpdateData);
-	lastUpdateData[id] = latest.id;
-	writeJson(lastUpdateData, "last-update.json");
-
-	return { id, messages };
 }

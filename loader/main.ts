@@ -1,13 +1,11 @@
-import { aggregate } from "./aggregate.js";
+import { aggregate } from "./aggregate";
 import { writeToDB } from "./db";
-import { fetchInitialData, fetchUpdates } from "./update.js";
+import { getCurrentData, getUpdates } from "./update";
 
-const init = () => fetchInitialData().then(aggregate).then(writeToDB);
-
-const update = () => fetchUpdates().then(aggregate).then(writeToDB);
-
-if (process.argv[2] === "init") {
-	await init();
+if (process.argv[2] === "update") {
+	await getUpdates().then(aggregate).then(writeToDB);
+} else if (process.argv[2] === "reload") {
+	await getCurrentData().then(aggregate).then(writeToDB);
 } else {
-	await update();
+	console.error("update or reload?");
 }

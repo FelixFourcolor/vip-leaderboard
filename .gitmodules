@@ -1,0 +1,3 @@
+[submodule "loader/data"]
+	path = loader/data-repo
+	url = git@github.com:FelixFourcolor/vip-leaderboard-data

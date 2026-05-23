@@ -1,7 +1,7 @@
-import type { ActivityData, UserData } from "./db.js";
-import type { Message, User } from "./types.js";
+import type { ActivityData, UserData } from "./db";
+import type { Channel, Message, User } from "./types";
 
-export function aggregate(channels: { id: string; messages: Message[] }[]) {
+export function aggregate(channels: Channel[]) {
 	const usersMap = new Map<string, UserData>();
 	const activitiesMap = new Map<string, ActivityData>();
 
@@ -127,7 +127,7 @@ export function aggregate(channels: { id: string; messages: Message[] }[]) {
 				);
 		});
 
-	channels.forEach(({ id, messages }) => {
+	channels.forEach(({ channel: { id }, messages }) => {
 		if (id === WARNINGS_CHANNEL_ID) {
 			countWarnings(messages);
 		} else if (id === BANS_CHANNEL_ID) {

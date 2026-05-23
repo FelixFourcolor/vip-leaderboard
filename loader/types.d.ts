@@ -22,7 +22,7 @@ export type Message = {
 	reactions: Reaction[];
 };
 
-export type Data = {
+export type Channel = {
 	channel: { id: ChannelId };
 	messages: Message[];
 };
