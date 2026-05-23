@@ -120,4 +120,9 @@
 .legend {
 	margin: 0;
 	overflow-y: auto;
+	scroll-padding: 6px;
+	scroll-snap-type: y mandatory;
+	> * {
+		scroll-snap-align: start;
+	}
 }
