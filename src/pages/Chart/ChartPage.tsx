@@ -19,8 +19,18 @@ export function ChartPage() {
 		getMonthlyData({ since, until, types }).then(setData);
 	}, [since, until, types]);
 
+	useEffect(() => {
+		const root = document.getElementById("root")!;
+		// fix max height to prevent layout shift on load
+		// but only for this page
+		root.style.maxHeight = "100vh";
+		return () => {
+			root.style.maxHeight = "";
+		};
+	}, []);
+
 	return (
-		<div className={cx("chart-page")}>
+		<main className={cx("chart-page")}>
 			<TimeChartProvider data={data} {...controls} PointTooltip={PointTooltip}>
 				<fieldset className={cx("chart")}>
 					<legend>chart</legend>
@@ -38,6 +48,6 @@ export function ChartPage() {
 				</SidePanel>
 			</TimeChartProvider>
 			<ControlPanel />
-		</div>
+		</main>
 	);
 }

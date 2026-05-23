@@ -44,8 +44,8 @@ export function TimeChart({ className, ...configs }: TimeChartProps) {
 		<div ref={chartRef} className={cx("chart", className)}>
 			{data ? (
 				<ResponsiveLine
-					{...CONFIGS}
-					margin={{ ...CONFIGS.margin, ...configs.margin }}
+					{...DEFAULT_CONFIGS}
+					margin={{ ...DEFAULT_CONFIGS.margin, ...configs.margin }}
 					data={data}
 					colors={colors}
 					gridXValues={gridXValues}
@@ -61,7 +61,7 @@ export function TimeChart({ className, ...configs }: TimeChartProps) {
 	);
 }
 
-const CONFIGS = {
+const DEFAULT_CONFIGS = {
 	curve: "monotoneX",
 	useMesh: false,
 	enableCrosshair: false,
@@ -180,7 +180,7 @@ function useHorizontalScale({ margin }: TimeChartProps) {
 		return {
 			chartRef,
 			xLabels: xValues,
-			axisBottom: { ...CONFIGS.axisBottom, tickValues },
+			axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
 			gridXValues: tickValues,
 		};
 	}, [margin, xValues, width]);
@@ -245,7 +245,7 @@ function useVerticalScale({ axisLeft }: TimeChartProps) {
 				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
 
 		return {
-			yScale: { ...CONFIGS.yScale, min, max, stacked },
+			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked },
 			axisLeft: { ...axisLeft, tickValues },
 			gridYValues: tickValues,
 		};

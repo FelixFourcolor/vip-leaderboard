@@ -1,8 +1,8 @@
-.about {
+.about-page {
 	line-height: 1.5;
 	max-width: 800px;
 	align-self: center;
-	margin: 12px;
+	margin: 20px 32px;
 
 	ol,
 	ul {

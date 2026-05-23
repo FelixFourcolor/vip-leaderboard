@@ -6,7 +6,7 @@ const cx = classNames.bind(styles);
 
 export function AboutPage() {
 	return (
-		<div className={cx("about")}>
+		<main className={cx("about-page")}>
 			<h2>What is this?</h2>
 			<p>
 				A leaderboard of SponsorBlock VIPs, ranked by amount of moderation work.
@@ -169,13 +169,13 @@ export function AboutPage() {
 
 			<details>
 				<summary>Can I opt out?</summary>
-				<p>Of course, let me know.</p>
+				<p>Of course, just let me know.</p>
 			</details>
 
 			<details>
 				<summary>Why is it buggy?</summary>
 				<p>Incompetence.</p>
 			</details>
-		</div>
+		</main>
 	);
 }

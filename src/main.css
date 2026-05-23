@@ -62,19 +62,15 @@ body {
 	font-weight: var(--weight-normal);
 
 	margin: 0;
-	height: 100vh;
 
 	#root {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		min-height: 100vh;
 
 		main {
-			display: flex;
-			flex-direction: column;
 			flex: 1;
 			min-height: 0;
-			padding: 16px;
 		}
 	}
 }

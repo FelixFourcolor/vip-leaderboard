@@ -1,7 +1,6 @@
 .chart-page {
-	margin-top: -5px; /* compensate for fieldset legend */
-	flex: 1;
-	min-height: 0;
+	margin: 16px;
+	margin-top: 11px; /* compensate for fieldset legend */
 	display: grid;
 	grid-template-columns: 1fr 12px auto;
 	grid-template-rows: 1fr 8px auto;

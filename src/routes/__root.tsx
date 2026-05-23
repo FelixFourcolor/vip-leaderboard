@@ -7,9 +7,7 @@ function RootComponent() {
 	return (
 		<>
 			<Header />
-			<main>
-				<Outlet />
-			</main>
+			<Outlet />
 		</>
 	);
 }

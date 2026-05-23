@@ -19,7 +19,7 @@
 		align-items: center;
 		white-space: nowrap;
 
-		gap: 20px;
+		gap: 24px;
 		@media (max-width: 500px) {
 			display: none;
 		}
@@ -28,6 +28,7 @@
 			font-size: var(--text-large);
 			font-weight: var(--weight-bold);
 			margin: 0;
+			color: var(--accent);
 		}
 
 		dl {
@@ -40,16 +41,6 @@
 			margin: 0;
 
 			font-size: var(--text-small);
-			color: var(--text-secondary);
-
-			&::before {
-				content: "(";
-				margin-right: -5px;
-			}
-			&::after {
-				content: ")";
-				margin-left: -5px;
-			}
 
 			dt {
 				&::after {
@@ -86,7 +77,7 @@
 
 			color: var(--text-secondary);
 			&.active {
-				color: var(--text-primary);
+				color: var(--accent);
 			}
 		}
 	}
