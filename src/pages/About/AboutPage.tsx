@@ -22,8 +22,6 @@ export function AboutPage() {
 			</p>
 
 			<h2>How work is counted</h2>
-			<p>Work is tracked separately in three categories:</p>
-
 			<h3>1. Resolved tickets</h3>
 			<p>Tracked channels:</p>
 			<ul>
@@ -99,72 +97,85 @@ export function AboutPage() {
 				ban.
 			</p>
 
-			<h3>Caveats</h3>
-			<p>
-				All of these scoring methods are based on educated guesses. For instance
-			</p>
-			<ul>
-				<li>
-					It&apos;s unlikely that you would react ✅ ❌ to something other than
-					a ticket.
-				</li>
-				<li>
-					It&apos;s unlikely that a message would contain 64 consecutive
-					alphanumeric characters but it would not be a warning or ban.
-				</li>
-				<li>
-					For <DiscordLink warning-log /> before the ban/warning/report split,
-					if the message contains the word &quot;warn&quot; it&apos;s probably a
-					warning, likewise for &quot;ban&quot;, and otherwise it&apos;s
-					probably a ticket.
-				</li>
-			</ul>
-			<p>
-				So don&apos;t take the data too seriously, it&apos;s just for funsies.
-				(The VIP payout multiplier is definitely real though.)
-			</p>
+			<details>
+				<summary>Caveats</summary>
+				<p>
+					All of these scoring methods are based on educated guesses. For
+					instance
+				</p>
+				<ul>
+					<li>
+						It&apos;s unlikely that you would react ✅ ❌ to something other
+						than a ticket.
+					</li>
+					<li>
+						It&apos;s unlikely that a message would contain 64 consecutive
+						alphanumeric characters but it would not be a warning or ban.
+					</li>
+					<li>
+						For <DiscordLink warning-log /> before the ban/warning/report split,
+						if the message contains the word &quot;warn&quot; it&apos;s probably
+						a warning, likewise for &quot;ban&quot;, and otherwise it&apos;s
+						probably a ticket.
+					</li>
+				</ul>
+				<p>
+					So don&apos;t take the data too seriously, it&apos;s just for funsies.
+					(The VIP payout multiplier is definitely real though.)
+				</p>
+			</details>
 
 			<h2>FAQs</h2>
+			<details>
+				<summary>
+					Why not include other channels such as <DiscordLink genderall />,{" "}
+					<DiscordLink questions />, <DiscordLink de-arrow />?
+				</summary>
+				<p>
+					Mostly for efficiency. These channels are more general-purpose than{" "}
+					<DiscordLink incorrect-submissions /> and{" "}
+					<DiscordLink report-a-user />. It&apos;s not worth scraping and
+					processing a huge amount of data to add a relatively small number of
+					points.
+				</p>
+			</details>
 
-			<h3>
-				Why not include other channels such as <DiscordLink genderall />,{" "}
-				<DiscordLink questions />, <DiscordLink de-arrow />?
-			</h3>
-			<p>
-				Mostly for efficiency. These channels are more general-purpose than{" "}
-				<DiscordLink incorrect-submissions /> and <DiscordLink report-a-user />.
-				It&apos;s not worth scraping and processing a huge amount of data to add
-				a relatively small number of points.
-			</p>
+			<details>
+				<summary>How did you come up with these scoring methods?</summary>
+				<p>
+					I want to approximate the amount of effort each action takes, with 1
+					unit of work = 1 point. For example, it takes the same effort to
+					propose a ban regardless of whether it&apos;s approved, that&apos;s
+					why approved and rejected bans are counted the same.
+				</p>
+				<p>
+					If you have other ideas for how to count points, let&apos;s talk about
+					it in the server and I&apos;ll follow the majority opinion.{" "}
+					<img
+						src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
+						alt="interaction reminder"
+					/>
+				</p>
+			</details>
 
-			<h3>How did you come up with these scoring methods?</h3>
-			<p>
-				I want to approximate the amount of effort each action takes, with 1
-				unit of work = 1 point. For example, it takes the same effort to propose
-				a ban regardless of whether it&apos;s approved, that&apos;s why approved
-				and rejected bans are counted the same.
-			</p>
-			<p>
-				If you have other ideas for how to count points, let&apos;s talk about
-				it in the server and I&apos;ll follow the majority opinion.{" "}
-				<img
-					src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
-					alt="interaction reminder"
-				/>
-			</p>
+			<details>
+				<summary>How often is the data updated?</summary>
+				<p>
+					I scrape the server once at the end of each month. But that also means
+					if you resolve a ticket from a previous month, it will not be counted.
+				</p>
+				<p>Bad, I know. But the data is already unreliable in other ways.</p>
+			</details>
 
-			<h3>How often is the data updated?</h3>
-			<p>
-				I scrape the server once at the end of each month. But that also means
-				if you resolve a ticket from a previous month, it will not be counted.
-			</p>
-			<p>Bad, I know. But the data is already unreliable in other ways.</p>
+			<details>
+				<summary>Can I opt out?</summary>
+				<p>Of course, let me know.</p>
+			</details>
 
-			<h3>Can I opt out?</h3>
-			<p>Of course, let me know.</p>
-
-			<h3>Why is it buggy?</h3>
-			<p>Incompetence.</p>
+			<details>
+				<summary>Why is it buggy?</summary>
+				<p>Incompetence.</p>
+			</details>
 		</div>
 	);
 }

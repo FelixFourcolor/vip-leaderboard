@@ -39,6 +39,7 @@
 		}
 		margin-bottom: 0;
 	}
+
 	h3 {
 		font-weight: var(--weight-semi-bold);
 		font-size: var(--text-large);
@@ -46,12 +47,25 @@
 		text-decoration-color: var(--text-secondary);
 		text-underline-offset: 2px;
 		margin-bottom: 0;
-		margin-top: 24px;
+		margin-top: 20px;
 		h2 + & {
-			margin-top: 16px;
+			margin-top: 14px;
 		}
 	}
-	p2 {
+
+	details {
+		margin-top: 20px;
+		h2 + & {
+			margin-top: 14px;
+		}
+
+		summary {
+			font-weight: var(--weight-semi-bold);
+			font-size: var(--text-large);
+		}
+	}
+
+	p {
 		margin: 14px 0;
 	}
 }
