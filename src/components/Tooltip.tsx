@@ -2,25 +2,42 @@ import {
 	autoUpdate,
 	flip,
 	offset as offsetMiddleware,
+	type Placement,
 	shift,
 	useFloating,
 } from "@floating-ui/react";
 import type { CSSProperties, JSX, Ref } from "react";
 import { createPortal } from "react-dom";
+import { useControlled } from "@/hooks/useControlled";
+
+type TooltipTriggerProps = {
+	ref: Ref<any>;
+	onMouseEnter?: () => void;
+	onMouseLeave?: () => void;
+};
+
+export type TooltipContentProps = {
+	ref?: Ref<any>;
+	style?: CSSProperties;
+};
 
 type Props = {
-	element: (props: { ref: Ref<any> }) => JSX.Element | null;
-	content: (props: { ref: Ref<any>; style: CSSProperties }) => JSX.Element;
+	trigger: (props: TooltipTriggerProps) => JSX.Element | null;
+	content: (props: TooltipContentProps) => JSX.Element;
 	offset?: number;
+	placement?: Placement;
+	open?: boolean;
 };
 
 export function Tooltip({
-	element: Element,
+	trigger: Trigger,
 	content: Content,
+	placement,
 	offset = 4,
+	open,
 }: Props) {
 	const { refs, floatingStyles } = useFloating({
-		placement: "top",
+		placement,
 		strategy: "absolute",
 		middleware: [
 			offsetMiddleware(offset),
@@ -30,13 +47,24 @@ export function Tooltip({
 		whileElementsMounted: autoUpdate,
 	});
 
+	const [isOpen, setIsOpen] = useControlled(open ?? false);
+
+	const hoverEvents = {
+		onMouseEnter: () => setIsOpen(true),
+		onMouseLeave: () => setIsOpen(false),
+	};
+
 	return (
 		<>
-			<Element ref={refs.setReference} />
-			{createPortal(
-				<Content ref={refs.setFloating} style={floatingStyles} />,
-				document.body,
-			)}
+			<Trigger
+				ref={refs.setReference}
+				{...(open === undefined ? hoverEvents : undefined)}
+			/>
+			{isOpen &&
+				createPortal(
+					<Content ref={refs.setFloating} style={floatingStyles} />,
+					document.body,
+				)}
 		</>
 	);
 }

@@ -1,7 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
-import { type CSSProperties, type Ref, useMemo } from "react";
-import { Tooltip } from "@/components/Tooltip";
+import { type Ref, useMemo } from "react";
+import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
 import { useChart } from "../context";
 import type { NivoPoint, NivoSeries } from "../TimeChart";
@@ -67,12 +67,10 @@ function IsolatedPoint({ series, color, data: { x } }: PointProps) {
 	);
 }
 
-export type PointTooltipProps<S extends TimeSeries> = {
+export type PointTooltipProps<S extends TimeSeries> = TooltipContentProps & {
 	data: TimePoint;
 	series: Omit<S, "data">;
 	seriesColor: string;
-	ref: Ref<any>;
-	style: CSSProperties;
 };
 
 function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
@@ -88,8 +86,10 @@ function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
 
 	return (
 		<Tooltip
+			open
+			placement="top"
 			offset={stacked ? -6 : 4}
-			element={({ ref }) => (
+			trigger={({ ref }) => (
 				<HighlightedPoint ref={ref} color={color} stacked={stacked} />
 			)}
 			content={({ ref, style }) => (
