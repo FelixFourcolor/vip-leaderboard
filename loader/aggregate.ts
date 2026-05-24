@@ -55,7 +55,7 @@ export function aggregate(channels: Channel[]) {
 
 			const date = new Date(timestamp);
 			// Before this date, bans and warnings were in the same channel.
-			// So only count if the post contains the word "warn"
+			// So only count if the message contains the word "warn"
 			if (date < bansChannelCreationDate && !content.match(/warn/i)) {
 				return;
 			}
@@ -70,21 +70,26 @@ export function aggregate(channels: Channel[]) {
 		});
 
 	const countBans = (messages: Message[]) =>
-		messages.forEach(({ author, content, reactions, timestamp }) => {
+		messages.forEach(({ author, content, reactions, embeds, timestamp }) => {
 			// Count the :verified: reactions on auto ban announcements
-			if (author.name === "Auto ban announcement") {
-				reactions
-					.filter((r) => r.emoji.code === "verified")
-					.flatMap((r) => r.users)
-					.map(getOrCreateUser)
-					.forEach((userId) =>
-						activitiesMap.set(`${timestamp}-${userId}`, {
-							date: new Date(timestamp),
-							userId,
-							type: "ban",
-						}),
-					);
+			const autoban = embeds.find((e) => e.title === "Auto banned user");
+			if (autoban) {
+				const date = new Date(timestamp);
+				const recipientIds = autoban.description.match(USER_ID_REGEX);
 
+				recipientIds?.forEach((recipientId) => {
+					reactions
+						.filter((r) => r.emoji.code === "verified")
+						.flatMap((r) => r.users)
+						.map(getOrCreateUser)
+						.forEach((userId) =>
+							activitiesMap.set(`${recipientId}-${userId}`, {
+								date,
+								userId,
+								type: "ban",
+							}),
+						);
+				});
 				return;
 			}
 
@@ -98,7 +103,7 @@ export function aggregate(channels: Channel[]) {
 
 			const date = new Date(timestamp);
 			// Before this date, bans and warnings were in the same channel.
-			// So only count if the post contains the word "ban"
+			// So only count if the message contains the word "ban"
 			if (date < bansChannelCreationDate && !content.match(/ban/i)) {
 				return;
 			}

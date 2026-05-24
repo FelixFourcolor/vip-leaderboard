@@ -95,8 +95,8 @@ export function AboutPage() {
 					<p>Approved and rejected bans are counted the same.</p>
 					<p>
 						Reacting <img src="./icon.png" width="16" alt="verified" /> to an
-						auto ban announcement earns 1 point, but only 1 even if it&apos;s a
-						batch ban.
+						auto ban announcement earns 1 point. Batch autobans count multiple
+						times.
 					</p>
 				</Subsection>
 

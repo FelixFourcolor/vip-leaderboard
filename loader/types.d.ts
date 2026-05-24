@@ -14,12 +14,18 @@ type Reaction = {
 	users: User[];
 };
 
+type Embed = {
+	title: string;
+	description: string;
+};
+
 export type Message = {
 	id: MessageId;
 	timestamp: string;
 	author: User;
 	content: string;
 	reactions: Reaction[];
+	embeds: Embed[];
 };
 
 export type Channel = {
