@@ -17,7 +17,7 @@ import { Labels } from "./layers/Labels";
 import { Lines } from "./layers/Lines";
 import { Points } from "./layers/Points";
 import styles from "./TimeChart.module.css";
-import type { TimeSeries } from "./TimeChartProvider";
+import type { TimeSeries } from "./Wrapper";
 
 const cx = classNames.bind(styles);
 
@@ -26,7 +26,7 @@ export type NivoPoint = { x: Date; y: number | null };
 
 type NivoProps = ComponentProps<typeof ResponsiveLine<NivoSeries>>;
 
-type TimeChartProps = {
+type LineProps = {
 	margin?: NivoProps["margin"];
 	axisLeft?: Pick<
 		NonNullable<NivoProps["axisLeft"]>,
@@ -34,7 +34,8 @@ type TimeChartProps = {
 	>;
 	className?: string;
 };
-export function TimeChart({ className, ...configs }: TimeChartProps) {
+
+export function Chart({ className, ...configs }: LineProps) {
 	const data = useNivoData();
 	const colors = useColors();
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(configs);
@@ -145,7 +146,7 @@ function useColors() {
 const fontSize = 12;
 const gap = 12;
 const labelWidth = 7 * fontSize * 0.6 + gap;
-function useHorizontalScale({ margin }: TimeChartProps) {
+function useHorizontalScale({ margin }: LineProps) {
 	const { xValues } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
@@ -230,7 +231,7 @@ function findMaxClamped(
 
 	return stacked ? whenStacked() : whenNotStacked();
 }
-function useVerticalScale({ axisLeft }: TimeChartProps) {
+function useVerticalScale({ axisLeft }: LineProps) {
 	const { chartData = [], stacked } = useChart();
 
 	return useMemo(() => {

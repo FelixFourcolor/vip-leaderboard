@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
-import { Legend, TimeChart, TimeChartProvider } from "@/components/TimeChart";
+import { TimeChart } from "@/components/TimeChart";
 import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
 import styles from "./ChartPage.module.css";
 import { ControlPanel, categoryLabels, useChartControls } from "./ControlPanel";
@@ -35,10 +35,10 @@ export function ChartPage() {
 
 	return (
 		<main className={cx("chart-page")}>
-			<TimeChartProvider data={data} {...controls} PointTooltip={PointTooltip}>
+			<TimeChart data={data} {...controls} PointTooltip={PointTooltip}>
 				<fieldset className={cx("chart")}>
 					<legend>chart</legend>
-					<TimeChart
+					<TimeChart.Chart
 						margin={{ top: 22, right: 34, bottom: 30, left: 70 }}
 						axisLeft={{
 							legendOffset: -54,
@@ -48,9 +48,9 @@ export function ChartPage() {
 					/>
 				</fieldset>
 				<SidePanel>
-					<Legend Entry={LegendEntry} className={cx("legend")} />
+					<TimeChart.Legend Entry={LegendEntry} className={cx("legend")} />
 				</SidePanel>
-			</TimeChartProvider>
+			</TimeChart>
 			<ControlPanel />
 		</main>
 	);

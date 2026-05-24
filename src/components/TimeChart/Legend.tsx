@@ -15,7 +15,7 @@ import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
 import { useChart } from "./context";
 import styles from "./TimeChart.module.css";
-import type { TimeSeries } from "./TimeChartProvider";
+import type { TimeSeries } from "./Wrapper";
 
 const cx = classNames.bind(styles);
 

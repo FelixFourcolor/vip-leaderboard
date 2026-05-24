@@ -3,10 +3,10 @@ import classNames from "classnames/bind";
 import { type Ref, useMemo } from "react";
 import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
+import type { NivoPoint, NivoSeries } from "../Chart";
 import { useChart } from "../context";
-import type { NivoPoint, NivoSeries } from "../TimeChart";
 import styles from "../TimeChart.module.css";
-import type { TimePoint, TimeSeries } from "../TimeChartProvider";
+import type { TimePoint, TimeSeries } from "../Wrapper";
 
 const cx = classNames.bind(styles);
 

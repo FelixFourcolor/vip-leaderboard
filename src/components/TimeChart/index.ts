@@ -1,8 +1,9 @@
 export { useChart } from "./context";
-export { Legend, type LegendEntryProps } from "./Legend";
+export type { LegendEntryProps } from "./Legend";
 export type { PointTooltipProps } from "./layers/Points.tsx";
-export { TimeChart } from "./TimeChart";
-export {
-	TimeChartContext as TimeChartProvider,
-	type TimePoint,
-} from "./TimeChartProvider";
+
+import { Chart } from "./Chart";
+import { Legend } from "./Legend";
+import { Wrapper } from "./Wrapper";
+
+export const TimeChart = Object.assign(Wrapper, { Chart, Legend });

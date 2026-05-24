@@ -21,7 +21,7 @@ type Props<S extends TimeSeries> = {
 	children: ReactNode;
 };
 
-export function TimeChartContext<S extends TimeSeries>({
+export function Wrapper<S extends TimeSeries>({
 	data,
 	since,
 	until,
@@ -40,7 +40,7 @@ export function TimeChartContext<S extends TimeSeries>({
 	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
 
 	return (
-		<ChartContext.Provider
+		<ChartContext
 			value={{
 				data,
 				chartData,
@@ -59,7 +59,7 @@ export function TimeChartContext<S extends TimeSeries>({
 			}}
 		>
 			{children}
-		</ChartContext.Provider>
+		</ChartContext>
 	);
 }
 
@@ -111,7 +111,7 @@ function useTransform<S extends TimeSeries>(
 			const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
 			const continuousPoints = xValues.map((x, index) => {
 				// Only interpolate the points between the first and last non-null values
-				// to keep the graph clean
+				// to keep the Chart clean
 				if (firstNonNull <= index && index <= lastNonNull) {
 					return { x, y: pointMapping[x] ?? 0 };
 				}
