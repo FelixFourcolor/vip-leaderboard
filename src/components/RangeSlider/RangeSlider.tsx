@@ -1,4 +1,13 @@
-import { type Dispatch, useCallback, useEffect, useRef, useState } from "react";
+import { isEqual } from "es-toolkit";
+import debounce from "es-toolkit/compat/debounce";
+import {
+	type Dispatch,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { Range } from "react-range";
 import { useControlled } from "@/hooks/useControlled";
 import type { Pair } from "@/utils/types";
@@ -32,91 +41,80 @@ export function RangeSlider<Value>({
 			];
 		}, [domain, selectedFrom, selectedTo]),
 	);
-
-	// dragging = actually dragging
-	// active = either dragging or recently dragged
-	const [isDragging, setIsDragging] = useState<Pair<boolean>>([false, false]);
-	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
-	// biome-ignore format: one line
-	const dragTimeoutRef = useRef<Pair<number | undefined>>([undefined, undefined]);
-
-	const activateThumb = useCallback((index: number) => {
-		setIsActive((current) => {
-			const updated = [...current] as Pair<boolean>;
-			updated[index] = true;
-			return updated;
-		});
-		clearTimeout(dragTimeoutRef.current[index]);
-		dragTimeoutRef.current[index] = setTimeout(() => {
-			setIsActive((current) => {
-				const updated = [...current] as Pair<boolean>;
-				updated[index] = false;
-				return updated;
-			});
-		}, 2000);
-	}, []);
-
+	const onChangeDebounced = useMemo(() => debounce(onChange, 50), [onChange]);
 	const setValues = useCallback(
 		(updater: (_: Pair<number>) => Pair<number>) => {
 			_setValues((current) => {
 				const updated = updater(current);
-
-				if (updated[0] !== current[0] && updated[1] !== current[1]) {
-					setIsDragging([true, true]);
-				} else if (updated[0] !== current[0]) {
-					setIsDragging([true, false]);
-				} else if (updated[1] !== current[1]) {
-					setIsDragging([false, true]);
-				} else {
-					setIsDragging([false, false]);
+				if (isEqual(current, updated)) {
+					return current;
 				}
-				updated.forEach((value, i) => {
-					if (value !== current[i]) {
-						activateThumb(i);
-					}
-				});
-
+				const fromValue = domain[updated[0]];
+				const toValue = domain[updated[1]];
+				if (fromValue !== undefined && toValue !== undefined) {
+					onChangeDebounced([fromValue, toValue]);
+				}
 				return updated;
 			});
 		},
-		[activateThumb, _setValues],
+		[_setValues, domain, onChangeDebounced],
 	);
 
-	const onValueChange = useCallback(
-		(values: number[]) => {
-			let [from, to] = values as [number, number];
-			setValues(([currentFrom, currentTo]) => {
-				const distance = to - from;
-				if (distance < minDistance) {
-					if (from === currentFrom) {
-						to = from + minDistance;
-					} else {
-						from = to - minDistance;
-					}
-				} else if (distance > maxDistance) {
-					if (from === currentFrom) {
-						to = from + maxDistance;
-					} else {
-						from = to - maxDistance;
-					}
-				}
-				if (from < 0 || to >= domain.length) {
-					return [currentFrom, currentTo];
-				}
-				return [from, to];
-			});
-		},
-		[setValues, minDistance, maxDistance, domain.length],
-	);
+	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
+	const [isFocused, setIsFocused] = useState<Pair<boolean>>([false, false]);
+	// biome-ignore format: one line
+	const dragTimeoutRef = useRef<Pair<number | undefined>>([undefined, undefined]);
 
-	useEffect(() => {
-		const fromValue = domain[values[0]!];
-		const toValue = domain[values[1]!];
-		if (fromValue !== undefined && toValue !== undefined) {
-			onChange([fromValue, toValue]);
+	const activateThumb = useCallback((...indices: number[]) => {
+		if (indices.length === 0) {
+			indices = [0, 1];
 		}
-	}, [values, onChange, domain]);
+		indices.forEach((i) => {
+			setIsActive((current) => {
+				const updated = [...current] as Pair<boolean>;
+				updated[i] = true;
+				return updated;
+			});
+			clearTimeout(dragTimeoutRef.current[i]);
+			dragTimeoutRef.current[i] = setTimeout(() => {
+				setIsActive((current) => {
+					const updated = [...current] as Pair<boolean>;
+					updated[i] = false;
+					return updated;
+				});
+			}, 2000);
+		});
+	}, []);
 
+	const onDrag = (values: number[]) => {
+		let [from, to] = values as [number, number];
+		setValues(([currentFrom, currentTo]) => {
+			activateThumb(from === currentFrom ? 1 : 0);
+
+			const distance = to - from;
+			if (distance < minDistance) {
+				// If "from" is not moving, adjust it to keep distance with "to".
+				// This allows the moving thumb to push the other, instead of being blocked.
+				if (from === currentFrom) {
+					from = to - minDistance;
+				} else {
+					to = from + minDistance;
+				}
+			} else if (distance > maxDistance) {
+				if (from === currentFrom) {
+					from = to - maxDistance;
+				} else {
+					to = from + maxDistance;
+				}
+			}
+
+			if (from < 0 || to >= domain.length) {
+				return [currentFrom, currentTo];
+			}
+
+			return [from, to];
+		});
+	};
 	const onShift = (delta: number) => {
 		if (!delta) {
 			return;
@@ -132,15 +130,16 @@ export function RangeSlider<Value>({
 				to = domain.length - 1;
 				from = to - currentDistance;
 			}
+
+			activateThumb();
 			return [from, to];
 		});
 	};
-
 	const onZoom = (delta: number) => {
 		if (!delta) {
 			return;
 		}
-		setValues(([currentFrom, currentTo]) => {
+		_setValues(([currentFrom, currentTo]) => {
 			let from = currentFrom - delta;
 			let to = currentTo + delta;
 			if (from < 0) {
@@ -161,6 +160,7 @@ export function RangeSlider<Value>({
 				to -= Math.ceil(adjustment / 2);
 			}
 
+			activateThumb();
 			return [from, to];
 		});
 	};
@@ -197,7 +197,7 @@ export function RangeSlider<Value>({
 	return (
 		<Range
 			values={values}
-			onChange={onValueChange}
+			onChange={onDrag}
 			min={0}
 			step={1}
 			max={max}
@@ -225,11 +225,15 @@ export function RangeSlider<Value>({
 				<Thumb
 					{...thumbProps}
 					key={index}
-					onFocus={() => activateThumb(index)}
+					kind={index === 0 ? "from" : "to"}
+					onFocus={() => {
+						activateThumb(index);
+						setIsFocused([index === 0, index === 1]);
+					}}
+					onBlur={() => setIsFocused([false, false])}
 					label={domain[values[index]!]}
 					labelRef={[fromLabelRef, toLabelRef][index]}
-					hideLabel={!isActive[index] || (labelsOverlap && !isDragging[index])}
-					kind={index === 0 ? "from" : "to"}
+					showLabel={isActive[index] && (isFocused[index] || !labelsOverlap)}
 				/>
 			)}
 		/>

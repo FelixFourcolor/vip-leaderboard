@@ -6,14 +6,14 @@ const cx = classNames.bind(styles);
 
 export type ThumbProps = ComponentProps<"div"> & {
 	label?: unknown;
-	hideLabel?: boolean;
+	showLabel?: boolean;
 	labelRef?: Ref<HTMLSpanElement>;
 	kind: "from" | "to";
 };
 
 export function Thumb({
 	label,
-	hideLabel,
+	showLabel,
 	labelRef,
 	kind,
 	className,
@@ -22,7 +22,7 @@ export function Thumb({
 	return (
 		<div {...props} className={cx("thumb", kind, className)}>
 			{label != null && (
-				<span ref={labelRef} className={cx("label", { hidden: hideLabel })}>
+				<span ref={labelRef} className={cx("label", { hidden: !showLabel })}>
 					{String(label)}
 				</span>
 			)}
