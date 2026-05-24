@@ -45,7 +45,7 @@ export function Wrapper({ children, placement, offset = 8 }: Props) {
 	});
 
 	return (
-		<LocalMenuContext.Provider
+		<LocalMenuContext
 			value={{
 				menuId,
 				menuStyles: floatingStyles,
@@ -54,7 +54,7 @@ export function Wrapper({ children, placement, offset = 8 }: Props) {
 			}}
 		>
 			{children}
-		</LocalMenuContext.Provider>
+		</LocalMenuContext>
 	);
 }
 

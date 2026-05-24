@@ -22,9 +22,9 @@ export function GrabManager({ children }: { children: ReactNode }) {
 	}, []);
 
 	return (
-		<GrabbingContext.Provider value={{ isGrabbing, setIsGrabbing }}>
+		<GrabbingContext value={{ isGrabbing, setIsGrabbing }}>
 			{children}
-		</GrabbingContext.Provider>
+		</GrabbingContext>
 	);
 }
 

@@ -29,8 +29,8 @@ export function Manager({ children }: { children: ReactNode }) {
 	}, [activeMenuId]);
 
 	return (
-		<GlobalMenuContext.Provider value={{ activeMenuId, setActiveMenuId }}>
+		<GlobalMenuContext value={{ activeMenuId, setActiveMenuId }}>
 			{children}
-		</GlobalMenuContext.Provider>
+		</GlobalMenuContext>
 	);
 }

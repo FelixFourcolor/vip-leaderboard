@@ -73,9 +73,9 @@ export function ResizeManager({ children }: { children: ReactNode }) {
 	}, [onMouseMove, onResizeEnd]);
 
 	return (
-		<ResizeContext.Provider value={{ isResizing, delta, onResize }}>
+		<ResizeContext value={{ isResizing, delta, onResize }}>
 			{children}
-		</ResizeContext.Provider>
+		</ResizeContext>
 	);
 }
 
