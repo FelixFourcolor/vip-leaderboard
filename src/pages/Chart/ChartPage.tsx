@@ -20,12 +20,16 @@ export function ChartPage() {
 	}, [since, until, types]);
 
 	useEffect(() => {
-		const root = document.getElementById("root")!;
 		// fix max height to prevent layout shift on load
 		// but only for this page
+		const root = document.getElementById("root")!;
+
 		root.style.maxHeight = "100vh";
+		document.body.style.overflow = "hidden";
+
 		return () => {
 			root.style.maxHeight = "";
+			document.body.style.overflow = "";
 		};
 	}, []);
 
