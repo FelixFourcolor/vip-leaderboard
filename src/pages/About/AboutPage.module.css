@@ -2,11 +2,11 @@
 	line-height: 1.5;
 	max-width: 800px;
 	align-self: center;
-	margin: 20px 32px;
+	margin: 24px 32px;
 
 	ol,
 	ul {
-		margin-top: -9px;
+		margin-top: -7px;
 		margin-bottom: 15px;
 
 		li {
@@ -30,8 +30,8 @@
 	h2 {
 		font-weight: var(--weight-bold);
 		font-size: var(--text-very-large);
-		padding: 4px 12px;
-		margin-left: -12px;
+		padding: 2px 8px;
+		margin-left: -8px;
 		background: var(--bg-secondary);
 		margin-top: 24px;
 		&:first-child {
@@ -44,7 +44,7 @@
 		font-weight: var(--weight-semi-bold);
 		font-size: var(--text-large);
 		text-decoration: underline;
-		text-decoration-color: var(--text-secondary);
+		text-decoration-color: var(--text-tertiary);
 		text-underline-offset: 2px;
 		margin-bottom: 0;
 		margin-top: 20px;
@@ -62,6 +62,9 @@
 		summary {
 			font-weight: var(--weight-semi-bold);
 			font-size: var(--text-large);
+		}
+		&[open] summary {
+			border-bottom: 1px solid var(--text-tertiary);
 		}
 	}
 
