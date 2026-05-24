@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Toggle } from "@/components/Toggle";
-import { getUser, type UserData } from "@/db/user";
+import { getUser, type User } from "@/db/user";
 import { setIsZack, useIsZack } from "@/hooks/useIsZack";
 
 export function ZackToggle() {
 	const isZack = useIsZack();
 
-	const [zackData, setZackData] = useState<UserData | undefined>();
+	const [zackData, setZackData] = useState<User | undefined>();
 	useEffect(() => {
 		getUser("zackwb").then(setZackData);
 	}, []);

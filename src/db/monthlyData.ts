@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
-import type { TimePoint } from "@/components/TimeChart";
+import type { TimeSeries } from "@/components/TimeChart";
 import { pick } from "@/utils/object";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
@@ -8,9 +8,7 @@ import type { RankingParams, UserRanking } from "./ranking";
 import { activity, user } from "./schema";
 import { userFields } from "./user";
 
-export interface UserMonthlyData extends UserRanking {
-	data: TimePoint[];
-}
+export interface UserMonthlyData extends UserRanking, TimeSeries {}
 
 export async function getMonthlyData({
 	since,

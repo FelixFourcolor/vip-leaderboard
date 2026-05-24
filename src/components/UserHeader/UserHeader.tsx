@@ -1,11 +1,11 @@
 import classNames from "classnames/bind";
 import { useState } from "react";
-import type { UserData } from "@/db/user";
+import type { User } from "@/db/user";
 import styles from "./UserHeader.module.css";
 
 const cx = classNames.bind(styles);
 
-export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
+export function UserHeader({ name, avatarUrl, color }: Partial<User>) {
 	const [imgError, setImgError] = useState(false);
 
 	return (
@@ -18,7 +18,7 @@ export function UserHeader({ name, avatarUrl, color }: Partial<UserData>) {
 					alt={`${name}'s avatar`}
 				/>
 			)}
-			<div style={{ color: color ?? undefined }} className={cx("name")}>
+			<div style={color ? { color } : undefined} className={cx("name")}>
 				{name}
 			</div>
 		</div>

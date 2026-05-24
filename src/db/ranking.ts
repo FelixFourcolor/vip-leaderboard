@@ -1,8 +1,9 @@
+
 import { and, asc, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
 import { type ActivityType, activity, user } from "./schema";
-import { type UserData, userFields } from "./user";
+import { type User, userFields } from "./user";
 
 export type RankingParams = {
 	since?: YyyyMm;
@@ -10,7 +11,7 @@ export type RankingParams = {
 	types?: ActivityType[];
 };
 
-export interface UserRanking extends UserData {
+export interface UserRanking extends User {
 	rank: number;
 	count: number;
 }
