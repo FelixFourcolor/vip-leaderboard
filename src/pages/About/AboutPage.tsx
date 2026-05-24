@@ -37,16 +37,13 @@ export function AboutPage() {
 				</li>
 			</ul>
 			<p>
-				Any message with one of these reactions ✅ ❌ 🔒 🗑️ is considered a
+				Any message with one of these reactions ✅/❌/🔒/🗑️ is considered a
 				ticket.
 			</p>
 			<p>
 				Each VIP earns 1 point for each ticket they resolve. If multiple VIPs
 				work on the same ticket (e.g. one reacts ✅, another reacts 🔒),
 				everyone involved earns 1 point.
-			</p>
-			<p>
-				(⚠️ 🔨 are not counted to avoid double counting with warnings and bans.)
 			</p>
 
 			<h3>2. Warnings</h3>
@@ -87,7 +84,7 @@ export function AboutPage() {
 				once for each recipient.
 			</p>
 			<p>
-				Any other VIP who reacts to a ban message with 👍 👎 🔨 ✅ ❌ also earns
+				Any other VIP who reacts to a ban message with 👍/👎/🔨/✅/❌ also earns
 				1 point, but only 1 even if it&apos;s a batch ban.
 			</p>
 			<p>Approved and rejected bans are counted the same.</p>
@@ -100,28 +97,26 @@ export function AboutPage() {
 			<details>
 				<summary>Caveats</summary>
 				<p>
-					All of these scoring methods are based on educated guesses. For
-					instance
+					All of these scoring methods are based on educated guesses such as:
 				</p>
 				<ul>
 					<li>
-						It&apos;s unlikely that you would react ✅ ❌ to something other
-						than a ticket.
+						If a message has a ✅/❌ reaction, it&apos;s probably a ticket.
 					</li>
 					<li>
-						It&apos;s unlikely that a message would contain 64 consecutive
-						alphanumeric characters but it would not be a warning or ban.
+						If a message contains 64 consecutive alphanumeric characters,
+						that&apos;s probably a user ID, so it&apos;s probably a ban/warning
+						based on the channel.
 					</li>
 					<li>
-						For <DiscordLink warning-log /> before the ban/warning/report split,
-						if the message contains the word &quot;warn&quot; it&apos;s probably
-						a warning, likewise for &quot;ban&quot;, and otherwise it&apos;s
-						probably a ticket.
+						Before the ban/warning channel split, it&apos;s good enough to check
+						whether the message contains the word &quot;ban&quot; or
+						&quot;warn&quot;.
 					</li>
 				</ul>
 				<p>
-					So don&apos;t take the data too seriously, it&apos;s just for funsies.
-					(The VIP payout multiplier is definitely real though.)
+					Good enough guesses for a fun project, but don&apos;t take the data
+					too seriously. (The VIP payout multiplier is definitely real though.)
 				</p>
 			</details>
 
@@ -150,7 +145,7 @@ export function AboutPage() {
 				</p>
 				<p>
 					If you have other ideas for how to count points, let&apos;s talk about
-					it in the server and I&apos;ll follow the majority opinion.{" "}
+					it in the server and I&apos;ll follow the consensus opinion.{" "}
 					<img
 						src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
 						alt="interaction reminder"
@@ -161,10 +156,30 @@ export function AboutPage() {
 			<details>
 				<summary>How often is the data updated?</summary>
 				<p>
-					I scrape the server once at the end of each month. But that also means
-					if you resolve a ticket from a previous month, it will not be counted.
+					I scrape the server once at the end of each month. That also means if
+					you resolve a ticket from a previous month, it will not be counted.
 				</p>
 				<p>Bad, I know. But the data is already unreliable in other ways.</p>
+			</details>
+
+			<details>
+				<summary>Why only count the last 2 years?</summary>
+				<p>
+					I think 2 years is a good balance that gives a nod to the old
+					generation while also giving new VIPs a chance to compete. And it's
+					more exciting to check back every month, because the rankings are more
+					likely to change.
+				</p>
+				<p>
+					Also, <DiscordLink report-a-user /> was separated from{" "}
+					<DiscordLink warning-log /> in June 2024, coincidentally around 2
+					years before the start of this project. So it&apos;s a good cutoff for
+					the most reliable data.
+				</p>
+				<p>
+					You can drag the time slider all the way back if you want, but the
+					canonical ranking is based on the last 2 years.
+				</p>
 			</details>
 
 			<details>
