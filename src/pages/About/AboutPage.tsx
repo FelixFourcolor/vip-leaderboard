@@ -19,11 +19,13 @@ export function AboutPage() {
 				</p>
 				<p>
 					Whoever ranks top each month will get 2x the regular VIP payout.
-					(Which is still $0, but it&apos;s the thought that counts.)
+					<aside>
+						(Which is still $0, but it&apos;s the thought that counts.)
+					</aside>
 				</p>
 			</Section>
 
-			<Section title="How work is counted">
+			<Section title="How &quot;work&quot; is counted">
 				<Subsection title="1. Resolved tickets">
 					<p>Tracked channels:</p>
 					<ul>
@@ -35,7 +37,7 @@ export function AboutPage() {
 						</li>
 						<li>
 							<DiscordLink warning-log /> before June 14 2024 (back then it
-							served both purposes as warning log and user report)
+							served both as warning log and user report)
 						</li>
 					</ul>
 					<p>
@@ -55,13 +57,16 @@ export function AboutPage() {
 					</p>
 					<p>
 						Warnings are detected by the presence of a user ID in the message
-						content. (Oops{" "}
-						<img
-							src="https://cdn.discordapp.com/emojis/1269432955059568710.png"
-							width="16"
-							alt="mschae restaurant"
-						/>
-						)
+						content.
+						<aside>
+							(Oops{" "}
+							<img
+								src="https://cdn.discordapp.com/emojis/1269432955059568710.png"
+								width="16"
+								alt="mschae restaurant"
+							/>
+							)
+						</aside>
 					</p>
 					<p>
 						Each VIP earns 1 point for each warning. Batch warnings count
@@ -120,9 +125,16 @@ export function AboutPage() {
 						</li>
 					</ul>
 					<p>
-						Good enough guesses for a fun project, but don&apos;t take the data
-						too seriously. (The VIP payout multiplier is definitely real
-						though.)
+						These are reasonable assumptions for a fun project, but don&apos;t
+						take the data too seriously.
+						<aside>(The payout multiplier is definitely real though.)</aside>
+					</p>
+					<p>
+						If you are curious, the entire scoring logic is in{" "}
+						<a href="https://github.com/FelixFourcolor/vip-leaderboard/blob/main/loader/scoring.ts">
+							loader/scoring.ts
+						</a>
+						.
 					</p>
 				</Subsection>
 			</Section>
@@ -144,7 +156,7 @@ export function AboutPage() {
 						points.
 					</p>
 				</Subsection>
-				<Subsection title="How did you come up with these scoring methods?">
+				<Subsection title="How did you decide these scoring methods?">
 					<p>
 						I want to approximate the amount of effort each action takes, with 1
 						unit of work = 1 point. For example, it takes the same effort to
@@ -153,11 +165,13 @@ export function AboutPage() {
 					</p>
 					<p>
 						If you have other ideas for how to count points, let&apos;s talk
-						about it in the server and I&apos;ll follow the consensus opinion.{" "}
-						<img
-							src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
-							alt="interaction reminder"
-						/>
+						about it in the server and I&apos;ll follow the consensus opinion.
+						<aside>
+							<img
+								src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
+								alt="interaction reminder"
+							/>
+						</aside>
 					</p>
 				</Subsection>
 

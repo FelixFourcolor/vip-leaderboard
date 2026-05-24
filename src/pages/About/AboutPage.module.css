@@ -12,8 +12,17 @@
 			text-decoration: underline;
 		}
 	}
+
 	img {
 		vertical-align: middle;
+	}
+
+	aside {
+		display: inline;
+		color: var(--text-secondary);
+		&::before {
+			content: " ";
+		}
 	}
 }
 
