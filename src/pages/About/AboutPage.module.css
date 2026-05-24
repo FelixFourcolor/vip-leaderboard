@@ -1,18 +1,8 @@
 .about-page {
-	line-height: 1.5;
+	line-height: 1.4;
 	max-width: 800px;
 	align-self: center;
 	margin: 24px 32px;
-
-	ol,
-	ul {
-		margin-top: -7px;
-		margin-bottom: 15px;
-
-		li {
-			margin: 6px 0;
-		}
-	}
 
 	a {
 		color: var(--accent);
@@ -22,54 +12,80 @@
 			text-decoration: underline;
 		}
 	}
-
 	img {
 		vertical-align: middle;
 	}
+}
 
-	h2 {
-		font-weight: var(--weight-bold);
-		font-size: var(--text-very-large);
+section {
+	&:not(:last-child) {
+		margin-bottom: 30px;
+	}
+
+	.header {
 		padding: 2px 8px;
 		margin-left: -8px;
+		margin-bottom: 15px;
 		background: var(--bg-secondary);
-		margin-top: 24px;
-		&:first-child {
-			margin-top: 0;
+		display: flex;
+		justify-content: space-between;
+
+		h1 {
+			font-weight: var(--weight-bold);
+			font-size: var(--text-very-large);
+			margin-left: -8px;
+			margin: 0;
 		}
-		margin-bottom: 0;
+
+		button {
+			font-size: var(--text-small);
+			outline: none;
+			padding: 0;
+			background: none;
+
+			color: var(--accent);
+			&:hover {
+				text-decoration: underline;
+			}
+			&:focus-visible {
+				outline: 1px solid var(--accent);
+			}
+		}
 	}
 
-	h3 {
-		font-weight: var(--weight-semi-bold);
-		font-size: var(--text-large);
-		text-decoration: underline;
-		text-decoration-color: var(--text-tertiary);
-		text-underline-offset: 2px;
-		margin-bottom: 0;
-		margin-top: 20px;
-		h2 + & {
-			margin-top: 14px;
-		}
-	}
-
-	details {
-		margin-top: 20px;
-		h2 + & {
-			margin-top: 14px;
+	.subsection {
+		&:not(:last-child) {
+			margin-bottom: 22px;
 		}
 
-		summary {
+		.subheader {
 			font-weight: var(--weight-semi-bold);
 			font-size: var(--text-large);
-		}
-		&[open] summary {
 			border-bottom: 1px solid var(--text-tertiary);
+			&::marker {
+				color: var(--text-secondary);
+			}
+		}
+		&[open] .subheader {
+			margin-bottom: 13px;
 		}
 	}
 
 	p {
-		margin: 14px 0;
+		margin: 0;
+		&:not(:last-child) {
+			margin-bottom: 14px;
+		}
+	}
+
+	ol,
+	ul {
+		margin-top: -6px;
+		margin-bottom: 15px;
+
+		li {
+			margin: 7px 0;
+		}
 	}
 }
 
