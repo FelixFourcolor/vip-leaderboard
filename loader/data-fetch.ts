@@ -4,12 +4,12 @@ import type { Channel } from "./types";
 
 const dataDir = "data-repo/data";
 
-export const getCurrentData = () =>
+export const fetchCurrentData = () =>
 	Promise.all(
 		ls(dataDir).map((file) => readJson<Channel>(`${dataDir}/${file}`)),
 	);
 
-export const getUpdates = () =>
+export const fetchUpdates = () =>
 	Promise.all(
 		ls(dataDir).map(async (file) => {
 			const { channel, messages } = await readJson<Channel>(
@@ -17,7 +17,7 @@ export const getUpdates = () =>
 			);
 			const lastUpdate = messages[messages.length - 1]!.id;
 
-			const update = await fetch(channel.id, lastUpdate);
+			const update = await getChannelHistory(channel.id, lastUpdate);
 			await writeJson(`${dataDir}/${file}`, {
 				channel: { id: channel.id },
 				messages: [...messages, ...update.messages],
@@ -27,7 +27,7 @@ export const getUpdates = () =>
 		}),
 	);
 
-async function fetch(channelId: string, afterMessageId: string) {
+async function getChannelHistory(channelId: string, afterMessageId: string) {
 	const dataFile = `${channelId}-${afterMessageId}.json`;
 	await new Promise<void>((resolve) => {
 		spawn(

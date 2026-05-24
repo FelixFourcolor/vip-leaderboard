@@ -1,7 +1,3 @@
-type ChannelId = string;
-type MessageId = string;
-export type LastUpdateData = Record<ChannelId, MessageId>;
-
 export type User = {
 	name: string;
 	nickname: string;
@@ -20,7 +16,7 @@ type Embed = {
 };
 
 export type Message = {
-	id: MessageId;
+	id: string;
 	timestamp: string;
 	author: User;
 	content: string;
@@ -29,6 +25,6 @@ export type Message = {
 };
 
 export type Channel = {
-	channel: { id: ChannelId };
+	channel: { id: string };
 	messages: Message[];
 };

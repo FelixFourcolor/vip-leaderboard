@@ -7,7 +7,7 @@ import { pick } from "@/utils/object";
 export type UserData = typeof user.$inferInsert;
 export type ActivityData = typeof activity.$inferInsert;
 
-export function writeToDB(data: {
+export function saveToDB(data: {
 	users: UserData[];
 	activities: ActivityData[];
 }) {

@@ -7,7 +7,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"tscheck": "tsc --noEmit -p tsconfig.proj.json ; tsc --noEmit -p tsconfig.app.json",
-		"db-reload": "rm public/db.sqlite; drizzle-kit push && tsx --tsconfig tsconfig.proj.json loader/main.ts reload",
+		"db-reload": "rm public/db.sqlite; drizzle-kit push && tsx --tsconfig tsconfig.proj.json loader/main.ts",
 		"db-update": "tsx --tsconfig tsconfig.proj.json loader/main.ts update"
 	},
 	"dependencies": {

@@ -1,7 +1,7 @@
-import type { ActivityData, UserData } from "./db";
+import type { ActivityData, UserData } from "./data-save";
 import type { Channel, Message, User } from "./types";
 
-export function aggregate(channels: Channel[]) {
+export function countActivities(channels: Channel[]) {
 	const usersMap = new Map<string, UserData>();
 	const activitiesMap = new Map<string, ActivityData>();
 
