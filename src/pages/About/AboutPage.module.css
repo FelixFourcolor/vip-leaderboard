@@ -23,8 +23,8 @@ section {
 	}
 
 	.header {
-		padding: 2px 8px;
-		margin-left: -8px;
+		padding: 4px 12px;
+		margin-left: -12px;
 		margin-bottom: 15px;
 		background: var(--bg-secondary);
 		display: flex;
@@ -33,17 +33,16 @@ section {
 		h1 {
 			font-weight: var(--weight-bold);
 			font-size: var(--text-very-large);
-			margin-left: -8px;
 			margin: 0;
 		}
 
 		button {
 			font-size: var(--text-small);
 			outline: none;
-			padding: 0;
+			padding: 0 2px;
 			background: none;
 
-			color: var(--accent);
+			color: var(--text-secondary);
 			&:hover {
 				text-decoration: underline;
 			}
