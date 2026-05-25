@@ -10,6 +10,11 @@ export function Header() {
 	return (
 		<header className={cx("header")}>
 			<div>
+				<img
+					src="./icon.png"
+					alt="VIP leaderboard logo"
+					className={cx("logo")}
+				/>
 				<h1>VIP leaderboard</h1>
 				<dl>
 					<dt>Last update</dt>
@@ -35,6 +40,7 @@ export function Header() {
 					rel="noopener noreferrer"
 				>
 					<img
+						className={cx("github-icon")}
 						src="https://unpkg.com/@lobehub/icons-static-svg@1.90.0/icons/github.svg"
 						alt="GitHub"
 					/>

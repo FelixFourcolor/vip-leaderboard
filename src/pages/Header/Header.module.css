@@ -13,15 +13,29 @@
 	background: var(--bg-secondary);
 	user-select: none;
 
+	img {
+		vertical-align: middle;
+		[data-is-zack="false"] & {
+			opacity: 0.9;
+		}
+		[data-is-zack="true"] & {
+			opacity: 0.8;
+		}
+	}
+
 	> :first-child {
 		justify-self: start;
 		display: flex;
 		align-items: center;
 		white-space: nowrap;
 
-		gap: 24px;
 		@media (max-width: 500px) {
 			display: none;
+		}
+
+		.logo {
+			width: 24px;
+			margin-right: 10px;
 		}
 
 		h1 {
@@ -39,8 +53,11 @@
 
 			gap: 6px;
 			margin: 0;
+			margin-left: 24px;
 
 			font-size: var(--text-small);
+			color: var(--text-secondary);
+			vertical-align: middle;
 
 			dt {
 				&::after {
@@ -91,15 +108,11 @@
 			gap: 16px;
 		}
 
-		img {
+		.github-icon {
 			width: 18px;
 			vertical-align: middle;
-
 			[data-is-zack="false"] & {
-				filter: invert(100%) opacity(0.9);
-			}
-			[data-is-zack="true"] & {
-				filter: opacity(0.9);
+				filter: invert(100%);
 			}
 		}
 	}
