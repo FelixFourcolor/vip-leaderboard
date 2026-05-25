@@ -24,6 +24,7 @@ export type VisibleIdx = { from: number; to: number };
 export type LegendEntryProps<S extends TimeSeries> = {
 	series: Omit<S, "data">;
 	seriesColor: string;
+	seriesIndex: number;
 } & Pick<
 	ComponentProps<"li">,
 	"onFocus" | "onBlur" | "onKeyDown" | "onMouseEnter" | "onMouseLeave" | "ref"
@@ -168,6 +169,7 @@ export function Legend<S extends TimeSeries>({
 					<Entry
 						key={series.id}
 						series={series}
+						seriesIndex={i}
 						ref={i === 0 ? entryRef : undefined}
 						seriesColor={colorMapping[series.id]!}
 						onMouseEnter={() => {

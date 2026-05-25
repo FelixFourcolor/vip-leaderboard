@@ -8,11 +8,7 @@ import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
 export type TimePoint = { x: YyyyMm; y: number | null };
-
-export interface TimeSeries {
-	id: string;
-	data: readonly TimePoint[];
-}
+export type TimeSeries = { id: string; data: readonly TimePoint[] };
 
 type Props<S extends TimeSeries> = {
 	data: S[] | undefined;

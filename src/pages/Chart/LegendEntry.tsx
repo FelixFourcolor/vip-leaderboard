@@ -7,8 +7,9 @@ import styles from "./ChartPage.module.css";
 const cx = classNames.bind(styles);
 
 export function LegendEntry({
-	series: { id, rank, count, ...user },
+	series: { id, total, ...user },
 	seriesColor,
+	seriesIndex,
 	...props
 }: LegendEntryProps<UserMonthlyCount>) {
 	const { isHighlighted } = useChart();
@@ -23,9 +24,9 @@ export function LegendEntry({
 			<UserHeader {...user} />
 			<dl>
 				<dt className={"sr-only"}>Rank</dt>
-				<dd className={cx("rank")}>{rank}</dd>
-				<dt className={"sr-only"}>Count</dt>
-				<dd>{count}</dd>
+				<dd className={cx("rank")}>{seriesIndex + 1}</dd>
+				<dt className={"sr-only"}>Activities</dt>
+				<dd>{total}</dd>
 			</dl>
 		</li>
 	);
