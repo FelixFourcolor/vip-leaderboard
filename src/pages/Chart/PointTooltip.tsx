@@ -1,7 +1,7 @@
 import classNames from "classnames/bind";
 import type { PointTooltipProps } from "@/components/TimeChart";
 import { UserHeader } from "@/components/UserHeader";
-import type { UserMonthlyData } from "@/db/monthlyData";
+import type { UserMonthlyCount } from "@/db/user";
 import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
@@ -12,7 +12,7 @@ export function PointTooltip({
 	seriesColor,
 	ref,
 	style,
-}: PointTooltipProps<UserMonthlyData>) {
+}: PointTooltipProps<UserMonthlyCount>) {
 	return (
 		<div
 			ref={ref}

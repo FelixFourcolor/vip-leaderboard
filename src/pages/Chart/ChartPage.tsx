@@ -1,7 +1,7 @@
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
-import { getMonthlyData, type UserMonthlyData } from "@/db/monthlyData";
+import { getUserMonthlyCount, type UserMonthlyCount } from "@/db/user";
 import styles from "./ChartPage.module.css";
 import { ControlPanel, categoryLabels, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
@@ -14,9 +14,9 @@ export function ChartPage() {
 	const [controls] = useChartControls();
 	const { since, until, types } = controls;
 
-	const [data, setData] = useState<UserMonthlyData[]>();
+	const [data, setData] = useState<UserMonthlyCount[]>();
 	useEffect(() => {
-		getMonthlyData({ since, until, types }).then(setData);
+		getUserMonthlyCount({ since, until, types }).then(setData);
 	}, [since, until, types]);
 
 	useEffect(() => {
