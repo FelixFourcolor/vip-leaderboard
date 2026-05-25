@@ -10,7 +10,7 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	extends State<"focusedSeries", Maybe<string>>,
 		State<"hoveredPoint", Maybe<InteractivePoint>>,
 		State<"visibleIdx", Maybe<VisibleIdx>> {
-	data: readonly S[] | undefined;
+	chartSeries: readonly Omit<S, "data">[] | undefined;
 	chartData: readonly S[] | undefined;
 	xValues: readonly YyyyMm[];
 	stacked: boolean;

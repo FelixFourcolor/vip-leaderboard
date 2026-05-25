@@ -46,7 +46,7 @@ export function Wrapper<S extends TimeSeries>({
 	return (
 		<ChartContext
 			value={{
-				data,
+				chartSeries: data,
 				chartData,
 				xValues,
 				colorMapping: useColorMapping(data, colors),

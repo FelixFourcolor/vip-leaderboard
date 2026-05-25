@@ -46,6 +46,7 @@ function useVisibility() {
 		isPointIsolated,
 		isHighlighted,
 		isPointHovered,
+		PointTooltip,
 	} = useChart();
 
 	const lastIndex = useMemo(() => {
@@ -72,7 +73,7 @@ function useVisibility() {
 	return (seriesId: string, index: number, { x, y }: NivoPoint) =>
 		y &&
 		isHighlighted(seriesId) &&
-		(stacked || !isPointHovered({ seriesId, x })) &&
+		(stacked || !PointTooltip || !isPointHovered({ seriesId, x })) &&
 		(isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x }));
 }
 

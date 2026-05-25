@@ -42,7 +42,7 @@ export function Legend<S extends TimeSeries>({
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
-	const { data, colorMapping } = useChart<S>();
+	const { chartSeries, colorMapping } = useChart<S>();
 	const colors = useMemo(
 		() => [...new Set(Object.values(colorMapping))],
 		[colorMapping],
@@ -130,7 +130,7 @@ export function Legend<S extends TimeSeries>({
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [data, setVisibleFrom]);
+	}, [chartSeries, setVisibleFrom]);
 
 	const onScroll = useCallback<UIEventHandler>(
 		({ currentTarget: { scrollTop } }) => {
@@ -163,8 +163,8 @@ export function Legend<S extends TimeSeries>({
 				}
 			}}
 		>
-			{data ? (
-				data.map((series, i) => (
+			{chartSeries ? (
+				chartSeries.map((series, i) => (
 					<Entry
 						key={series.id}
 						series={series}
