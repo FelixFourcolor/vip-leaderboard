@@ -1,9 +1,11 @@
 import classNames from "classnames/bind";
+import { mapValues } from "es-toolkit";
 import {
 	createContext,
 	type ReactNode,
 	use,
 	useCallback,
+	useMemo,
 	useState,
 } from "react";
 import { Button } from "@/components/Button";
@@ -20,22 +22,24 @@ type Props = {
 export function Section({ title, children }: Props) {
 	const [expandState, setExpandState] = useState<ExpandState>({});
 
-	const hasSubsections = Object.keys(expandState).length > 0;
-	const isExpanded = !Object.values(expandState).some((x) => !x);
+	const isMajorityExpanded = useMemo(() => {
+		const values = Object.values(expandState);
+		if (values.length > 0) {
+			return values.filter(Boolean).length > values.length / 2;
+		}
+	}, [expandState]);
 
 	return (
 		<section>
 			<div className={cx("header")}>
 				<h1>{title}</h1>
-				{hasSubsections && (
+				{isMajorityExpanded !== undefined && (
 					<Button
 						onClick={() =>
-							setExpandState((x) =>
-								Object.fromEntries(Object.keys(x).map((k) => [k, !isExpanded])),
-							)
+							setExpandState((x) => mapValues(x, () => !isMajorityExpanded))
 						}
 					>
-						{isExpanded ? "Collapse all" : "Expand all"}
+						{isMajorityExpanded ? "Collapse all" : "Expand all"}
 					</Button>
 				)}
 			</div>

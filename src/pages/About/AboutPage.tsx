@@ -18,10 +18,10 @@ export function AboutPage() {
 					.
 				</p>
 				<p>
-					Whoever ranks top each month will get 2x the regular VIP payout.
-					<aside>
+					Whoever ranks top each month will get 2x the regular VIP payout.{" "}
+					<span className={cx("tangent")}>
 						(Which is still $0, but it&apos;s the thought that counts.)
-					</aside>
+					</span>
 				</p>
 			</Section>
 
@@ -57,8 +57,8 @@ export function AboutPage() {
 					</p>
 					<p>
 						Warnings are detected by the presence of a user ID in the message
-						content.
-						<aside>
+						content.{" "}
+						<span className={cx("tangent")}>
 							(Oops{" "}
 							<img
 								src="https://cdn.discordapp.com/emojis/1269432955059568710.png"
@@ -66,7 +66,7 @@ export function AboutPage() {
 								alt="mschae restaurant"
 							/>
 							)
-						</aside>
+						</span>
 					</p>
 					<p>
 						Each VIP earns 1 point for each warning. Batch warnings count
@@ -126,13 +126,15 @@ export function AboutPage() {
 					</ul>
 					<p>
 						These are reasonable assumptions for a fun project, but don&apos;t
-						take the data too seriously.
-						<aside>(The payout multiplier is definitely real though.)</aside>
+						take the data too seriously.{" "}
+						<span className={cx("tangent")}>
+							(The payout multiplier is definitely real though.)
+						</span>
 					</p>
 					<p>
 						If you are curious, the entire scoring logic is in{" "}
 						<a href="https://github.com/FelixFourcolor/vip-leaderboard/blob/main/loader/scoring.ts">
-							loader/scoring.ts
+							/loader/scoring.ts
 						</a>
 						.
 					</p>
@@ -156,26 +158,33 @@ export function AboutPage() {
 						points.
 					</p>
 				</Subsection>
+
 				<Subsection title="How did you decide these scoring methods?">
 					<p>
 						I want to approximate the amount of effort each action takes, with 1
 						unit of work = 1 point. For example, it takes the same effort to
-						propose a ban regardless of whether it&apos;s approved, that&apos;s
-						why approved and rejected bans are counted the same.
+						propose a ban whether it&apos;s approved or not, that&apos;s why
+						approved and rejected bans are counted the same.
 					</p>
 					<p>
+						<img
+							src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
+							alt="interaction reminder"
+						/>{" "}
 						If you have other ideas for how to count points, let&apos;s talk
-						about it in the server and I&apos;ll follow the consensus opinion.
-						<aside>
-							<img
-								src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
-								alt="interaction reminder"
-							/>
-						</aside>
+						about it in the server and I&apos;ll follow the consensus opinion.{" "}
+						<img
+							src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
+							alt="interaction reminder"
+						/>
 					</p>
 				</Subsection>
 
-				<Subsection title="How is the data updated?">
+				<Subsection title="Can I opt out?">
+					<p>Of course, just let me know.</p>
+				</Subsection>
+
+				<Subsection title="How often is the data updated?">
 					<p>
 						I scrape the server once at the end of each month. That also means
 						if you resolve a ticket from a previous month, it will not be
@@ -198,13 +207,29 @@ export function AboutPage() {
 						to have more reliable data.
 					</p>
 					<p>
-						You can drag the time slider all the way back if you want, but the
-						canonical ranking is based on the last 2 years.
+						You can drag the time slider to the beginning if you want, but the
+						canonical ranking is based on the last 2 years (because I say so
+						😎).
 					</p>
 				</Subsection>
 
-				<Subsection title="Can I opt out?">
-					<p>Of course, just let me know.</p>
+				<Subsection
+					title={
+						<>
+							Does this leak <DiscordLink bans />?
+						</>
+					}
+				>
+					<p>
+						I don&apos;t think so, not in spirit. My database (
+						<a href="./db.sqlite">db.sqlite</a>) only tracks <em>who</em> did a
+						ban <em>when</em>, not the message content or whom got banned. You
+						cannot recover any sensitive information from this.
+					</p>
+					<p>
+						But let me know if you still have concerns, I&apos;ll stop tracking
+						bans if necessary.
+					</p>
 				</Subsection>
 
 				<Subsection title="Why is it buggy?">

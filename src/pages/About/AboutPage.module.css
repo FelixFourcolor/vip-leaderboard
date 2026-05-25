@@ -1,6 +1,6 @@
 .about-page {
-	line-height: 1.4;
-	max-width: 800px;
+	line-height: 1.5;
+	max-width: 750px;
 	align-self: center;
 	margin: 24px 32px;
 
@@ -17,18 +17,14 @@
 		vertical-align: middle;
 	}
 
-	aside {
-		display: inline;
+	.tangent {
 		color: var(--text-secondary);
-		&::before {
-			content: " ";
-		}
 	}
 }
 
 section {
 	&:not(:last-child) {
-		margin-bottom: 30px;
+		margin-bottom: 32px;
 	}
 
 	.header {
@@ -38,6 +34,7 @@ section {
 		background: var(--bg-secondary);
 		display: flex;
 		justify-content: space-between;
+		container-type: inline-size;
 
 		h1 {
 			font-weight: var(--weight-bold);
@@ -58,12 +55,16 @@ section {
 			&:focus-visible {
 				outline: 1px solid var(--accent);
 			}
+
+			@container (max-width: 400px) {
+				display: none;
+			}
 		}
 	}
 
 	.subsection {
 		&:not(:last-child) {
-			margin-bottom: 22px;
+			margin-bottom: 24px;
 		}
 
 		.subheader {
@@ -75,14 +76,14 @@ section {
 			}
 		}
 		&[open] .subheader {
-			margin-bottom: 13px;
+			margin-bottom: 15px;
 		}
 	}
 
 	p {
 		margin: 0;
 		&:not(:last-child) {
-			margin-bottom: 14px;
+			margin-bottom: 15px;
 		}
 	}
 
