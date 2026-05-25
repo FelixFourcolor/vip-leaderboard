@@ -15,6 +15,3 @@ export const activity = sqliteTable("activity", {
 		.references(() => user.id, { onDelete: "cascade" }),
 	type: text("type", { enum: ["ticket", "warning", "ban"] }).notNull(),
 });
-
-export const activityTypes = activity.type.enumValues;
-export type ActivityType = (typeof activityTypes)[number];

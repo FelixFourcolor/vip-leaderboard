@@ -3,8 +3,9 @@ import { groupBy } from "es-toolkit";
 import type { TimeSeries } from "@/components/TimeChart";
 import { pick } from "@/utils/object";
 import { offset, type YyyyMm } from "@/utils/time";
+import type { ActivityType } from "./activity";
 import { loadDb } from "./db";
-import { type ActivityType, activity, user } from "./schema";
+import { activity, user } from "./schema";
 
 const userFields = pick(user, ["id", "name", "avatarUrl", "color"]);
 
@@ -77,7 +78,6 @@ export async function getUserMonthlyCount({
 			),
 		)
 		.groupBy(activity.userId, sql`month`)
-		.orderBy(asc(sql`month`))
 		.all();
 
 	const users = Object.entries(groupBy(rows, (r) => r.id)).map(([id, rows]) => {

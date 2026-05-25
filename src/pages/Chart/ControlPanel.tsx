@@ -5,8 +5,8 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { type ActivityType, activityTypes } from "@/db/schema";
-import { Route, type SearchParams } from "@/routes/index";
+import { type ActivityType, activityTypes } from "@/db/activity";
+import { Route, type SearchParams } from "@/routes/chart";
 import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import styles from "./ChartPage.module.css";
 
