@@ -5,26 +5,22 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { type ActivityType, activityTypes } from "@/db/activity";
-import { Route, type SearchParams } from "@/routes/chart";
-import { monthsInRange, offset, toYyyyMm, type YyyyMm } from "@/utils/time";
+import { activityLabels, activityTypes, categoryIcons } from "@/db/activity";
+import { VALID_MONTHS } from "@/db/time";
+import { type ChartOptions, Route } from "@/routes/chart";
+import { offset, toYyyyMm, type YyyyMm } from "@/utils/time";
+import type { Pair } from "@/utils/types";
 import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
 
-// Earliest month with meaningful data.
-// Kinda hard to define "meaningful",
-// so just hardcode a value instead of querying it
-const startDate = "2020-01";
-const VALID_MONTHS = monthsInRange(startDate, lastUpdated);
-
 export function ControlPanel() {
-	const [params, setParams] = useChartControls();
-	const { until, since, cumulative, stacked, types } = params;
+	const [options, setOptions] = useChartControls();
+	const { until, since, cumulative, stacked, types } = options;
 
 	const onDateChange = useCallback(
-		([since, until]: readonly [YyyyMm, YyyyMm]) => setParams({ since, until }),
-		[setParams],
+		([since, until]: Pair<YyyyMm>) => setOptions({ since, until }),
+		[setOptions],
 	);
 
 	return (
@@ -36,7 +32,6 @@ export function ControlPanel() {
 					domain={VALID_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
-					minDistance={1}
 				/>
 
 				<PopupMenu>
@@ -51,14 +46,14 @@ export function ControlPanel() {
 									selected={types.includes(t)}
 									setSelected={(selected) => {
 										if (selected) {
-											setParams({ types: [...types, t] });
+											setOptions({ types: [...types, t] });
 										} else {
-											setParams({ types: types.filter((x) => x !== t) });
+											setOptions({ types: types.filter((x) => x !== t) });
 										}
 									}}
 									className={cx("menu-item")}
 								>
-									<span>{categoryLabels[t]}</span>
+									<span>{activityLabels[t]}</span>
 									<span aria-hidden className={cx("icon")}>
 										{categoryIcons[t]}
 									</span>
@@ -69,14 +64,14 @@ export function ControlPanel() {
 						<PopupMenu.Group title="View">
 							<PopupMenu.Item
 								selected={cumulative}
-								setSelected={(cumulative) => setParams({ cumulative })}
+								setSelected={(cumulative) => setOptions({ cumulative })}
 								className={cx("menu-item")}
 							>
 								Cumulative
 							</PopupMenu.Item>
 							<PopupMenu.Item
 								selected={stacked}
-								setSelected={(stacked) => setParams({ stacked })}
+								setSelected={(stacked) => setOptions({ stacked })}
 								className={cx("menu-item")}
 							>
 								Stacked
@@ -84,8 +79,8 @@ export function ControlPanel() {
 						</PopupMenu.Group>
 						<hr />
 						<PopupMenu.Item
-							disabled={isEqual(params, defaultParams)}
-							onClick={() => setParams(defaultParams)}
+							disabled={isEqual(options, defaultOptions)}
+							onClick={() => setOptions(defaultOptions)}
 							className={cx("menu-item")}
 						>
 							Reset
@@ -97,40 +92,28 @@ export function ControlPanel() {
 	);
 }
 
-const defaultParams = {
+const defaultOptions = {
 	until: toYyyyMm(lastUpdated),
 	since: offset(lastUpdated, { years: -2, months: 1 }),
 	cumulative: false,
 	stacked: false,
 	types: [],
-} satisfies Required<SearchParams>;
+} satisfies Required<ChartOptions>;
 
 export function useChartControls() {
 	const search = Route.useSearch();
-	const params = useMemo(() => ({ ...defaultParams, ...search }), [search]);
+	const options = useMemo(() => ({ ...defaultOptions, ...search }), [search]);
 
 	const navigate = Route.useNavigate();
-	const setParams = useCallback(
-		(params: SearchParams) => {
-			const search = mapValues(params, (v, k) =>
-				isEqual(v, defaultParams[k]) ? undefined : v,
-			) as SearchParams;
+	const setOptions = useCallback(
+		(options: ChartOptions) => {
+			const search = mapValues(options, (v, k) =>
+				isEqual(v, defaultOptions[k]) ? undefined : v,
+			) as ChartOptions;
 			navigate({ search, replace: true });
 		},
 		[navigate],
 	);
 
-	return [params, setParams] as const;
+	return [options, setOptions] as const;
 }
-
-export const categoryLabels = {
-	ticket: "Tickets",
-	warning: "Warnings",
-	ban: "Bans",
-} as const satisfies Record<ActivityType, string>;
-
-const categoryIcons = {
-	ticket: "✅",
-	warning: "⚠️",
-	ban: "🔨",
-} as const satisfies Record<ActivityType, string>;

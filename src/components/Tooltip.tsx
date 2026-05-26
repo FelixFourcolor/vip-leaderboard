@@ -8,7 +8,7 @@ import {
 } from "@floating-ui/react";
 import type { CSSProperties, JSX, Ref } from "react";
 import { createPortal } from "react-dom";
-import { useControlled } from "@/hooks/useControlled";
+import { useSyncedState } from "@/hooks/useSyncedState";
 
 type TooltipTriggerProps = {
 	ref: Ref<any>;
@@ -47,7 +47,7 @@ export function Tooltip({
 		whileElementsMounted: autoUpdate,
 	});
 
-	const [isOpen, setIsOpen] = useControlled(open ?? false);
+	const [isOpen, setIsOpen] = useSyncedState(open ?? false);
 
 	const hoverEvents = {
 		onMouseEnter: () => setIsOpen(true),

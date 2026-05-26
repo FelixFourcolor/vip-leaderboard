@@ -9,7 +9,7 @@ import {
 	useState,
 } from "react";
 import { Range } from "react-range";
-import { useControlled } from "@/hooks/useControlled";
+import { useSyncedState } from "@/hooks/useSyncedState";
 import type { Pair } from "@/utils/types";
 import { Thumb } from "./Thumb";
 import { Track } from "./Track";
@@ -31,7 +31,7 @@ export function RangeSlider<Value>({
 	maxDistance = domain.length - 1,
 	className,
 }: SliderProps<Value>) {
-	const [values, _setValues] = useControlled(
+	const [values, _setValues] = useSyncedState(
 		useCallback((): Pair<number> => {
 			const fromIndex = domain.indexOf(selectedFrom);
 			const toIndex = domain.indexOf(selectedTo);

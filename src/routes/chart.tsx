@@ -4,7 +4,7 @@ import { type ActivityType, activityTypes } from "@/db/activity";
 import { ChartPage } from "@/pages/Chart";
 import type { YyyyMm } from "@/utils/time";
 
-export type SearchParams = {
+export type ChartOptions = {
 	until?: YyyyMm;
 	since?: YyyyMm;
 	cumulative?: boolean;
@@ -14,7 +14,7 @@ export type SearchParams = {
 
 export const Route = createFileRoute("/chart")({
 	component: ChartPage,
-	validateSearch: (search): SearchParams =>
+	validateSearch: (search): ChartOptions =>
 		mapValues(search, (v, k) => {
 			if (k === "until" || k === "since") {
 				return !Number.isNaN(new Date(v as any).getTime()) ? v : undefined;

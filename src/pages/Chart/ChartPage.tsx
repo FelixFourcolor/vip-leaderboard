@@ -1,9 +1,10 @@
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
+import { activityLabels } from "@/db/activity";
 import { getUserMonthlyStats, type UserMonthlyStats } from "@/db/user";
 import styles from "./ChartPage.module.css";
-import { ControlPanel, categoryLabels, useChartControls } from "./ControlPanel";
+import { ControlPanel, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
 import { PointTooltip } from "./PointTooltip";
 import { SidePanel } from "./SidePanel";
@@ -11,8 +12,8 @@ import { SidePanel } from "./SidePanel";
 const cx = classNames.bind(styles);
 
 export function ChartPage() {
-	const [controls] = useChartControls();
-	const { since, until, types } = controls;
+	const [options] = useChartControls();
+	const { since, until, types } = options;
 
 	const [data, setData] = useState<UserMonthlyStats[]>();
 	useEffect(() => {
@@ -35,7 +36,7 @@ export function ChartPage() {
 
 	return (
 		<main className={cx("chart-page")}>
-			<TimeChart data={data} {...controls} PointTooltip={PointTooltip}>
+			<TimeChart {...options} data={data} PointTooltip={PointTooltip}>
 				<fieldset className={cx("chart")}>
 					<legend>chart</legend>
 					<TimeChart.Chart
@@ -43,7 +44,7 @@ export function ChartPage() {
 						axisLeft={{
 							legendOffset: -54,
 							legend:
-								types.map((t) => categoryLabels[t]).join(" + ") || "Activities",
+								types.map((t) => activityLabels[t]).join(" + ") || "Activities",
 						}}
 					/>
 				</fieldset>

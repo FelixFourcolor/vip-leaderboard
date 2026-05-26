@@ -9,6 +9,17 @@ import { activity } from "./schema";
 export const activityTypes = activity.type.enumValues;
 export type ActivityType = (typeof activityTypes)[number];
 
+export const activityLabels = {
+	ticket: "Tickets",
+	warning: "Warnings",
+	ban: "Bans",
+} satisfies Record<ActivityType, string>;
+export const categoryIcons = {
+	ticket: "✅",
+	warning: "⚠️",
+	ban: "🔨",
+} satisfies Record<ActivityType, string>;
+
 type ActivityCountParams = {
 	since?: YyyyMm;
 	until?: YyyyMm;
@@ -18,7 +29,6 @@ export type ActivityCount = {
 	type: ActivityType;
 	count: number;
 };
-
 export async function getActivityCount({
 	since,
 	until,

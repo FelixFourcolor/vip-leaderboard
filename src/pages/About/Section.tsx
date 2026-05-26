@@ -75,7 +75,7 @@ export function Subsection({ title, children }: Props) {
 }
 
 type ExpandState = Record<string, boolean>;
-type ContextValue = State<"expandState", ExpandState, { action: true }>;
+type ContextValue = State<"expandState", ExpandState>;
 
 const ExpandStateContext = createContext<ContextValue | null>(null);
 
