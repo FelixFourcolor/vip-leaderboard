@@ -1,14 +1,22 @@
 import { lastUpdated } from "virtual:db/last-updated";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
+import { useEffect, useState } from "react";
 import styles from "./Header.module.css";
 import { ZackToggle } from "./ZackToggle";
 
 const cx = classNames.bind(styles);
 
 export function Header() {
+	const [scrolled, setScrolled] = useState(false);
+	useEffect(() => {
+		const handleScroll = () => setScrolled(window.scrollY > 32);
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
 	return (
-		<header className={cx("header")}>
+		<header className={cx("header", { scrolled })}>
 			<div>
 				<img
 					src="./icon.png"
