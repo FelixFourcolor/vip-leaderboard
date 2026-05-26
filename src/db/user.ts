@@ -93,15 +93,20 @@ export async function getUserMonthlyStats({
 		return { id, name, color, avatarUrl, total, data };
 	});
 
-	return users.sort((a, b) => {
-		const scoreDiff = b.total - a.total;
-		if (scoreDiff) {
-			return scoreDiff;
-		}
-		// in /loader/data-save.ts,
-		// we already removed all inactive users, so the data array is never empty
-		const aLastActiveDate = a.data[a.data.length - 1]!.x;
-		const bLastActiveDate = b.data[b.data.length - 1]!.x;
-		return bLastActiveDate.localeCompare(aLastActiveDate);
-	});
+	return users.sort(
+		(a, b) =>
+			b.total - a.total ||
+			(() => {
+				// in loader/data-save.ts we already removed all inactive users,
+				// so the data array is never empty
+				const aLastActiveDate = a.data.at(-1)!.x;
+				const bLastActiveDate = b.data.at(-1)!.x;
+				return bLastActiveDate.localeCompare(aLastActiveDate);
+			})() ||
+			(() => {
+				const aFirstActiveDate = a.data.at(0)!.x;
+				const bFirstActiveDate = b.data.at(0)!.x;
+				return bFirstActiveDate.localeCompare(aFirstActiveDate);
+			})(),
+	);
 }
