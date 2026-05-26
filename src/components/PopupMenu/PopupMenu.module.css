@@ -10,6 +10,7 @@
 	flex-direction: column;
 	list-style-type: none;
 	margin: 0;
+	font-size: var(--text-semi-small);
 
 	.title {
 		color: var(--text-secondary);
