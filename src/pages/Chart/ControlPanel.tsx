@@ -86,7 +86,6 @@ export function ControlPanel() {
 						<PopupMenu.Item
 							disabled={isEqual(params, defaultParams)}
 							onClick={() => setParams(defaultParams)}
-							stayOpenOnClick
 							className={cx("menu-item")}
 						>
 							Reset

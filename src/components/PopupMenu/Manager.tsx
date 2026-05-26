@@ -12,7 +12,8 @@ export function Manager({ children }: { children: ReactNode }) {
 		if (!activeMenuId) {
 			return;
 		}
-		const handleClickOutside = ({ target }: MouseEvent) => {
+
+		const closeActiveMenu = ({ target }: Event) => {
 			if (
 				!(target instanceof HTMLElement) ||
 				!target.closest(
@@ -22,9 +23,14 @@ export function Manager({ children }: { children: ReactNode }) {
 				setActiveMenuId(undefined);
 			}
 		};
-		document.addEventListener("pointerdown", handleClickOutside);
+
+		document.addEventListener("pointerdown", closeActiveMenu);
+		document.addEventListener("focus", closeActiveMenu);
+		document.addEventListener("wheel", closeActiveMenu, { passive: true });
 		return () => {
-			document.removeEventListener("pointerdown", handleClickOutside);
+			document.removeEventListener("pointerdown", closeActiveMenu);
+			document.removeEventListener("focus", closeActiveMenu);
+			document.removeEventListener("wheel", closeActiveMenu);
 		};
 	}, [activeMenuId]);
 
