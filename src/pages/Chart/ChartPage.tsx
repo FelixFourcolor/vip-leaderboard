@@ -36,7 +36,12 @@ export function ChartPage() {
 
 	return (
 		<main className={cx("chart-page")}>
-			<TimeChart {...options} data={data} PointTooltip={PointTooltip}>
+			<TimeChart
+				{...options}
+				data={data}
+				PointTooltip={PointTooltip}
+				renderDelay={100}
+			>
 				<fieldset className={cx("chart")}>
 					<legend>chart</legend>
 					<TimeChart.Chart

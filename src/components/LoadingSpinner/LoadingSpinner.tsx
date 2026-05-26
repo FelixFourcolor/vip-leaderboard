@@ -9,7 +9,7 @@ type Props = {
 	thickness?: number;
 	delay?: number;
 };
-export function LoadingSpinner({ size, thickness = 3, delay = 100 }: Props) {
+export function LoadingSpinner({ size, thickness = 3, delay = 0 }: Props) {
 	const [visible, setVisible] = useState(false);
 	useEffect(() => {
 		const timer = setTimeout(() => setVisible(true), delay);

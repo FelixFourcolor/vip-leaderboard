@@ -1,4 +1,5 @@
 import { type JSX, type ReactNode, useMemo, useState } from "react";
+import { useDelay } from "@/hooks/useDelay";
 import { windowed } from "@/utils/array";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
 import { category10 } from "./colors";
@@ -23,6 +24,8 @@ type Props<S extends TimeSeries> = {
 	stacked?: boolean;
 	cumulative?: boolean;
 	colors?: readonly string[];
+	/** Delay ms before rendering the chart. Helps with perceived performance. */
+	renderDelay?: number;
 	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
 	children: ReactNode;
 };
@@ -34,6 +37,7 @@ export function Wrapper<S extends TimeSeries>({
 	colors = category10,
 	stacked = false,
 	cumulative = false,
+	renderDelay,
 	PointTooltip,
 	children,
 }: Props<S>) {
@@ -45,11 +49,13 @@ export function Wrapper<S extends TimeSeries>({
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
 
+	const renderReady = useDelay(renderDelay) || renderDelay === undefined;
+
 	return (
 		<ChartContext
 			value={{
-				chartSeries: data,
-				chartData,
+				chartSeries: renderReady ? data : undefined,
+				chartData: renderReady ? chartData : undefined,
 				xValues,
 				colorMapping: useColorMapping(data, colors),
 				stacked,
