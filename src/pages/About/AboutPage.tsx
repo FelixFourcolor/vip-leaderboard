@@ -111,7 +111,8 @@ export function AboutPage() {
 					</p>
 					<ul>
 						<li>
-							If a message has a ✅/❌ reaction, it&apos;s probably a ticket.
+							If a message has a ✅/❌/🔒/🗑️ reaction, it&apos;s probably a
+							ticket.
 						</li>
 						<li>
 							If a message contains 64 consecutive alphanumeric characters,
@@ -153,9 +154,13 @@ export function AboutPage() {
 					<p>
 						Mostly for efficiency. These channels are more general-purpose than{" "}
 						<DiscordLink incorrect-submissions /> and{" "}
-						<DiscordLink report-a-user />. It&apos;s not worth scraping and
-						processing a huge amount of data to add a relatively small number of
-						points.
+						<DiscordLink report-a-user />. It&apos;s not worth scraping a huge
+						amount of data for relatively few points.
+					</p>
+					<p>
+						Also, outside the designated channels, the reactions ✅/❌/🔒/🗑️ are
+						more likely to be used for other purposes, so those few points are
+						also less accurate. It&apos;s just not worth it.
 					</p>
 				</Subsection>
 
@@ -195,10 +200,9 @@ export function AboutPage() {
 
 				<Subsection title="Why only count the last 2 years?">
 					<p>
-						I think 2 years is a good balance that gives a nod to the old
-						generation while also giving new VIPs a chance to compete. And it's
-						more exciting to check back every month, because the rankings are
-						more likely to change.
+						Mostly to make it more exicting to check back every month, as
+						rankings are more likely to change with a rolling window. I think 2
+						years is a good balance that acknowledges both old and new VIPs.
 					</p>
 					<p>
 						Also, <DiscordLink report-a-user /> was separated from{" "}
@@ -207,28 +211,9 @@ export function AboutPage() {
 						to have more reliable data.
 					</p>
 					<p>
-						You can drag the time slider to the beginning if you want, but the
+						You will always have the option to see the full data, but the
 						canonical ranking is based on the last 2 years (because I say so
 						😎).
-					</p>
-				</Subsection>
-
-				<Subsection
-					title={
-						<>
-							Does this leak <DiscordLink bans />?
-						</>
-					}
-				>
-					<p>
-						I don&apos;t think so, not in spirit. My database (
-						<a href="./db.sqlite">db.sqlite</a>) only tracks <em>who</em> did a
-						ban <em>when</em>, not the message content or whom got banned. You
-						cannot recover any sensitive information from this.
-					</p>
-					<p>
-						But let me know if you still have concerns, I&apos;ll stop tracking
-						bans if necessary.
 					</p>
 				</Subsection>
 
