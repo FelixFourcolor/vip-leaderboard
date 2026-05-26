@@ -1,7 +1,7 @@
 import classNames from "classnames/bind";
 import { type LegendEntryProps, useChart } from "@/components/TimeChart";
 import { UserHeader } from "@/components/UserHeader";
-import type { UserMonthlyCount } from "@/db/user";
+import type { UserMonthlyStats } from "@/db/user";
 import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
@@ -11,7 +11,7 @@ export function LegendEntry({
 	seriesColor,
 	seriesIndex,
 	...props
-}: LegendEntryProps<UserMonthlyCount>) {
+}: LegendEntryProps<UserMonthlyStats>) {
 	const { isHighlighted } = useChart();
 
 	return (

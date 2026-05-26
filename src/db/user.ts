@@ -15,21 +15,19 @@ export async function getUser(userId: string): Promise<User | undefined> {
 	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
 
-type UserRankingParams<T extends ActivityType = ActivityType> = {
+type UserStatsParams<T extends ActivityType = ActivityType> = {
 	since?: YyyyMm;
 	until?: YyyyMm;
 	types?: T[];
-	sortBy?: T | "total";
 };
-export type UserRanking<T extends ActivityType = ActivityType> = User & {
-	[K in T]: number;
-} & { total: number };
-export async function getUserRanking<T extends ActivityType = ActivityType>({
+export interface UserStats<T extends ActivityType = ActivityType> extends User {
+	data: Record<T, number>;
+}
+export async function getUserStats<T extends ActivityType = ActivityType>({
 	since,
 	until,
 	types,
-	sortBy = "total",
-}: UserRankingParams<T>): Promise<UserRanking<T>[]> {
+}: UserStatsParams<T>): Promise<UserStats<T>[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -48,28 +46,23 @@ export async function getUserRanking<T extends ActivityType = ActivityType>({
 		.groupBy(user.id, activity.type)
 		.all();
 
-	const users = Object.entries(groupBy(rows, (r) => r.id)).map(
-		([id, userRows]) => {
-			const { name, color, avatarUrl } = userRows[0]!;
-			return userRows.reduce(
-				(acc, { type, count }) =>
-					Object.assign(acc, { [type]: count, total: acc.total + count }),
-				{ id, name, color, avatarUrl, total: 0 } as UserRanking,
-			);
-		},
-	);
-
-	return users.sort(
-		(a, b) => b[sortBy] - a[sortBy] || a.id.localeCompare(b.id),
-	);
+	return Object.entries(groupBy(rows, (r) => r.id)).map(([id, userRows]) => {
+		const { name, color, avatarUrl } = userRows[0]!;
+		const data = Object.fromEntries(
+			userRows.map((r) => [r.type, r.count] as const),
+		) as Record<T, number>;
+		return { id, name, color, avatarUrl, data };
+	});
 }
 
-export type UserMonthlyCount = TimeSeries & { total: number };
-export async function getUserMonthlyCount({
+export interface UserMonthlyStats extends TimeSeries {
+	total: number;
+}
+export async function getUserMonthlyStats({
 	since,
 	until,
 	types,
-}: UserRankingParams): Promise<UserMonthlyCount[]> {
+}: UserStatsParams): Promise<UserMonthlyStats[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -95,15 +88,20 @@ export async function getUserMonthlyCount({
 
 	const users = Object.entries(groupBy(rows, (r) => r.id)).map(([id, rows]) => {
 		const { name, color, avatarUrl } = rows[0]!;
-		return {
-			id,
-			name,
-			color,
-			avatarUrl,
-			total: rows.reduce((sum, r) => sum + r.count, 0),
-			data: rows.map((r) => ({ x: r.month as YyyyMm, y: r.count })),
-		};
+		const total = rows.reduce((sum, r) => sum + r.count, 0);
+		const data = rows.map((r) => ({ x: r.month as YyyyMm, y: r.count }));
+		return { id, name, color, avatarUrl, total, data };
 	});
 
-	return users.sort((a, b) => b.total - a.total || a.id.localeCompare(b.id));
+	return users.sort((a, b) => {
+		const scoreDiff = b.total - a.total;
+		if (scoreDiff) {
+			return scoreDiff;
+		}
+		// in /loader/data-save.ts,
+		// we already removed all inactive users, so the data array is never empty
+		const aLastActiveDate = a.data[a.data.length - 1]!.x;
+		const bLastActiveDate = b.data[b.data.length - 1]!.x;
+		return bLastActiveDate.localeCompare(aLastActiveDate);
+	});
 }

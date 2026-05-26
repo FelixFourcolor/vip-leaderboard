@@ -7,8 +7,14 @@ import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
-export type TimePoint = { x: YyyyMm; y: number | null };
-export type TimeSeries = { id: string; data: readonly TimePoint[] };
+export type TimePoint = {
+	x: YyyyMm;
+	y: number | null;
+};
+export type TimeSeries = {
+	id: string;
+	data: readonly TimePoint[];
+};
 
 type Props<S extends TimeSeries> = {
 	data: S[] | undefined;
