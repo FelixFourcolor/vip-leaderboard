@@ -57,9 +57,9 @@ export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 		<table className={cx("data-bar-table", className)}>
 			<tbody>
 				<tr>
-					<th>Rank</th>
+					<th>#</th>
 					<th>{headerLabel}</th>
-					{keys(sortedRows[0]!.data).map((col) => (
+					{keys(colors).map((col) => (
 						<th
 							key={col}
 							className={cx("sortable", { sorted: sortBy === col })}
@@ -73,7 +73,8 @@ export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 								}
 							}}
 						>
-							{col[0]!.toUpperCase() + col.slice(1).toLowerCase()}
+							<div>{col}</div>
+							<SortIcon />
 						</th>
 					))}
 				</tr>
@@ -101,5 +102,19 @@ export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 				))}
 			</tbody>
 		</table>
+	);
+}
+
+export function SortIcon() {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="currentColor"
+		>
+			<path d="M6 8l6 8 6-8z" />
+		</svg>
 	);
 }

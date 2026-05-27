@@ -1,9 +1,40 @@
 .data-bar-table {
 	th {
 		text-transform: capitalize;
+		cursor: default;
 
-		&.sortable:not(.sorted) {
-			cursor: pointer;
+		&.sortable {
+			display: grid;
+			grid-template-columns: 1fr auto 1fr;
+
+			&:not(.sorted) {
+				cursor: pointer;
+
+				&:is(:hover, :focus-visible) svg {
+					opacity: 0.4;
+				}
+				&:not(:hover, :focus-visible) svg {
+					display: none;
+				}
+			}
+
+			&::before {
+				content: "";
+				justify-self: start;
+			}
+			div {
+				justify-self: center;
+			}
+			svg {
+				justify-self: end;
+				margin-right: -2px;
+			}
+
+			@media (max-width: 700px) {
+				svg {
+					display: none;
+				}
+			}
 		}
 	}
 
