@@ -5,11 +5,14 @@ import styles from "./UserHeader.module.css";
 
 const cx = classNames.bind(styles);
 
-export function UserHeader({ name, avatarUrl, color }: Partial<User>) {
+type Props = Partial<User> & {
+	className?: string;
+};
+export function UserHeader({ name, avatarUrl, color, className }: Props) {
 	const [imgError, setImgError] = useState(false);
 
 	return (
-		<div className={cx("header")}>
+		<div className={cx("header", className)}>
 			{!imgError && (
 				<img
 					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
 import { getUserStats, type UserStats } from "@/db/user";
-import { ControlPanel, useRankingControls } from "./ControlPanel";
+import { Controls, useRankingControls } from "./Controls";
 import styles from "./HomePage.module.css";
 
 const cx = classNames.bind(styles);
@@ -13,7 +13,6 @@ export function HomePage() {
 	const { until, since, sortBy } = options;
 
 	const [data, setData] = useState<UserStats[]>();
-	console.log(data);
 	useEffect(() => {
 		getUserStats({ since, until }).then(setData);
 	}, [since, until]);
@@ -24,22 +23,29 @@ export function HomePage() {
 
 	return (
 		<main className={cx("home-page")}>
-			<DataBarTable
-				rows={data}
-				headerLabel="User"
-				RowLabel={UserHeader}
-				colors={colors}
-				sortBy={sortBy}
-				setSortBy={(sortBy) => setOptions({ sortBy })}
-			/>
-			<ControlPanel />
+			<div className={cx("table-container")} tabIndex={-1}>
+				<DataBarTable
+					rows={data}
+					headerLabel="User"
+					rowLabel={(props) => (
+						<UserHeader {...props} className={cx("user-header")} />
+					)}
+					colors={colors}
+					sortBy={sortBy}
+					setSortBy={(sortBy) => setOptions({ sortBy })}
+					className={cx("table")}
+				/>
+			</div>
+			<div className={cx("controls-container")}>
+				<Controls />
+			</div>
 		</main>
 	);
 }
 
 const colors = {
-	ticket: "#7cb342",
-	warning: "#ffcc32",
-	ban: "#f44336",
-	total: "#6674cc",
+	ticket: "hsl(95, 70%, 50%)",
+	warning: "hsl(45, 100%, 50%)",
+	ban: "#ff6673",
+	total: "#80aaff",
 };

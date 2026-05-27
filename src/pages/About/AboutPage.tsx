@@ -1,4 +1,5 @@
 import classNames from "classnames/bind";
+import { useEffect } from "react";
 import styles from "./AboutPage.module.css";
 import { DiscordLink } from "./DiscordLink";
 import { Section, Subsection } from "./Section";
@@ -6,6 +7,17 @@ import { Section, Subsection } from "./Section";
 const cx = classNames.bind(styles);
 
 export function AboutPage() {
+	useEffect(() => {
+		// to allow scrolling but only for this page
+		const root = document.getElementById("root")!;
+
+		const { maxHeight } = root.style;
+		root.style.maxHeight = "none";
+		return () => {
+			root.style.maxHeight = maxHeight;
+		};
+	}, []);
+
 	return (
 		<main className={cx("about-page")}>
 			<Section title="What is this?">

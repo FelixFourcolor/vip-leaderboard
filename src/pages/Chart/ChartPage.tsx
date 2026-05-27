@@ -20,20 +20,6 @@ export function ChartPage() {
 		getUserMonthlyStats({ since, until, types }).then(setData);
 	}, [since, until, types]);
 
-	useEffect(() => {
-		// fix max height to prevent layout shift on load
-		// but only for this page
-		const root = document.getElementById("root")!;
-
-		root.style.maxHeight = "100vh";
-		document.body.style.overflow = "hidden";
-
-		return () => {
-			root.style.maxHeight = "";
-			document.body.style.overflow = "";
-		};
-	}, []);
-
 	return (
 		<main className={cx("chart-page")}>
 			<TimeChart

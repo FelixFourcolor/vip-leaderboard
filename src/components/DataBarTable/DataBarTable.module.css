@@ -1,3 +1,31 @@
 .data-bar-table {
-    
+	th {
+		text-transform: capitalize;
+
+		&.sortable:not(.sorted) {
+			cursor: pointer;
+		}
+	}
+
+	td.data {
+		position: relative;
+		z-index: 1;
+
+		&::before {
+			content: "";
+			position: absolute;
+			left: 6px;
+			width: 0;
+			top: 6px;
+			height: calc(100% - 12px);
+			transition: width 0.3s ease;
+			z-index: -1;
+			background-color: var(--bar-color);
+			opacity: 0.5;
+		}
+
+		&.sorted::before {
+			width: calc(100% * var(--bar-scale) - 12px);
+		}
+	}
 }

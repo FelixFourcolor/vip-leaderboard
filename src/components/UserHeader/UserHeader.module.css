@@ -4,14 +4,21 @@
 	max-width: 100%;
 	overflow: hidden;
 	height: 1lh;
+	gap: 6px;
 	white-space: nowrap;
 
 	[data-is-zack="true"] & {
 		font-weight: var(--weight-semi-bold);
 	}
 
+	.name {
+		display: flex;
+		align-items: center;
+	}
+
 	.avatar {
 		align-self: stretch;
-		margin-right: 6px;
+		min-height: 0;
+		height: 100%;
 	}
 }

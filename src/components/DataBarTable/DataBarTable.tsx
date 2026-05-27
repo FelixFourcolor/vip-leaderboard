@@ -13,7 +13,7 @@ export type DataRow<Col extends string> = {
 
 type Props<Col extends string, Row extends DataRow<Col>> = {
 	rows: Row[];
-	RowLabel: (row: Omit<Row, "data">) => JSX.Element | null;
+	rowLabel: (row: Omit<Row, "data">) => JSX.Element | null;
 	headerLabel: ReactNode;
 	colors: Record<Col, string>;
 	className?: string;
@@ -21,7 +21,7 @@ type Props<Col extends string, Row extends DataRow<Col>> = {
 
 export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 	rows,
-	RowLabel,
+	rowLabel: RowLabel,
 	colors,
 	headerLabel,
 	sortBy,
@@ -54,31 +54,39 @@ export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 					{keys(sortedRows[0]!.data).map((col) => (
 						<th
 							key={col}
+							className={cx("sortable", { sorted: sortBy === col })}
 							aria-sort={sortBy === col ? "descending" : undefined}
 							onClick={() => setSortBy(col)}
-							tabIndex={0}
+							tabIndex={sortBy !== col ? 0 : undefined}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									setSortBy(col);
+									e.preventDefault();
+								}
+							}}
 						>
-							{col}
+							{col[0]!.toUpperCase() + col.slice(1).toLowerCase()}
 						</th>
 					))}
 				</tr>
 				{sortedRows.map((row, i) => (
 					<tr key={row.id}>
-						<td>{i + 1}</td>
+						<td>
+							<div>{i + 1}</div>
+						</td>
 						<td>
 							<RowLabel {...row} />
 						</td>
 						{keys(row.data).map((col) => (
-							<td key={col}>
-								<span
-									className={cx("data-bar", { sorted: sortBy === col })}
-									style={{
-										["--bar-color" as string]: colors[col],
-										["--bar-scale" as string]: scales[i],
-									}}
-								>
-									{row.data[col] || ""}
-								</span>
+							<td
+								key={col}
+								className={cx("data", { sorted: sortBy === col })}
+								style={{
+									["--bar-color" as string]: colors[col],
+									["--bar-scale" as string]: scales[i],
+								}}
+							>
+								<div>{row.data[col] || ""}</div>
 							</td>
 						))}
 					</tr>

@@ -12,7 +12,7 @@ import styles from "./HomePage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function ControlPanel() {
+export function Controls() {
 	const [options, setOptions] = useRankingControls();
 	const { until, since } = options;
 
@@ -22,7 +22,7 @@ export function ControlPanel() {
 	);
 
 	return (
-		<div className={cx("control-panel")}>
+		<div className={cx("controls")}>
 			<RangeSlider
 				className={cx("slider")}
 				domain={VALID_MONTHS}

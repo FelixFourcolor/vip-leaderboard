@@ -1,3 +1,153 @@
 .home-page {
-	margin: 24px;
+	margin-top: 16px;
+	margin-bottom: 4px;
+	display: grid;
+	grid-template-rows: 1fr auto;
+	gap: 16px;
+
+	.table-container {
+		overflow-y: auto;
+		margin: 0 24px;
+		@media (max-width: 500px) {
+			margin: 0 12px;
+		}
+	}
+
+	.controls-container {
+		display: flex;
+		justify-content: center;
+		margin: 0 24px;
+
+		.controls {
+			display: flex;
+			width: 100%;
+			max-width: 1000px;
+			padding: 20px;
+			align-items: center;
+			justify-content: center;
+			background-color: var(--bg-secondary);
+			border: 1px solid var(--text-tertiary);
+
+			gap: 48px;
+			@media (max-width: 600px) {
+				gap: 32px;
+			}
+			@media (max-width: 450px) {
+				gap: 24px;
+			}
+
+			.slider {
+				justify-self: center;
+				flex: 1;
+				max-width: 700px;
+			}
+		}
+	}
+}
+
+.table {
+	margin: auto;
+	border-spacing: 0;
+
+	th,
+	td {
+		min-width: 0;
+		padding: 6px;
+		text-align: center;
+
+		/* manual border-collapse since it's not supported in grid */
+		border-right: 1px solid var(--text-tertiary);
+		border-bottom: 1px solid var(--text-tertiary);
+		&:first-child {
+			border-left: 1px solid var(--text-tertiary);
+		}
+
+		> * {
+			display: flex;
+			height: 100%;
+			align-items: center;
+			&:not(.user-header) {
+				justify-content: center;
+			}
+		}
+	}
+	th {
+		border-top: 1px solid var(--text-tertiary);
+		background-color: rgb(from var(--accent) r g b / 0.85);
+		font-weight: var(--weight-bold);
+		color: var(--bg-primary);
+
+		&:focus-visible {
+			outline-offset: -1px;
+		}
+	}
+	tr {
+		display: grid;
+		justify-content: center;
+		align-content: center;
+		grid-template-columns: 50px 3fr 1fr 1fr 1fr 1fr;
+
+		&:first-child {
+			position: sticky;
+			z-index: 2;
+			top: 0;
+		}
+		&:nth-child(even) {
+			background-color: var(--bg-primary);
+		}
+		&:nth-child(odd) {
+			background-color: var(--bg-secondary);
+		}
+	}
+
+	.user-header {
+		height: 100%;
+		display: grid;
+		&:has(> :first-child:not(:last-child)) {
+			grid-template-columns: 1fr auto 1fr;
+		}
+
+		> :first-child {
+			justify-self: start;
+			height: 24px;
+			margin-left: 4px;
+			&:not(:last-child) {
+				@media (max-width: 600px) {
+					display: none;
+				}
+			}
+		}
+		> :last-child {
+			justify-self: center;
+			@media (max-width: 600px) {
+				justify-self: start;
+			}
+		}
+	}
+
+	@media (max-width: 900px) {
+		tr {
+			grid-template-columns: 50px 2.5fr 1fr 1fr 1fr 1fr;
+		}
+	}
+	@media (max-width: 700px) {
+		tr {
+			grid-template-columns: 50px 2fr 1fr 1fr 1fr 1fr;
+		}
+	}
+	@media (max-width: 500px) {
+		font-size: var(--text-semi-small);
+		tr {
+			grid-template-columns: 48px 1.5fr 1fr 1fr 1fr 1fr;
+		}
+	}
+	@media (max-width: 450px) {
+		font-size: var(--text-small);
+		tr {
+			grid-template-columns: 45px 1.5fr 1fr 1fr 1fr 1fr;
+		}
+	}
+	@media (max-width: 400px) {
+		font-size: var(--text-very-small);
+	}
 }

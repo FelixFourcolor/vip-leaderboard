@@ -5,13 +5,14 @@
 	--text-normal: 15px;
 	--text-semi-small: 14px;
 	--text-small: 13px;
+	--text-very-small: 12px;
 
 	--bg-primary: #222130;
 	--bg-secondary: #181622;
 
 	--text-primary: #e0def4;
 	--text-secondary: #a5a1ba;
-	--text-tertiary: #69667f;
+	--text-tertiary: #5d5b71;
 
 	--accent: #ebbcba;
 
@@ -68,6 +69,8 @@ body {
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+		max-height: 100vh;
+		overflow: hidden;
 
 		main {
 			flex: 1;
