@@ -2,6 +2,7 @@ import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
+import type { ActivityType } from "@/db/activity";
 import { getUserStats, type UserStats } from "@/db/user";
 import styles from "./HomePage.module.css";
 import { RankingControls, useRankingControls } from "./RankingControls";
@@ -31,6 +32,7 @@ export function HomePage() {
 						<UserHeader {...props} className={cx("user-header")} />
 					)}
 					colors={colors}
+					compare={compare}
 					sortBy={sortBy}
 					setSortBy={(sortBy) => setOptions({ sortBy })}
 					className={cx("table")}
@@ -49,3 +51,8 @@ const colors = {
 	ban: "#ff6673",
 	total: "#80aaff",
 };
+
+const compare = (a: UserStats, b: UserStats, by: ActivityType | "total") =>
+	b.data[by] - a.data[by] ||
+	b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
+	b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf();

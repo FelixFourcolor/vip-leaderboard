@@ -16,21 +16,29 @@ type Props<Col extends string, Row extends DataRow<Col>> = {
 	rowLabel: (row: Omit<Row, "data">) => JSX.Element | null;
 	headerLabel: ReactNode;
 	colors: Record<Col, string>;
+	compare?: (a: Row, b: Row, by: Col) => number;
 	className?: string;
 } & State<"sortBy", Col, { action: false }>;
+
+const defaultCompare = <Col extends string>(
+	a: DataRow<Col>,
+	b: DataRow<Col>,
+	by: Col,
+) => b.data[by] - a.data[by];
 
 export function DataBarTable<Col extends string, Row extends DataRow<Col>>({
 	rows,
 	rowLabel: RowLabel,
 	colors,
+	compare = defaultCompare,
 	headerLabel,
 	sortBy,
 	setSortBy,
 	className,
 }: Props<Col, Row>) {
 	const sortedRows = useMemo(
-		() => rows.toSorted((a, b) => b.data[sortBy] - a.data[sortBy]),
-		[rows, sortBy],
+		() => rows.toSorted((a, b) => compare(a, b, sortBy)),
+		[rows, sortBy, compare],
 	);
 
 	const scales = useMemo(() => {

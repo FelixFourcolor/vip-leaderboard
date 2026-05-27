@@ -1,4 +1,4 @@
-import { and, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, count, eq, gte, inArray, lt, max, min, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
 import type { TimeSeries } from "@/components/TimeChart";
 import { pick, values } from "@/utils/object";
@@ -22,6 +22,8 @@ type UserStatsParams<T extends ActivityType = ActivityType> = {
 };
 export interface UserStats<T extends ActivityType = ActivityType> extends User {
 	data: Record<T | "total", number>;
+	lastActiveDate: Date;
+	firstActiveDate: Date;
 }
 export async function getUserStats<T extends ActivityType = ActivityType>({
 	since,
@@ -33,7 +35,13 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	const db = await loadDb();
 
 	const rows = db
-		.select({ ...userFields, count: count(activity.date), type: activity.type })
+		.select({
+			...userFields,
+			count: count(activity.date),
+			type: activity.type,
+			minDate: min(activity.date),
+			maxDate: max(activity.date),
+		})
 		.from(activity)
 		.innerJoin(user, eq(user.id, activity.userId))
 		.where(
@@ -46,24 +54,41 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 		.groupBy(user.id, activity.type)
 		.all();
 
-	return Object.entries(groupBy(rows, (r) => r.id)).map(([id, userRows]) => {
-		const { name, color, avatarUrl } = userRows[0]!;
+	return Object.entries(groupBy(rows, (r) => r.id)).map(([id, rows]) => {
+		const { name, color, avatarUrl } = rows[0]!;
 
 		const activitiesCount = Object.fromEntries(
 			(types ?? activityTypes).map((type) => [
 				type,
-				userRows.find((r) => r.type === type)?.count ?? 0,
+				rows.find((r) => r.type === type)?.count ?? 0,
 			]),
 		) as Record<T, number>;
 		const total = values(activitiesCount).reduce((sum, v) => sum + v, 0);
 		const data = { ...activitiesCount, total };
 
-		return { id, name, color, avatarUrl, data };
+		const firstActiveDate = rows
+			.map((r) => r.minDate!)
+			.reduce((min, d) => (d < min ? d : min));
+		const lastActiveDate = rows
+			.map((r) => r.maxDate!)
+			.reduce((max, d) => (d > max ? d : max));
+
+		return {
+			id,
+			name,
+			color,
+			avatarUrl,
+			data,
+			lastActiveDate,
+			firstActiveDate,
+		};
 	});
 }
 
-export interface UserMonthlyStats extends TimeSeries {
+export interface UserMonthlyStats extends User, TimeSeries {
 	total: number;
+	lastActiveDate: Date;
+	firstActiveDate: Date;
 }
 export async function getUserMonthlyStats({
 	since,
@@ -80,6 +105,8 @@ export async function getUserMonthlyStats({
 			// biome-ignore format: one line
 			month: sql<string>`strftime('%Y-%m', ${activity.date}, 'unixepoch')`.as("month"),
 			count: count().as("count"),
+			minDate: min(activity.date),
+			maxDate: max(activity.date),
 		})
 		.from(activity)
 		.innerJoin(user, eq(user.id, activity.userId))
@@ -95,25 +122,34 @@ export async function getUserMonthlyStats({
 
 	const users = Object.entries(groupBy(rows, (r) => r.id)).map(([id, rows]) => {
 		const { name, color, avatarUrl } = rows[0]!;
+
 		const total = rows.reduce((sum, r) => sum + r.count, 0);
 		const data = rows.map((r) => ({ x: r.month as YyyyMm, y: r.count }));
-		return { id, name, color, avatarUrl, total, data };
+
+		const firstActiveDate = rows
+			.map((r) => r.minDate!)
+			.reduce((min, d) => (d < min ? d : min));
+
+		const lastActiveDate = rows
+			.map((r) => r.maxDate!)
+			.reduce((max, d) => (d > max ? d : max));
+
+		return {
+			id,
+			name,
+			color,
+			avatarUrl,
+			total,
+			data,
+			firstActiveDate,
+			lastActiveDate,
+		};
 	});
 
 	return users.sort(
 		(a, b) =>
 			b.total - a.total ||
-			(() => {
-				// in loader/data-save.ts we already removed all inactive users,
-				// so the data array is never empty
-				const aLastActiveDate = a.data.at(-1)!.x;
-				const bLastActiveDate = b.data.at(-1)!.x;
-				return bLastActiveDate.localeCompare(aLastActiveDate);
-			})() ||
-			(() => {
-				const aFirstActiveDate = a.data.at(0)!.x;
-				const bFirstActiveDate = b.data.at(0)!.x;
-				return bFirstActiveDate.localeCompare(aFirstActiveDate);
-			})(),
+			b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
+			b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf(),
 	);
 }
