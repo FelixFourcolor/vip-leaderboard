@@ -28,6 +28,7 @@ export function RankingControls() {
 				domain={VALID_MONTHS}
 				selected={[since, until]}
 				onChange={onDateChange}
+				minDistance={0}
 			/>
 			<Button
 				onClick={() => setOptions(defaultOptions)}
