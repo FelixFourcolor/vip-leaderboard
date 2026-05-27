@@ -7,16 +7,19 @@
 
 	.table-container {
 		overflow-y: auto;
-		margin: 0 24px;
+		padding: 0 24px;
 		@media (max-width: 500px) {
-			margin: 0 12px;
+			padding: 0 12px;
 		}
 	}
 
 	.controls-container {
 		display: flex;
 		justify-content: center;
-		margin: 0 24px;
+		padding: 0 24px;
+		@media (max-width: 500px) {
+			padding: 0 12px;
+		}
 
 		.controls {
 			display: flex;
