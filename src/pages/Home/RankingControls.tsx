@@ -12,7 +12,7 @@ import styles from "./HomePage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function Controls() {
+export function RankingControls() {
 	const [options, setOptions] = useRankingControls();
 	const { until, since } = options;
 

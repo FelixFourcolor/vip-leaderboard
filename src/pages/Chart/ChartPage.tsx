@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
 import { activityLabels } from "@/db/activity";
 import { getUserMonthlyStats, type UserMonthlyStats } from "@/db/user";
+import { ChartControls, useChartControls } from "./ChartControls";
 import styles from "./ChartPage.module.css";
-import { ControlPanel, useChartControls } from "./ControlPanel";
 import { LegendEntry } from "./LegendEntry";
 import { PointTooltip } from "./PointTooltip";
 import { SidePanel } from "./SidePanel";
@@ -43,7 +43,7 @@ export function ChartPage() {
 					<TimeChart.Legend Entry={LegendEntry} className={cx("legend")} />
 				</SidePanel>
 			</TimeChart>
-			<ControlPanel />
+			<ChartControls />
 		</main>
 	);
 }

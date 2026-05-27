@@ -1,5 +1,5 @@
 import { isEqual } from "es-toolkit";
-import debounce from "es-toolkit/compat/debounce";
+import debounceFn from "es-toolkit/compat/debounce";
 import {
 	type Dispatch,
 	useCallback,
@@ -18,6 +18,7 @@ type SliderProps<Value> = {
 	domain: readonly Value[];
 	selected: Pair<Value>;
 	onChange: Dispatch<Pair<Value>>;
+	debounce?: number;
 	className?: string;
 	minDistance?: number;
 	maxDistance?: number;
@@ -27,6 +28,7 @@ export function RangeSlider<Value>({
 	domain,
 	selected: [selectedFrom, selectedTo],
 	onChange,
+	debounce,
 	minDistance = 1,
 	maxDistance = domain.length - 1,
 	className,
@@ -41,7 +43,12 @@ export function RangeSlider<Value>({
 			];
 		}, [domain, selectedFrom, selectedTo]),
 	);
-	const onChangeDebounced = useMemo(() => debounce(onChange, 50), [onChange]);
+
+	const onChangeDebounced = useMemo(
+		() => (debounce ? debounceFn(onChange, debounce) : onChange),
+		[onChange, debounce],
+	);
+
 	const setValues = useCallback(
 		(updater: (_: Pair<number>) => Pair<number>) => {
 			_setValues((current) => {

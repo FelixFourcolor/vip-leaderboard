@@ -14,7 +14,7 @@ import styles from "./ChartPage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function ControlPanel() {
+export function ChartControls() {
 	const [options, setOptions] = useChartControls();
 	const { until, since, cumulative, stacked, types } = options;
 
@@ -32,6 +32,7 @@ export function ControlPanel() {
 					domain={VALID_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
+					debounce={50}
 				/>
 
 				<PopupMenu>

@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
 import { getUserStats, type UserStats } from "@/db/user";
-import { Controls, useRankingControls } from "./Controls";
 import styles from "./HomePage.module.css";
+import { RankingControls, useRankingControls } from "./RankingControls";
 
 const cx = classNames.bind(styles);
 
@@ -37,15 +37,15 @@ export function HomePage() {
 				/>
 			</div>
 			<div className={cx("controls-container")}>
-				<Controls />
+				<RankingControls />
 			</div>
 		</main>
 	);
 }
 
 const colors = {
-	ticket: "hsl(95, 70%, 50%)",
-	warning: "hsl(45, 100%, 50%)",
+	ticket: "#71d926",
+	warning: "#ffbf00",
 	ban: "#ff6673",
 	total: "#80aaff",
 };
