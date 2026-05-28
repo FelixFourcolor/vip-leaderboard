@@ -11,9 +11,11 @@ export function AboutPage() {
 		// to allow scrolling but only for this page
 		const root = document.getElementById("root")!;
 
-		const { maxHeight } = root.style;
+		const { overflow, maxHeight } = root.style;
+		root.style.overflow = "visible";
 		root.style.maxHeight = "none";
 		return () => {
+			root.style.overflow = overflow;
 			root.style.maxHeight = maxHeight;
 		};
 	}, []);
