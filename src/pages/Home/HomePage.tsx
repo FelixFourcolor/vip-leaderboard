@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import { useEffect, useState } from "react";
-import { DataBarTable } from "@/components/DataBarTable/DataBarTable";
+import { DataBarTable } from "@/components/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
 import type { ActivityType } from "@/db/activity";
 import { getUserStats, type UserStats } from "@/db/user";
@@ -26,11 +26,45 @@ export function HomePage() {
 		<main className={cx("home-page")}>
 			<div className={cx("table-container")} tabIndex={-1}>
 				<DataBarTable
-					rows={data}
-					headerLabel="User"
-					rowLabel={(props) => (
-						<UserHeader {...props} className={cx("user-header")} />
-					)}
+					data={data}
+					renderers={{
+						$index: {
+							header: "#",
+							data: ({ index }) => (
+								<div className={cx("cell")}>{index + 1}</div>
+							),
+						},
+						name: {
+							header: "User",
+							data: ({ row }) => (
+								<UserHeader {...row} className={cx("user-header")} />
+							),
+						},
+						ticket: {
+							header: "Tickets",
+							data: ({ row }) => (
+								<div className={cx("cell")}>{row.data.ticket || ""}</div>
+							),
+						},
+						warning: {
+							header: "Warnings",
+							data: ({ row }) => (
+								<div className={cx("cell")}>{row.data.warning || ""}</div>
+							),
+						},
+						ban: {
+							header: "Bans",
+							data: ({ row }) => (
+								<div className={cx("cell")}>{row.data.ban || ""}</div>
+							),
+						},
+						total: {
+							header: "Total",
+							data: ({ row }) => (
+								<div className={cx("cell")}>{row.data.total || ""}</div>
+							),
+						},
+					}}
 					colors={colors}
 					compare={compare}
 					sortBy={sortBy}
@@ -46,7 +80,7 @@ export function HomePage() {
 }
 
 const colors = {
-	ticket: "#6ad147",
+	ticket: "#5cc639",
 	warning: "#ffbf00",
 	ban: "#ff6673",
 	total: "#80aaff",

@@ -86,8 +86,6 @@
 	th,
 	td {
 		min-width: 0;
-		padding: 6px;
-		text-align: center;
 
 		/* manual border-collapse since it's not supported in grid */
 		border-right: 1px solid var(--text-tertiary);
@@ -97,23 +95,23 @@
 			min-width: 3ch;
 		}
 
-		> * {
+		.cell {
 			display: flex;
 			height: 100%;
 			align-items: center;
-			&:not(.user-header) {
-				justify-content: center;
-			}
+			justify-content: center;
 		}
 	}
 	th {
+		overflow: hidden;
 		border-top: 1px solid var(--text-tertiary);
-		background-color: rgb(from var(--accent) r g b / 0.85);
 		font-weight: var(--weight-bold);
 		color: var(--bg-primary);
-
+		[data-is-zack="true"] & {
+			color: white;
+		}
 		&:focus-visible {
-			outline-offset: -1px;
+			outline-offset: -2px;
 		}
 	}
 	tr {
@@ -125,12 +123,16 @@
 			position: sticky;
 			z-index: 2;
 			top: 0;
+			background-color: rgb(from var(--accent) r g b / 0.9);
 		}
-		&:nth-child(even) {
-			background-color: var(--bg-primary);
-		}
-		&:nth-child(odd) {
-			background-color: var(--bg-secondary);
+
+		&:not(:first-child) {
+			&:nth-child(even) {
+				background-color: var(--bg-primary);
+			}
+			&:nth-child(odd) {
+				background-color: var(--bg-secondary);
+			}
 		}
 	}
 

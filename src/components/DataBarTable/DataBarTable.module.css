@@ -1,6 +1,15 @@
 .data-bar-table {
+	td,
 	th {
-		text-transform: capitalize;
+		padding: var(--padding);
+
+		--padding: 6px;
+		@media (max-width: 500px) {
+			--padding: 4px;
+		}
+	}
+
+	th {
 		cursor: default;
 
 		&.sortable {
@@ -27,7 +36,8 @@
 			}
 			svg {
 				justify-self: end;
-				margin-right: -2px;
+				margin-right: -4px;
+				margin-left: -4px;
 			}
 
 			@media (max-width: 700px) {
@@ -38,17 +48,17 @@
 		}
 	}
 
-	td.data {
+	.data {
 		position: relative;
 		z-index: 1;
 
 		&::before {
 			content: "";
 			position: absolute;
-			left: 6px;
+			left: var(--padding);
 			width: 0;
-			top: 6px;
-			height: calc(100% - 12px);
+			top: var(--padding);
+			height: calc(100% - var(--padding) * 2);
 			transition: width 0.3s ease;
 			z-index: -1;
 			background-color: var(--bar-color);
@@ -56,7 +66,7 @@
 		}
 
 		&.sorted::before {
-			width: calc(100% * var(--bar-scale) - 12px);
+			width: calc(100% * var(--bar-scale) - var(--padding) * 2);
 		}
 	}
 }
