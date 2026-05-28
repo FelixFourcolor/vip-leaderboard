@@ -12,7 +12,7 @@ export interface RankingOptions {
 
 export const Route = createFileRoute("/")({
 	component: HomePage,
-	validateSearch: (search): RankingOptions =>
+	validateSearch: (search) =>
 		mapValues(search, (v, k) => {
 			if (k === "until" || k === "since") {
 				return !Number.isNaN(new Date(v as any).getTime()) ? v : undefined;
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
 					? v
 					: undefined;
 			}
-			return undefined;
-		}) as any,
+			return v;
+		}) as RankingOptions,
 	search: { middlewares: [retainSearchParams(true)] },
 });

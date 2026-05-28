@@ -14,7 +14,7 @@ export type ChartOptions = {
 
 export const Route = createFileRoute("/chart")({
 	component: ChartPage,
-	validateSearch: (search): ChartOptions =>
+	validateSearch: (search) =>
 		mapValues(search, (v, k) => {
 			if (k === "until" || k === "since") {
 				return !Number.isNaN(new Date(v as any).getTime()) ? v : undefined;
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/chart")({
 					? v
 					: undefined;
 			}
-			return undefined;
-		}) as any,
+			return v;
+		}) as ChartOptions,
 	search: { middlewares: [retainSearchParams(true)] },
 });
