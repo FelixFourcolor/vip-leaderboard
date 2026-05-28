@@ -25,18 +25,22 @@
 		width: 100%;
 	}
 	&:is(.scrolled, .absolute) {
-		&:hover {
-			z-index: 3;
-		}
-		&:not(:hover) {
-			transform: translateY(-100%);
-		}
 		&::after {
 			content: "";
 			position: absolute;
 			top: 100%;
 			width: 100%;
 			height: 100%;
+			transition: height 0.3s ease;
+		}
+		&:hover {
+			z-index: 3;
+			&::after {
+				height: 0;
+			}
+		}
+		&:not(:hover) {
+			transform: translateY(-100%);
 		}
 	}
 
