@@ -1,7 +1,7 @@
 .home-page {
 	display: grid;
 	grid-template-rows: 1fr auto;
-	max-height: 100vh;
+	height: 100vh;
 	gap: var(--gap);
 
 	--gap: 20px;
