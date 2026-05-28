@@ -96,6 +96,10 @@ export function RangeSlider<Value>({
 	const onDrag = (values: number[]) => {
 		let [from, to] = values as [number, number];
 		setValues(([currentFrom, currentTo]) => {
+			if (from === currentFrom && to === currentTo) {
+				return [currentFrom, currentTo];
+			}
+
 			activateThumb(from === currentFrom ? 1 : 0);
 
 			const distance = to - from;
@@ -118,7 +122,6 @@ export function RangeSlider<Value>({
 			if (from < 0 || to >= domain.length) {
 				return [currentFrom, currentTo];
 			}
-
 			return [from, to];
 		});
 	};
