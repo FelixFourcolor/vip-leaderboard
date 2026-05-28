@@ -46,7 +46,7 @@ export function HomePage() {
 }
 
 const colors = {
-	ticket: "#56d22d",
+	ticket: "#6ad147",
 	warning: "#ffbf00",
 	ban: "#ff6673",
 	total: "#80aaff",
