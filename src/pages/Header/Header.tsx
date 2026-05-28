@@ -1,22 +1,43 @@
 import { lastUpdated } from "virtual:db/last-updated";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
-import { useEffect, useState } from "react";
+import { type RefObject, useEffect, useState } from "react";
 import styles from "./Header.module.css";
 import { ZackToggle } from "./ZackToggle";
 
 const cx = classNames.bind(styles);
 
-export function Header() {
+type Props = {
+	position?: "sticky" | "absolute";
+	containerRef?: RefObject<HTMLDivElement | null>;
+};
+export function Header({ position = "sticky", containerRef }: Props) {
 	const [scrolled, setScrolled] = useState(false);
 	useEffect(() => {
-		const handleScroll = () => setScrolled(window.scrollY > 32);
-		window.addEventListener("scroll", handleScroll, { passive: true });
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+		if (position !== "sticky") {
+			return;
+		}
+
+		const container = containerRef?.current;
+
+		const handleScroll = () =>
+			setScrolled((container ? container.scrollTop : window.scrollY) > 32);
+
+		(container ?? window).addEventListener("scroll", handleScroll, {
+			passive: true,
+		});
+		return () =>
+			(container ?? window).removeEventListener("scroll", handleScroll);
+	}, [position, containerRef]);
 
 	return (
-		<header className={cx("header", { scrolled })}>
+		<header
+			className={cx("header", {
+				scrolled,
+				sticky: position === "sticky",
+				absolute: position === "absolute",
+			})}
+		>
 			<div>
 				<img
 					src="./icon.png"

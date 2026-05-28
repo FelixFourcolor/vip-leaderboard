@@ -22,20 +22,22 @@ export function RankingControls() {
 	);
 
 	return (
-		<div className={cx("controls")}>
-			<RangeSlider
-				className={cx("slider")}
-				domain={VALID_MONTHS}
-				selected={[since, until]}
-				onChange={onDateChange}
-				minDistance={0}
-			/>
-			<Button
-				onClick={() => setOptions(defaultOptions)}
-				disabled={isEqual(options, defaultOptions)}
-			>
-				Reset
-			</Button>
+		<div className={cx("controls-container")}>
+			<div className={cx("controls")}>
+				<RangeSlider
+					className={cx("slider")}
+					domain={VALID_MONTHS}
+					selected={[since, until]}
+					onChange={onDateChange}
+					minDistance={0}
+				/>
+				<Button
+					onClick={() => setOptions(defaultOptions)}
+					disabled={isEqual(options, defaultOptions)}
+				>
+					Reset
+				</Button>
+			</div>
 		</div>
 	);
 }

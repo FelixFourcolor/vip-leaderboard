@@ -1,25 +1,29 @@
 .home-page {
-	margin-top: 16px;
-	margin-bottom: 4px;
 	display: grid;
 	grid-template-rows: 1fr auto;
-	gap: 16px;
+	max-height: 100vh;
+	gap: var(--gap);
 
-	.table-container {
+	--gap: 20px;
+	@media (max-width: 700px) {
+		--gap: 16px;
+	}
+	@media (max-width: 500px) {
+		--gap: 12px;
+	}
+
+	.main-container {
 		overflow-y: auto;
-		padding: 0 24px;
-		@media (max-width: 500px) {
-			padding: 0 12px;
+		main {
+			margin: var(--gap);
+			margin-bottom: 0;
 		}
 	}
 
 	.controls-container {
 		display: flex;
 		justify-content: center;
-		padding: 0 24px;
-		@media (max-width: 500px) {
-			padding: 0 12px;
-		}
+		padding-bottom: 4px;
 
 		.controls {
 			display: flex;
@@ -30,7 +34,14 @@
 			align-items: center;
 			justify-content: center;
 			background-color: var(--bg-secondary);
-			border: 1px solid var(--text-tertiary);
+
+			outline: 1px solid var(--text-tertiary);
+			&:is(:focus-within, :hover) {
+				outline-color: var(--accent);
+				[data-is-zack="true"] & {
+					outline-width: 2px;
+				}
+			}
 
 			gap: 48px;
 			@media (max-width: 600px) {
@@ -43,7 +54,7 @@
 			.slider {
 				justify-self: center;
 				flex: 1;
-				max-width: 700px;
+				max-width: 650px;
 			}
 		}
 	}
