@@ -207,6 +207,7 @@ export function RangeSlider<Value>({
 	return (
 		<Range
 			values={values}
+			allowOverlap
 			onChange={onDrag}
 			min={0}
 			step={1}
