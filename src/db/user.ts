@@ -1,7 +1,8 @@
 import { and, count, eq, gte, inArray, lt, max, min, sql } from "drizzle-orm";
 import { groupBy } from "es-toolkit";
+import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
-import { pick, values } from "@/utils/object";
+import { fromEntries, pick, values } from "@/utils/object";
 import { offset, type YyyyMm } from "@/utils/time";
 import { type ActivityType, activityTypes } from "./activity";
 import { loadDb } from "./db";
@@ -20,8 +21,9 @@ type UserStatsParams<T extends ActivityType = ActivityType> = {
 	until?: YyyyMm;
 	types?: T[];
 };
-export interface UserStats<T extends ActivityType = ActivityType> extends User {
-	data: Record<T | "total", number>;
+export interface UserStats<T extends ActivityType = ActivityType>
+	extends User,
+		DataRow<T | "total"> {
 	lastActiveDate: Date;
 	firstActiveDate: Date;
 }
@@ -57,12 +59,12 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	return Object.entries(groupBy(rows, (r) => r.id)).map(([id, rows]) => {
 		const { name, color, avatarUrl } = rows[0]!;
 
-		const activitiesCount = Object.fromEntries(
+		const activitiesCount = fromEntries(
 			(types ?? activityTypes).map((type) => [
 				type,
 				rows.find((r) => r.type === type)?.count ?? 0,
 			]),
-		) as Record<T, number>;
+		);
 		const total = values(activitiesCount).reduce((sum, v) => sum + v, 0);
 		const data = { ...activitiesCount, total };
 

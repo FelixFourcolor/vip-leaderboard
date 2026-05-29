@@ -1,6 +1,7 @@
 import { count, eq, gte, lt, sql } from "drizzle-orm";
 import { and } from "drizzle-orm/sqlite-core/expressions";
 import { groupBy } from "es-toolkit";
+import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
 import { offset, type YyyyMm } from "@/utils/time";
 import { loadDb } from "./db";
@@ -13,27 +14,33 @@ export const activityLabels = {
 	ticket: "Tickets",
 	warning: "Warnings",
 	ban: "Bans",
-} satisfies Record<ActivityType, string>;
-export const categoryIcons = {
+	total: "Total",
+} as const satisfies Record<ActivityType | "total", string>;
+export const activityIcons = {
 	ticket: "✅",
 	warning: "⚠️",
 	ban: "🔨",
-} satisfies Record<ActivityType, string>;
+} as const satisfies Record<ActivityType, string>;
+export const activityColors = {
+	ticket: "#5cc639",
+	warning: "#ffbf00",
+	ban: "#ff6673",
+	total: "#6e9cf7",
+} as const satisfies Record<ActivityType | "total", string>;
 
-type ActivityCountParams = {
+type ActivityStatsParams = {
 	since?: YyyyMm;
 	until?: YyyyMm;
 	user?: string;
 };
-export type ActivityCount = {
-	type: ActivityType;
-	count: number;
-};
+export interface ActivityStats extends DataRow<"count"> {
+	type: ActivityType | "total";
+}
 export async function getActivityCount({
 	since,
 	until,
 	user,
-}: ActivityCountParams): Promise<ActivityCount[]> {
+}: ActivityStatsParams): Promise<ActivityStats[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -51,20 +58,30 @@ export async function getActivityCount({
 		.groupBy(activity.type)
 		.all();
 
-	return rows.sort(
-		(a, b) => activityTypes.indexOf(a.type) - activityTypes.indexOf(b.type),
-	);
+	return [
+		...activityTypes.map((type) => {
+			const row = rows.find((r) => r.type === type);
+			return {
+				type,
+				data: { count: row?.count ?? 0 },
+			};
+		}),
+		{
+			type: "total",
+			data: { count: rows.reduce((sum, r) => sum + r.count, 0) },
+		},
+	];
 }
 
-export interface ActivityMonthlyCount extends TimeSeries {
+export interface ActivityMonthlyStats extends TimeSeries {
 	type: ActivityType;
 	count: number;
 }
-export async function getActivityMonthlyCount({
+export async function getActivityMonthlyStats({
 	since,
 	until,
 	user,
-}: ActivityCountParams): Promise<ActivityMonthlyCount[]> {
+}: ActivityStatsParams): Promise<ActivityMonthlyStats[]> {
 	// make "until" include the last month
 	until = until ? offset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -87,16 +104,14 @@ export async function getActivityMonthlyCount({
 		.groupBy(activity.type, sql`month`)
 		.all();
 
-	const activities = Object.entries(groupBy(rows, (r) => r.type)).map(
-		([type, rows]) => ({
+	return Object.entries(groupBy(rows, (r) => r.type))
+		.map(([type, rows]) => ({
 			id: type,
 			type: type as ActivityType,
 			count: rows.reduce((sum, r) => sum + r.count, 0),
 			data: rows.map((r) => ({ x: r.month as YyyyMm, y: r.count })),
-		}),
-	);
-
-	return activities.sort(
-		(a, b) => activityTypes.indexOf(a.type) - activityTypes.indexOf(b.type),
-	);
+		}))
+		.sort(
+			(a, b) => activityTypes.indexOf(a.type) - activityTypes.indexOf(b.type),
+		);
 }

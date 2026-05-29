@@ -5,7 +5,7 @@ import { useCallback, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { activityLabels, activityTypes, categoryIcons } from "@/db/activity";
+import { activityIcons, activityLabels, activityTypes } from "@/db/activity";
 import { VALID_MONTHS } from "@/db/time";
 import { type ChartOptions, Route } from "@/routes/chart";
 import { offset, toYyyyMm, type YyyyMm } from "@/utils/time";
@@ -56,7 +56,7 @@ export function ChartControls() {
 								>
 									<span>{activityLabels[t]}</span>
 									<span aria-hidden className={cx("icon")}>
-										{categoryIcons[t]}
+										{activityIcons[t]}
 									</span>
 								</PopupMenu.Item>
 							))}

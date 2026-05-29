@@ -15,5 +15,5 @@ export type State<
 export type Pair<T> = [T, T];
 
 export type EitherOr<A extends object, B extends object> =
-	| (A & Partial<Record<keyof B, never>>)
-	| (B & Partial<Record<keyof A, never>>);
+	| (A & Partial<Record<Exclude<keyof B, keyof A>, never>>)
+	| (B & Partial<Record<Exclude<keyof A, keyof B>, never>>);

@@ -1,1 +1,1 @@
-export { DataBarTable } from "./DataBarTable";
+export { DataBarTable, type DataRow } from "./DataBarTable";
