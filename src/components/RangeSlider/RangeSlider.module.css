@@ -24,22 +24,8 @@
 	}
 
 	.bar {
-		background-color: var(--text-secondary);
-		display: flex;
 		height: 2px;
 		width: 100%;
-		flex-direction: row;
-
-		.pre {
-			height: 2px;
-			width: var(--pre);
-		}
-		.selected {
-			background-color: var(--accent);
-			align-self: center;
-			height: 2px;
-			width: var(--selected);
-		}
 	}
 
 	.thumb {

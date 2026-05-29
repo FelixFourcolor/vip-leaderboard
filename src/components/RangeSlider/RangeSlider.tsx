@@ -1,17 +1,10 @@
 import { isEqual } from "es-toolkit";
 import debounceFn from "es-toolkit/compat/debounce";
-import {
-	type Dispatch,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type Dispatch, useCallback, useMemo, useRef, useState } from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";
 import type { Pair } from "@/utils/types";
-import { Thumb } from "./Thumb";
+import { ThumbWrapper } from "./Thumb";
 import { Track } from "./Track";
 
 type SliderProps<Value> = {
@@ -175,37 +168,12 @@ export function RangeSlider<Value>({
 		});
 	};
 
-	const [labelsOverlap, setLabelsOverlap] = useState(false);
-	const fromLabelRef = useRef<HTMLSpanElement>(null);
-	const toLabelRef = useRef<HTMLSpanElement>(null);
-
-	const updateLabelOverlap = useCallback(() => {
-		const fromLabel = fromLabelRef.current;
-		const toLabel = toLabelRef.current;
-
-		if (!fromLabel || !toLabel || isActive.some(not)) {
-			setLabelsOverlap(false);
-			return;
-		}
-
-		const fromRect = fromLabel.getBoundingClientRect();
-		const toRect = toLabel.getBoundingClientRect();
-		const overlap = fromRect.right > toRect.left;
-		setLabelsOverlap(overlap);
-	}, [isActive]);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: values change = thumbs move = re-check for overlap
-	useEffect(updateLabelOverlap, [updateLabelOverlap, values]);
-
-	useEffect(() => {
-		addEventListener("resize", updateLabelOverlap);
-		return () => removeEventListener("resize", updateLabelOverlap);
-	}, [updateLabelOverlap]);
-
+	const rangeRef = useRef<Range>(null);
 	const max = domain.length - 1;
 
 	return (
 		<Range
+			ref={rangeRef}
 			values={values}
 			allowOverlap
 			onChange={onDrag}
@@ -232,23 +200,26 @@ export function RangeSlider<Value>({
 					{children}
 				</Track>
 			)}
-			renderThumb={({ props: thumbProps, index }) => (
-				<Thumb
-					{...thumbProps}
+			renderThumb={({ props, index }) => (
+				<ThumbWrapper
+					{...props}
 					key={index}
-					kind={index === 0 ? "from" : "to"}
-					onFocus={() => {
-						activateThumb(index);
-						setIsFocused([index === 0, index === 1]);
+					rangeRef={rangeRef}
+					values={values}
+					index={index}
+					domain={domain}
+					isActive={isActive}
+					isFocused={isFocused}
+					setIsFocused={(focused) => {
+						if (focused) {
+							activateThumb(index);
+							setIsFocused([index === 0, index === 1]);
+						} else {
+							setIsFocused([false, false]);
+						}
 					}}
-					onBlur={() => setIsFocused([false, false])}
-					label={domain[values[index]!]}
-					labelRef={[fromLabelRef, toLabelRef][index]}
-					showLabel={isActive[index] && (isFocused[index] || !labelsOverlap)}
 				/>
 			)}
 		/>
 	);
 }
-
-const not = (value: boolean) => !value;

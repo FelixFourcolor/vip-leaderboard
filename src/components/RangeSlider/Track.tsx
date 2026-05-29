@@ -1,5 +1,6 @@
 import classNames from "classnames/bind";
 import type { ComponentProps } from "react";
+import { getTrackBackground } from "react-range";
 import { useIsGrabbing } from "./Manager";
 import styles from "./RangeSlider.module.css";
 import { Thumb } from "./Thumb";
@@ -27,9 +28,6 @@ export function Track({
 	useIsGrabbing(isDragged);
 
 	const [from, to] = value;
-	const total = Math.max(max - min, 1);
-	const pre = ((from - min) / total) * 100;
-	const selected = ((to - from) / total) * 100;
 
 	return (
 		<div className={cx("container", className)}>
@@ -40,13 +38,18 @@ export function Track({
 				<div
 					className={cx("bar")}
 					style={{
-						["--pre" as string]: `${pre}%`,
-						["--selected" as string]: `${selected}%`,
+						background: getTrackBackground({
+							values: value as any, // bad react-range types
+							colors: [
+								"var(--text-secondary)",
+								"var(--accent)",
+								"var(--text-secondary)",
+							],
+							min,
+							max,
+						}),
 					}}
-				>
-					<div className={cx("pre")} />
-					<div className={cx("selected")} />
-				</div>
+				/>
 				{to !== max && <Thumb className={cx("limit")} kind="to" />}
 				<span className={cx("label", "max")}>{String(domain[max])}</span>
 			</div>
