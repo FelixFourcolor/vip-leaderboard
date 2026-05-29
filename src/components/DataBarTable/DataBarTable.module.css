@@ -1,12 +1,12 @@
 .data-bar-table {
+	--padding: 6px;
+	@media (max-width: 500px) {
+		--padding: 4px;
+	}
+
 	td,
 	th {
 		padding: var(--padding);
-
-		--padding: 6px;
-		@media (max-width: 500px) {
-			--padding: 4px;
-		}
 	}
 
 	th {
@@ -50,7 +50,7 @@
 
 	.data {
 		position: relative;
-		z-index: 1;
+		z-index: 0;
 
 		&::before {
 			content: "";

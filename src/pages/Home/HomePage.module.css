@@ -132,7 +132,7 @@
 
 		&:first-child {
 			position: sticky;
-			z-index: 2;
+			z-index: 1;
 			top: 0;
 			background-color: rgb(from var(--accent) r g b / 0.9);
 		}
