@@ -7,7 +7,7 @@ import type { Pair } from "@/utils/types";
 import { ThumbWrapper } from "./Thumb";
 import { Track } from "./Track";
 
-type SliderProps<Value> = {
+type RangeSliderProps<Value> = {
 	domain: readonly Value[];
 	selected: Pair<Value>;
 	onChange: Dispatch<Pair<Value>>;
@@ -15,6 +15,7 @@ type SliderProps<Value> = {
 	className?: string;
 	minDistance?: number;
 	maxDistance?: number;
+	autoHideLabel?: boolean;
 };
 
 export function RangeSlider<Value>({
@@ -25,7 +26,8 @@ export function RangeSlider<Value>({
 	minDistance = 1,
 	maxDistance = domain.length - 1,
 	className,
-}: SliderProps<Value>) {
+	autoHideLabel = false,
+}: RangeSliderProps<Value>) {
 	const [values, _setValues] = useSyncedState(
 		useCallback((): Pair<number> => {
 			const fromIndex = domain.indexOf(selectedFrom);
@@ -210,6 +212,7 @@ export function RangeSlider<Value>({
 					domain={domain}
 					isActive={isActive}
 					isFocused={isFocused}
+					autoHideLabel={autoHideLabel}
 					setIsFocused={(focused) => {
 						if (focused) {
 							activateThumb(index);

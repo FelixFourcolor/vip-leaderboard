@@ -33,6 +33,7 @@ export function ChartControls() {
 					selected={[since, until]}
 					onChange={onDateChange}
 					debounce={50}
+					autoHideLabel
 				/>
 
 				<PopupMenu>

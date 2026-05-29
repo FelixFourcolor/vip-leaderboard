@@ -40,6 +40,7 @@ export interface ThumbWrapperProps<Value> extends IThumbProps {
 	values: number[];
 	index: number;
 	domain: readonly Value[];
+	autoHideLabel: boolean;
 	isActive: Pair<boolean>;
 	isFocused: Pair<boolean>;
 	setIsFocused: (yes: boolean) => void;
@@ -50,6 +51,7 @@ export function ThumbWrapper<Value>({
 	values,
 	index,
 	domain,
+	autoHideLabel,
 	isActive,
 	isFocused,
 	setIsFocused,
@@ -69,13 +71,16 @@ export function ThumbWrapper<Value>({
 
 	const isMergedLabel = labelValue?.includes(" - ");
 
-	const showLabel = isMergedLabel
-		? isActive.some(Boolean) || isFocused.some(Boolean)
-		: isActive[index] || isFocused[index];
+	const showLabel =
+		!autoHideLabel ||
+		(isMergedLabel
+			? isActive.some(Boolean) || isFocused.some(Boolean)
+			: isActive[index] || isFocused[index]);
 
 	return (
 		<Thumb
 			{...props}
+			className={cx({ autoHideLabel })}
 			onFocus={() => setIsFocused(true)}
 			onBlur={() => setIsFocused(false)}
 			kind={index === 0 ? "from" : "to"}

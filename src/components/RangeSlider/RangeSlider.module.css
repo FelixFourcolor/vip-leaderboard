@@ -44,6 +44,15 @@
 				visibility: hidden;
 			}
 		}
+
+		&:not(.autoHideLabel):focus-visible {
+			.label {
+				outline: 1px solid var(--accent);
+				[data-is-zacky="true"] & {
+					outline-width: 2px;
+				}
+			}
+		}
 	}
 
 	.limit {
