@@ -1,7 +1,7 @@
 import classNames from "classnames/bind";
 import { type FC, type KeyboardEvent, type ReactNode, useMemo } from "react";
 import { entries, keys, values } from "@/utils/object";
-import type { EitherOr, State } from "@/utils/types";
+import type { EitherOr } from "@/utils/types";
 import styles from "./DataBarTable.module.css";
 
 const cx = classNames.bind(styles);
@@ -11,9 +11,8 @@ export interface DataRow<Col extends string = string> {
 }
 
 type Renderer<Row, H extends "with-header" | "no-header"> = {
-	header?: H extends "with-header" ? ReactNode : never;
 	cell?: FC<Row & { "[index]": number }>;
-};
+} & (H extends "with-header" ? { header: ReactNode } : { header?: never });
 
 type Columns<
 	Col extends string,
@@ -36,95 +35,83 @@ type Props<
 > = {
 	rows: Row[];
 	primaryKey: PK;
+	columns: Columns<Col, Row, "with-header"> | Columns<Col, Row, "no-header">;
+	activeColumn: Col;
+	onSort?: (col: Col) => void;
+	title?: ReactNode;
 	className?: string;
 } & EitherOr<
-	{ columnColors: Record<Col, string> },
 	// @ts-expect-error: Row[PK] *is* guaranteed to be PropertyKey by the PrimaryKey constraint,
 	// but TS doesn't know that
-	{ rowColors: Record<Row[PK], string> }
-> &
-	EitherOr<
-		{ columns: Columns<Col, Row, "with-header"> },
-		{ title: ReactNode; columns: Columns<Col, Row, "no-header"> }
-	> &
-	EitherOr<
-		{ scaleBy: Col },
-		{
-			compare: (a: Row, b: Row, by: Col) => number;
-		} & State<"sortBy", Col, { action: false }>
-	>;
+	{ rowColors: Record<Row[PK], string> },
+	{ columnColors: Record<Col, string> }
+>;
 
 export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	rows,
 	columns,
 	title,
+	activeColumn,
+	onSort,
 	columnColors,
 	rowColors,
 	primaryKey,
-	sortBy,
-	scaleBy = sortBy,
-	compare,
-	setSortBy,
 	className,
 }: Props<Row, PK>) {
 	type Col = Row extends DataRow<infer U> ? U : never;
 
-	const sortedRows = useMemo(
-		() =>
-			!compare || !sortBy
-				? rows
-				: rows.toSorted((a, b) => compare(a, b, sortBy)),
-		[rows, sortBy, compare],
-	);
-
+	const isSorted = onSort !== undefined;
 	const scales = useMemo(() => {
-		if (sortedRows.length === 0) {
+		if (rows.length === 0) {
 			return [];
 		}
-		if (!scaleBy) {
-			throw new Error("either scaleBy or sortBy must be provided");
-		}
-		const max = Math.max(...sortedRows.map((r) => r.data[scaleBy]!));
-		return sortedRows.map((r) => r.data[scaleBy]! / max);
-	}, [sortedRows, scaleBy]);
+		const max = isSorted
+			? rows[0]!.data[activeColumn]!
+			: Math.max(...rows.map((r) => r.data[activeColumn]!));
 
-	if (sortedRows.length === 0) {
+		return rows.map((r) => r.data[activeColumn]! / max);
+	}, [rows, activeColumn, isSorted]);
+
+	if (rows.length === 0) {
 		return;
 	}
 
-	const dataColumns = keys(sortedRows[0]!.data);
+	const dataColumns = keys(rows[0]!.data);
 	const isDataColumn = (col: any): col is Col => dataColumns.includes(col);
 
 	const headerSortProps = (col: Col) => ({
-		className: cx("sortable", { sorted: sortBy === col }),
-		"aria-sort": sortBy === col ? ("descending" as const) : undefined,
-		onClick: () => setSortBy?.(col),
-		tabIndex: sortBy === col ? -1 : 0,
+		className: cx("sortable", { sorted: activeColumn === col }),
+		"aria-sort": activeColumn === col ? ("descending" as const) : undefined,
+		onClick: () => onSort?.(col),
+		tabIndex: activeColumn === col ? -1 : 0,
 		onKeyDown: (e: KeyboardEvent) => {
 			if (e.key === "Enter" || e.key === " ") {
-				setSortBy?.(col);
+				onSort?.(col);
 				e.preventDefault();
 			}
 		},
 	});
 	const dataRowProps = (col: Col, index: number) => ({
-		className: cx("data", { scaled: scaleBy === col }),
+		className: cx("data", { scaled: activeColumn === col }),
 		style: {
 			["--bar-scale" as string]: scales[index],
 			["--bar-color" as string]:
-				columnColors?.[col] ?? rowColors?.[sortedRows[index]![primaryKey]],
+				columnColors?.[col] ?? rowColors?.[rows[index]![primaryKey]],
 		},
 	});
 
 	return (
 		<table className={cx("data-bar-table", className)}>
 			<tbody>
-				<tr>
-					{title ? (
+				{title && (
+					<tr>
 						<th colSpan={values(columns).length}>{title}</th>
-					) : (
-						entries(columns).map(([col, { header }]) =>
-							isDataColumn(col) && setSortBy ? (
+					</tr>
+				)}
+				{values(columns).some((c) => c.header) && (
+					<tr>
+						{entries(columns).map(([col, { header }]) =>
+							isDataColumn(col) && isSorted ? (
 								<th key={col} {...headerSortProps(col)}>
 									{header}
 									<SortIcon />
@@ -132,10 +119,10 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 							) : (
 								<th key={col.toString()}>{header}</th>
 							),
-						)
-					)}
-				</tr>
-				{sortedRows.map((row, i) => (
+						)}
+					</tr>
+				)}
+				{rows.map((row, i) => (
 					<tr key={String(row[primaryKey])}>
 						{entries(columns).map(([col, { cell: CellRenderer }]) =>
 							isDataColumn(col) ? (

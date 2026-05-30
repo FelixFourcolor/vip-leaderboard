@@ -89,8 +89,6 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 
 export interface UserMonthlyStats extends User, TimeSeries {
 	total: number;
-	lastActiveDate: Date;
-	firstActiveDate: Date;
 }
 export async function getUserMonthlyStats({
 	since,

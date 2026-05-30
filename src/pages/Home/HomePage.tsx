@@ -1,10 +1,9 @@
 import classNames from "classnames/bind";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
 import {
 	type ActivityStats,
-	type ActivityType,
 	activityColors,
 	activityIcons,
 	activityLabels,
@@ -21,12 +20,21 @@ export function HomePage() {
 	const [options, setOptions] = useHomeControls();
 	const { until, since, sortBy } = options;
 
-	const [userData, setUserData] = useState<UserStats[]>();
+	const [users, setUsers] = useState<UserStats[]>();
 	const [activityData, setActivityData] = useState<ActivityStats[]>();
 	useEffect(() => {
-		getUserStats({ since, until }).then(setUserData);
 		getActivityCount({ since, until }).then(setActivityData);
+		getUserStats({ since, until }).then(setUsers);
 	}, [since, until]);
+
+	const rankings = useMemo(() => {
+		return users?.sort(
+			(a, b) =>
+				b.data[sortBy] - a.data[sortBy] ||
+				b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
+				b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf(),
+		);
+	}, [users, sortBy]);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,14 +63,14 @@ export function HomePage() {
 								},
 								count: { cell: ({ data }) => data.count || "" },
 							}}
-							scaleBy="count"
+							activeColumn="count"
 							rowColors={activityColors}
 							className={cx("table", "summary-table")}
 						/>
 					)}
-					{userData && (
+					{rankings && (
 						<DataBarTable
-							rows={userData}
+							rows={rankings}
 							columns={{
 								"[index]": {
 									header: "#",
@@ -103,9 +111,8 @@ export function HomePage() {
 							}}
 							primaryKey="id"
 							columnColors={activityColors}
-							compare={compare}
-							sortBy={sortBy}
-							setSortBy={(sortBy) => setOptions({ sortBy })}
+							activeColumn={sortBy}
+							onSort={(sortBy) => setOptions({ sortBy })}
 							className={cx("table", "ranking-table")}
 						/>
 					)}
@@ -115,8 +122,3 @@ export function HomePage() {
 		</div>
 	);
 }
-
-const compare = (a: UserStats, b: UserStats, by: ActivityType | "total") =>
-	b.data[by] - a.data[by] ||
-	b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
-	b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf();
