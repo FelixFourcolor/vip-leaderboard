@@ -15,6 +15,12 @@
 	.main-container {
 		overflow-y: auto;
 
+		header {
+			@media (pointer: coarse) {
+				position: static;
+			}
+		}
+
 		main {
 			margin: 24px var(--side-margin) 0;
 

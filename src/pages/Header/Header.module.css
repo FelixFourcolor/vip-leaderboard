@@ -20,27 +20,29 @@
 	&.sticky {
 		position: sticky;
 	}
-	&.absolute {
-		position: absolute;
-		width: 100%;
-	}
-	&:is(.scrolled, .absolute) {
-		&::after {
-			content: "";
+	@media (pointer: fine) {
+		&.absolute {
 			position: absolute;
-			top: 100%;
 			width: 100%;
-			height: 100%;
-			transition: height 0.3s ease;
 		}
-		&:hover {
-			z-index: 2;
+		&.floating {
 			&::after {
-				height: 0;
+				content: "";
+				position: absolute;
+				top: 100%;
+				width: 100%;
+				height: 100%;
+				transition: height 0.3s ease;
 			}
-		}
-		&:not(:hover) {
-			transform: translateY(-100%);
+			&:is(:hover, :focus-within) {
+				z-index: 2;
+				&::after {
+					height: 0;
+				}
+			}
+			&:not(:hover, :focus-within) {
+				transform: translateY(-100%);
+			}
 		}
 	}
 

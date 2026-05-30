@@ -32,10 +32,8 @@ export function Header({ position = "sticky", containerRef }: Props) {
 
 	return (
 		<header
-			className={cx("header", {
-				scrolled,
-				sticky: position === "sticky",
-				absolute: position === "absolute",
+			className={cx("header", position, {
+				floating: position === "absolute" || scrolled,
 			})}
 		>
 			<div>
