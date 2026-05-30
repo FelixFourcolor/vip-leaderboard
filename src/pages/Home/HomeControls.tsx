@@ -49,51 +49,51 @@ export function HomeControls() {
 					onChange={onDateChange}
 					debounce={0}
 				/>
-				{isTouch ? (
-					<Button {...resetButtonProps} />
-				) : (
-					<PopupMenu menuId={controlMenuId}>
-						<PopupMenu.Trigger>
-							{(props) => <Button {...props}>Options</Button>}
-						</PopupMenu.Trigger>
-						<PopupMenu.Menu>
-							<PopupMenu.Item
-								selected={autoHide}
-								setSelected={(selected) => {
-									setAutoHide(selected);
-									if (selected) {
-										closeMenu();
-									}
-								}}
-							>
-								Auto-hide
-							</PopupMenu.Item>
-							<hr />
-							<PopupMenu.Item
-								selected={since === LAST_MONTH && until === LAST_MONTH}
-								setSelected={() =>
-									setTimeout(() =>
-										setOptions({ since: LAST_MONTH, until: LAST_MONTH }),
-									)
-								}
-							>
-								Last month
-							</PopupMenu.Item>
-							<PopupMenu.Item
-								selected={since === FIRST_MONTH && until === LAST_MONTH}
-								setSelected={() =>
-									setTimeout(() =>
-										setOptions({ since: FIRST_MONTH, until: LAST_MONTH }),
-									)
-								}
-							>
-								All time
-							</PopupMenu.Item>
-							<hr />
-							<PopupMenu.Item {...resetButtonProps} stayOpenOnClick />
-						</PopupMenu.Menu>
-					</PopupMenu>
-				)}
+				<PopupMenu menuId={controlMenuId}>
+					<PopupMenu.Trigger>
+						{(props) => <Button {...props}>Options</Button>}
+					</PopupMenu.Trigger>
+					<PopupMenu.Menu>
+						{!isTouch && (
+							<>
+								<PopupMenu.Item
+									selected={autoHide}
+									setSelected={(selected) => {
+										setAutoHide(selected);
+										if (selected) {
+											closeMenu();
+										}
+									}}
+								>
+									Auto-hide
+								</PopupMenu.Item>
+								<hr />
+							</>
+						)}
+						<PopupMenu.Item
+							selected={since === LAST_MONTH && until === LAST_MONTH}
+							setSelected={() =>
+								setTimeout(() =>
+									setOptions({ since: LAST_MONTH, until: LAST_MONTH }),
+								)
+							}
+						>
+							Last month
+						</PopupMenu.Item>
+						<PopupMenu.Item
+							selected={since === FIRST_MONTH && until === LAST_MONTH}
+							setSelected={() =>
+								setTimeout(() =>
+									setOptions({ since: FIRST_MONTH, until: LAST_MONTH }),
+								)
+							}
+						>
+							All time
+						</PopupMenu.Item>
+						<hr />
+						<PopupMenu.Item {...resetButtonProps} stayOpenOnClick />
+					</PopupMenu.Menu>
+				</PopupMenu>
 			</div>
 		</div>
 	);
