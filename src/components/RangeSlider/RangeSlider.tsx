@@ -63,10 +63,10 @@ export function RangeSlider<Value>({
 	);
 
 	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
-	const [isFocused, setIsFocused] = useState<Pair<boolean>>([false, false]);
-	// biome-ignore format: one line
-	const dragTimeoutRef = useRef<Pair<number | undefined>>([undefined, undefined]);
-
+	const activeTimeoutRef = useRef<Pair<number | undefined>>([
+		undefined,
+		undefined,
+	]);
 	const activateThumb = useCallback((...indices: number[]) => {
 		if (indices.length === 0) {
 			indices = [0, 1];
@@ -77,8 +77,8 @@ export function RangeSlider<Value>({
 				updated[i] = true;
 				return updated;
 			});
-			clearTimeout(dragTimeoutRef.current[i]);
-			dragTimeoutRef.current[i] = setTimeout(() => {
+			clearTimeout(activeTimeoutRef.current[i]);
+			activeTimeoutRef.current[i] = setTimeout(() => {
 				setIsActive((current) => {
 					const updated = [...current] as Pair<boolean>;
 					updated[i] = false;
@@ -211,16 +211,8 @@ export function RangeSlider<Value>({
 					index={index}
 					domain={domain}
 					isActive={isActive}
-					isFocused={isFocused}
 					autoHideLabel={autoHideLabel}
-					setIsFocused={(focused) => {
-						if (focused) {
-							activateThumb(index);
-							setIsFocused([index === 0, index === 1]);
-						} else {
-							setIsFocused([false, false]);
-						}
-					}}
+					onFocus={() => activateThumb(index)}
 				/>
 			)}
 		/>
