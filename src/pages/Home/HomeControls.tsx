@@ -1,10 +1,12 @@
 import { lastUpdated } from "virtual:db/last-updated";
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
+import { PopupMenu, usePopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
 import { VALID_MONTHS } from "@/db/time";
+import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { type RankingOptions, Route } from "@/routes/index";
 import { offset, toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
@@ -12,8 +14,8 @@ import styles from "./HomePage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function RankingControls() {
-	const [options, setOptions] = useRankingControls();
+export function HomeControls() {
+	const [options, setOptions] = useHomeControls();
 	const { until, since } = options;
 
 	const onDateChange = useCallback(
@@ -21,8 +23,25 @@ export function RankingControls() {
 		[setOptions],
 	);
 
+	const [controlMenuId] = useState(() => crypto.randomUUID());
+	const { activeMenuId, closeMenu } = usePopupMenu();
+	const isMenuOpen = activeMenuId === controlMenuId;
+
+	const [autoHide, setAutoHide] = useState(false);
+	const floating = autoHide && !isMenuOpen;
+
+	const isTouch = useIsTouchDevice((isTouch) => {
+		if (isTouch) setAutoHide(false);
+	});
+
+	const resetButtonProps = {
+		disabled: isEqual(options, defaultOptions),
+		onClick: () => setOptions(defaultOptions),
+		children: "Reset",
+	};
+
 	return (
-		<div className={cx("controls-container")}>
+		<div className={cx("controls-container", { floating })}>
 			<div className={cx("controls")}>
 				<RangeSlider
 					className={cx("slider")}
@@ -31,12 +50,33 @@ export function RankingControls() {
 					onChange={onDateChange}
 					minDistance={0}
 				/>
-				<Button
-					onClick={() => setOptions(defaultOptions)}
-					disabled={isEqual(options, defaultOptions)}
-				>
-					Reset
-				</Button>
+				{isTouch ? (
+					<Button {...resetButtonProps} />
+				) : (
+					<PopupMenu menuId={controlMenuId}>
+						<PopupMenu.Trigger>
+							{(props) => <Button {...props}>Options</Button>}
+						</PopupMenu.Trigger>
+						<PopupMenu.Menu>
+							<PopupMenu.Item
+								selected={autoHide}
+								setSelected={(selected) => {
+									setAutoHide(selected);
+									if (selected) {
+										closeMenu();
+									}
+								}}
+							>
+								Auto-hide
+							</PopupMenu.Item>
+							<hr />
+							<PopupMenu.Item
+								{...resetButtonProps}
+								stayOpenOnClick={autoHide}
+							/>
+						</PopupMenu.Menu>
+					</PopupMenu>
+				)}
 			</div>
 		</div>
 	);
@@ -48,7 +88,7 @@ const defaultOptions = {
 	sortBy: "total",
 } satisfies Required<RankingOptions>;
 
-export function useRankingControls() {
+export function useHomeControls() {
 	const search = Route.useSearch();
 	const options = useMemo(() => ({ ...defaultOptions, ...search }), [search]);
 

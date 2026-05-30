@@ -12,13 +12,13 @@ import {
 } from "@/db/activity";
 import { getUserStats, type UserStats } from "@/db/user";
 import { Header } from "../Header";
+import { HomeControls, useHomeControls } from "./HomeControls";
 import styles from "./HomePage.module.css";
-import { RankingControls, useRankingControls } from "./RankingControls";
 
 const cx = classNames.bind(styles);
 
 export function HomePage() {
-	const [options, setOptions] = useRankingControls();
+	const [options, setOptions] = useHomeControls();
 	const { until, since, sortBy } = options;
 
 	const [userData, setUserData] = useState<UserStats[]>();
@@ -111,7 +111,7 @@ export function HomePage() {
 					)}
 				</main>
 			</div>
-			<RankingControls />
+			<HomeControls />
 		</div>
 	);
 }

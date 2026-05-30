@@ -1,4 +1,11 @@
-import { createContext, type ReactNode, useEffect, useState } from "react";
+import {
+	createContext,
+	type ReactNode,
+	use,
+	useCallback,
+	useEffect,
+	useState,
+} from "react";
 import type { Maybe, State } from "@/utils/types";
 
 type GlobalContextValue = State<"activeMenuId", Maybe<string>>;
@@ -39,4 +46,19 @@ export function Manager({ children }: { children: ReactNode }) {
 			{children}
 		</GlobalMenuContext>
 	);
+}
+
+export function usePopupMenu() {
+	const context = use(GlobalMenuContext);
+	if (!context) {
+		throw new Error("usePopupMenu must be used within a PopupMenuManager");
+	}
+
+	const { activeMenuId, setActiveMenuId } = context;
+	const closeMenu = useCallback(
+		() => setActiveMenuId(undefined),
+		[setActiveMenuId],
+	);
+
+	return { activeMenuId, closeMenu };
 }

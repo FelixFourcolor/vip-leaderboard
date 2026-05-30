@@ -5,6 +5,8 @@ import { Menu } from "./Menu";
 import { Trigger } from "./Trigger";
 import { Wrapper } from "./Wrapper";
 
+export { usePopupMenu } from "./Manager";
+
 export const PopupMenu = Object.assign(Wrapper, {
 	Menu,
 	Trigger,

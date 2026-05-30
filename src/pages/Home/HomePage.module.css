@@ -4,6 +4,9 @@
 	height: 100vh;
 	gap: 12px;
 
+	position: relative;
+	overflow: hidden;
+
 	--side-margin: 24px;
 	@media (max-width: 700px) {
 		--side-margin: 16px;
@@ -35,40 +38,66 @@
 		display: flex;
 		justify-content: center;
 		margin: 0 var(--side-margin);
-		margin-bottom: 4px;
 
-		.controls {
-			display: flex;
-			box-sizing: border-box;
-			width: 100%;
-			max-width: 1000px;
-			padding: 20px;
-			align-items: center;
-			justify-content: center;
-			background-color: var(--bg-secondary);
+		transition: transform 0.3s ease;
+		&.floating {
+			z-index: 1;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
 
-			outline: 1px solid var(--text-tertiary);
-			&:is(:focus-within, :hover) {
-				outline-color: var(--accent);
-				[data-is-zack="true"] & {
-					outline-width: 2px;
+			&::before {
+				content: "";
+				position: absolute;
+				bottom: 100%;
+				width: 100%;
+				height: 100%;
+				transition: height 0.3s ease;
+			}
+			&:is(:hover, :has(:focus-visible)) {
+				&::before {
+					height: 0;
 				}
 			}
-
-			gap: 48px;
-			@media (max-width: 600px) {
-				gap: 32px;
-			}
-			@media (max-width: 450px) {
-				gap: 24px;
-			}
-
-			.slider {
-				justify-self: center;
-				flex: 1;
-				max-width: 650px;
+			&:not(:hover, :has(:focus-visible)) {
+				transform: translateY(calc(100% + 5px));
 			}
 		}
+	}
+}
+
+.controls {
+	display: flex;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 1000px;
+	margin-bottom: 6px;
+	padding: 20px;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--bg-secondary);
+
+	outline: 1px solid var(--text-tertiary);
+	&:is(:focus-within, :hover) {
+		outline-color: var(--accent);
+		[data-is-zack="true"] & {
+			outline-width: 2px;
+		}
+	}
+
+	gap: 48px;
+	@media (max-width: 600px) {
+		gap: 32px;
+	}
+	@media (max-width: 450px) {
+		gap: 24px;
+	}
+
+	.slider {
+		justify-self: center;
+		flex: 1;
+		max-width: 650px;
 	}
 }
 

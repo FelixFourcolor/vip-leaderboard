@@ -25,13 +25,19 @@ interface LocalContextValue {
 const LocalMenuContext = createContext<LocalContextValue | null>(null);
 
 type Props = {
+	menuId?: string;
 	placement?: Placement;
 	offset?: number;
 	children?: React.ReactNode;
 };
 
-export function Wrapper({ children, placement, offset = 8 }: Props) {
-	const [menuId] = useState(() => crypto.randomUUID());
+export function Wrapper({
+	menuId: menuIdProp,
+	children,
+	placement,
+	offset = 8,
+}: Props) {
+	const [menuId] = useState(() => menuIdProp || crypto.randomUUID());
 
 	const { refs, floatingStyles } = useFloating({
 		strategy: "absolute",
