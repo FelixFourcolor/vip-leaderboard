@@ -51,7 +51,7 @@ export function Legend<S extends TimeSeries>({
 	const {
 		visibleIdx = colorRange(colors),
 		setVisibleIdx,
-		setFocusedSeries,
+		setActiveSeries,
 	} = useChart();
 
 	const setVisibleFrom = useCallback(
@@ -173,10 +173,10 @@ export function Legend<S extends TimeSeries>({
 						seriesColor={colorMapping[series.id]!}
 						onMouseEnter={() => {
 							if (!isResizing && !isGrabbing) {
-								setFocusedSeries(series.id);
+								setActiveSeries(series.id);
 							}
 						}}
-						onMouseLeave={() => setFocusedSeries(undefined)}
+						onMouseLeave={() => setActiveSeries(undefined)}
 						onFocus={() => {
 							const legend = legendRef.current;
 							if (!legend || !entryHeight) {
@@ -194,11 +194,11 @@ export function Legend<S extends TimeSeries>({
 								);
 							}
 							isEntryFocusedRef.current = true;
-							setFocusedSeries(series.id);
+							setActiveSeries(series.id);
 						}}
 						onBlur={() => {
 							isEntryFocusedRef.current = false;
-							setFocusedSeries((current) =>
+							setActiveSeries((current) =>
 								current === series.id ? undefined : current,
 							);
 						}}

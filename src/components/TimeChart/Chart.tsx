@@ -104,7 +104,7 @@ const DEFAULT_CONFIGS = {
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
 function useNivoData(): NivoSeries[] | undefined {
-	const { focusedSeries, chartData, stacked } = useChart();
+	const { activeSeries, chartData, stacked } = useChart();
 
 	const data = useMemo(() => {
 		return chartData?.map(({ id, data }) => ({
@@ -121,13 +121,13 @@ function useNivoData(): NivoSeries[] | undefined {
 			// to draw higher-ranked series above (idk why nivo does it reversed)
 			return [...data].reverse();
 		}
-		if (focusedSeries) {
-			// to draw the focused series on top
-			const [focused, others] = partition(data, (s) => s.id === focusedSeries);
-			return [...others, ...focused];
+		if (activeSeries) {
+			// to draw the active series on top
+			const [active, others] = partition(data, (s) => s.id === activeSeries);
+			return [...others, ...active];
 		}
 		return data;
-	}, [data, stacked, focusedSeries]);
+	}, [data, stacked, activeSeries]);
 }
 
 function useColors() {

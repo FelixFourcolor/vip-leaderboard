@@ -7,7 +7,7 @@ import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
 interface ChartContextValue<S extends TimeSeries = TimeSeries>
-	extends State<"focusedSeries", Maybe<string>>,
+	extends State<"activeSeries", Maybe<string>>,
 		State<"hoveredPoint", Maybe<InteractivePoint>>,
 		State<"visibleIdx", Maybe<VisibleIdx>> {
 	chartSeries: readonly Omit<S, "data">[] | undefined;
@@ -28,7 +28,7 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 		throw new Error("useChart must be used within ChartContext");
 	}
 
-	const { hoveredPoint, isolatedPoints, focusedSeries, ...rest } = context;
+	const { hoveredPoint, isolatedPoints, activeSeries, ...rest } = context;
 
 	const isPointHovered = useCallback(
 		(point: InteractivePoint) =>
@@ -44,18 +44,18 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 	);
 
 	const isHighlighted = useCallback(
-		(seriesId: string) => focusedSeries === seriesId,
-		[focusedSeries],
+		(seriesId: string) => activeSeries === seriesId,
+		[activeSeries],
 	);
 
 	const isMuted = useCallback(
-		(seriesId: string) => focusedSeries && focusedSeries !== seriesId,
-		[focusedSeries],
+		(seriesId: string) => activeSeries && activeSeries !== seriesId,
+		[activeSeries],
 	);
 
 	return {
 		...rest,
-		focusedSeries,
+		activeSeries,
 		isPointHovered,
 		isPointIsolated,
 		isHighlighted,

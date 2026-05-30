@@ -12,18 +12,17 @@ export function Interaction({
 	series,
 	yScale,
 }: LineCustomSvgLayerProps<NivoSeries>) {
-	const { setFocusedSeries, setHoveredPoint, stacked } = useChart();
+	const { setActiveSeries, setHoveredPoint, stacked } = useChart();
 
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 
 	const focus = (point: InteractivePoint) => {
-		setFocusedSeries(point.seriesId);
+		setActiveSeries(point.seriesId);
 		setHoveredPoint(point);
 	};
-
 	const unfocus = () => {
-		setFocusedSeries(undefined);
+		setActiveSeries(undefined);
 		setHoveredPoint(undefined);
 	};
 

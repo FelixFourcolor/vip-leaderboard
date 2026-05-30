@@ -42,7 +42,7 @@ export function ChartWrapper<S extends TimeSeries>({
 	children,
 }: Props<S>) {
 	const [visibleIdx, setVisibleIdx] = useState<VisibleIdx>();
-	const [focusedSeries, setFocusedSeries] = useState<string>();
+	const [activeSeries, setActiveSeries] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
 	const visibleData = useFilter(data, visibleIdx);
@@ -62,8 +62,8 @@ export function ChartWrapper<S extends TimeSeries>({
 				cumulative,
 				PointTooltip: PointTooltip as any, // generics
 				isolatedPoints: useIsolatedPoints(chartData),
-				focusedSeries,
-				setFocusedSeries,
+				activeSeries,
+				setActiveSeries,
 				hoveredPoint,
 				setHoveredPoint,
 				visibleIdx,
