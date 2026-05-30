@@ -23,7 +23,7 @@ export function RangeSlider<Value>({
 	selected: [selectedFrom, selectedTo],
 	onChange,
 	debounce,
-	minDistance = 1,
+	minDistance = 0,
 	maxDistance = domain.length - 1,
 	className,
 	autoHideLabel = false,
@@ -40,7 +40,7 @@ export function RangeSlider<Value>({
 	);
 
 	const onChangeDebounced = useMemo(
-		() => (debounce ? debounceFn(onChange, debounce) : onChange),
+		() => (debounce !== undefined ? debounceFn(onChange, debounce) : onChange),
 		[onChange, debounce],
 	);
 

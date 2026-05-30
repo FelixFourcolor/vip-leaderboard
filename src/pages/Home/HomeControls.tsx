@@ -36,7 +36,7 @@ export function HomeControls() {
 
 	const resetButtonProps = {
 		disabled: isEqual(options, defaultOptions),
-		onClick: () => setOptions(defaultOptions),
+		onClick: () => setTimeout(() => setOptions(defaultOptions), 0),
 		children: "Reset",
 	};
 
@@ -48,7 +48,7 @@ export function HomeControls() {
 					domain={VALID_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
-					minDistance={0}
+					debounce={0}
 				/>
 				{isTouch ? (
 					<Button {...resetButtonProps} />

@@ -47,11 +47,13 @@ export function ChartControls() {
 									key={t}
 									selected={types.includes(t)}
 									setSelected={(selected) => {
-										if (selected) {
-											setOptions({ types: [...types, t] });
-										} else {
-											setOptions({ types: types.filter((x) => x !== t) });
-										}
+										setTimeout(() => {
+											if (selected) {
+												setOptions({ types: [...types, t] });
+											} else {
+												setOptions({ types: types.filter((x) => x !== t) });
+											}
+										}, 0);
 									}}
 									className={cx("menu-item")}
 								>
@@ -82,7 +84,7 @@ export function ChartControls() {
 						<hr />
 						<PopupMenu.Item
 							disabled={isEqual(options, defaultOptions)}
-							onClick={() => setOptions(defaultOptions)}
+							onClick={() => setTimeout(() => setOptions(defaultOptions), 0)}
 							className={cx("menu-item")}
 						>
 							Reset
