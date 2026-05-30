@@ -1,4 +1,11 @@
-import { type JSX, type ReactNode, useMemo, useState } from "react";
+import {
+	type JSX,
+	type ReactNode,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useDelay } from "@/hooks/useDelay";
 import { windowed } from "@/utils/array";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
@@ -49,8 +56,37 @@ export function ChartWrapper<S extends TimeSeries>({
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
 
-	const renderReady = useDelay(renderDelay) || renderDelay === undefined;
+	const visibleIds = useMemo(
+		() => new Set(visibleData?.map(({ id }) => id)),
+		[visibleData],
+	);
+	// A bunch of badly written glue code to
+	// sync activeSeries, hoveredPoint and visibleIdx.
+	// If something breaks, it's probbably here.
+	const prevActiveSeries = useRef(activeSeries);
+	useEffect(() => {
+		if (activeSeries) {
+			// inactivate series if it becomes invisible
+			if (!visibleIds.has(activeSeries)) {
+				setActiveSeries(undefined);
+				prevActiveSeries.current = undefined;
+			}
+			// hide tooltip if hovered point doesn't belong to active series anymore
+			else if (hoveredPoint && hoveredPoint.seriesId !== activeSeries) {
+				setHoveredPoint(undefined);
+			}
+		}
+		// recover the active series if it becomes visible again
+		else if (
+			prevActiveSeries.current &&
+			prevActiveSeries.current === hoveredPoint?.seriesId &&
+			visibleIds.has(hoveredPoint.seriesId)
+		) {
+			setActiveSeries(hoveredPoint.seriesId);
+		}
+	}, [visibleIds, activeSeries, hoveredPoint]);
 
+	const renderReady = useDelay(renderDelay) || renderDelay === undefined;
 	return (
 		<ChartContext
 			value={{
