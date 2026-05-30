@@ -66,19 +66,6 @@ function Content() {
 						Tracked channel: <DiscordLink warning-log />
 					</p>
 					<p>
-						Warnings are detected by the presence of a user ID in the message
-						content.{" "}
-						<span className={cx("tangent")}>
-							(Oops{" "}
-							<img
-								src="https://cdn.discordapp.com/emojis/1269432955059568710.png"
-								width="16"
-								alt="mschae restaurant"
-							/>
-							)
-						</span>
-					</p>
-					<p>
 						Each VIP earns 1 point for each warning. Batch warnings count
 						multiple times, once for each recipient.
 					</p>
@@ -95,10 +82,6 @@ function Content() {
 							served all 3 purposes)
 						</li>
 					</ul>
-					<p>
-						Bans are detected by the presence of a user ID in the message
-						content.
-					</p>
 					<p>
 						Each VIP earns 1 point for each ban. Batch bans count multiple
 						times, once for each recipient.
@@ -195,19 +178,6 @@ function Content() {
 					</p>
 				</Subsection>
 
-				<Subsection title="Can I opt out?">
-					<p>Of course, just let me know.</p>
-				</Subsection>
-
-				<Subsection title="How often is the data updated?">
-					<p>
-						I scrape the server once at the end of each month. That also means
-						if you resolve a ticket from a previous month, it will not be
-						counted.
-					</p>
-					<p>Bad, I know. But the data is already unreliable in other ways.</p>
-				</Subsection>
-
 				<Subsection title="Why only count the last 2 years?">
 					<p>
 						Mostly to make it more exicting to check back every month, as
@@ -225,6 +195,10 @@ function Content() {
 						canonical ranking is based on the last 2 years (because I say so
 						😎).
 					</p>
+				</Subsection>
+
+				<Subsection title="Can I opt out?">
+					<p>Of course, just let me know.</p>
 				</Subsection>
 
 				<Subsection title="Why is it buggy?">
