@@ -10,6 +10,7 @@ import {
 } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toDate } from "@/utils/time";
+import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./context";
 import { Areas } from "./layers/Areas";
 import { Interaction } from "./layers/Interaction";
@@ -17,7 +18,6 @@ import { Labels } from "./layers/Labels";
 import { Lines } from "./layers/Lines";
 import { Points } from "./layers/Points";
 import styles from "./TimeChart.module.css";
-import type { TimeSeries } from "./Wrapper";
 
 const cx = classNames.bind(styles);
 

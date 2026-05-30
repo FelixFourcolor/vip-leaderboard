@@ -2,7 +2,7 @@ import classNames from "classnames/bind";
 import type { ReactNode } from "react";
 import type { EitherOr, State } from "@/utils/types";
 import styles from "./PopupMenu.module.css";
-import { usePopupMenu } from "./Wrapper";
+import { useLocalMenu } from "./PopupWrapper";
 
 const cx = classNames.bind(styles);
 
@@ -24,7 +24,7 @@ export function Item({
 	className,
 	children,
 }: Props) {
-	const { setMenuOpen } = usePopupMenu();
+	const { setMenuOpen } = useLocalMenu();
 
 	return (
 		<li className={cx("item", { disabled })}>
@@ -50,19 +50,17 @@ export function Item({
 	);
 }
 
-function CheckIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			aria-hidden
-			viewBox="0 0 24 24"
-			className={className}
-			width="1em"
-			height="1em"
-		>
-			<path
-				fill="currentColor"
-				d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-			/>
-		</svg>
-	);
-}
+const CheckIcon = ({ className }: { className?: string }) => (
+	<svg
+		aria-hidden
+		viewBox="0 0 24 24"
+		className={className}
+		width="1em"
+		height="1em"
+	>
+		<path
+			fill="currentColor"
+			d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+		/>
+	</svg>
+);

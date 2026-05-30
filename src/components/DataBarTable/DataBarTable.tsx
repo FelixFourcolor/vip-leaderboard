@@ -252,16 +252,14 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	);
 }
 
-function SortIcon() {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="20"
-			height="20"
-			viewBox="0 0 24 24"
-			fill="currentColor"
-		>
-			<path d="M6 8l6 8 6-8z" />
-		</svg>
-	);
-}
+const SortIcon = () => (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		width="20"
+		height="20"
+		viewBox="0 0 24 24"
+		fill="currentColor"
+	>
+		<path d="M6 8l6 8 6-8z" />
+	</svg>
+);

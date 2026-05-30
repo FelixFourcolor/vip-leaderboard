@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { usePopupMenu } from "./Wrapper";
+import { useLocalMenu } from "./PopupWrapper";
 
 type Props = {
 	children: (props: {
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function Trigger({ children: Renderer }: Props) {
-	const { menuId, isMenuOpen, setMenuOpen, triggerRef } = usePopupMenu();
+	const { menuId, isMenuOpen, setMenuOpen, triggerRef } = useLocalMenu();
 
 	return (
 		<Renderer

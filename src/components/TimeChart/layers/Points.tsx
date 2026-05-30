@@ -6,7 +6,7 @@ import { toYyyyMm } from "@/utils/time";
 import type { NivoPoint, NivoSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
-import type { TimePoint, TimeSeries } from "../Wrapper";
+import type { TimePoint, TimeSeries } from "../ChartWrapper";
 
 const cx = classNames.bind(styles);
 

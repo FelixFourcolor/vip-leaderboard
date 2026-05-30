@@ -1,10 +1,10 @@
 import { createContext, type ReactElement, use, useCallback } from "react";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
+import type { TimeSeries } from "./ChartWrapper";
 import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
-import type { TimeSeries } from "./Wrapper";
 
 interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	extends State<"focusedSeries", Maybe<string>>,

@@ -38,13 +38,13 @@ export function ZackToggle() {
 						? zackAvatarUrl
 							? `url("${zackAvatarUrl}")`
 							: undefined
-						: `url("${moonSvg}")`,
+						: `url("${moonSvgUrl}")`,
 				},
 			}}
 		/>
 	);
 }
 
-const moonSvg = `data:image/svg+xml,${encodeURIComponent(
+const moonSvgUrl = `data:image/svg+xml,${encodeURIComponent(
 	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#21202f"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
 )}`;

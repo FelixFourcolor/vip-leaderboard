@@ -1,10 +1,10 @@
+export type { TimeSeries } from "./ChartWrapper";
 export { useChart } from "./context";
 export type { LegendEntryProps } from "./Legend";
 export type { PointTooltipProps } from "./layers/Points.tsx";
-export type { TimeSeries } from "./Wrapper";
 
 import { Chart } from "./Chart";
+import { ChartWrapper } from "./ChartWrapper";
 import { Legend } from "./Legend";
-import { Wrapper } from "./Wrapper";
 
-export const TimeChart = Object.assign(Wrapper, { Chart, Legend });
+export const TimeChart = Object.assign(ChartWrapper, { Chart, Legend });

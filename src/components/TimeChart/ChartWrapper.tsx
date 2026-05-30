@@ -30,7 +30,7 @@ type Props<S extends TimeSeries> = {
 	children: ReactNode;
 };
 
-export function Wrapper<S extends TimeSeries>({
+export function ChartWrapper<S extends TimeSeries>({
 	data,
 	since,
 	until,

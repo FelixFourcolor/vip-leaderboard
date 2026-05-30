@@ -31,7 +31,7 @@ type Props = {
 	children?: React.ReactNode;
 };
 
-export function Wrapper({
+export function PopupWrapper({
 	menuId: menuIdProp,
 	children,
 	placement,
@@ -64,16 +64,16 @@ export function Wrapper({
 	);
 }
 
-export function usePopupMenu() {
+export function useLocalMenu() {
 	const globalContext = use(GlobalMenuContext);
 	if (!globalContext) {
-		throw new Error("usePopupMenu must be used within a PopupMenuManager");
+		throw new Error("useLocalMenu must be used within a PopupMenuManager");
 	}
 	const { activeMenuId, setActiveMenuId } = globalContext;
 
 	const localContext = use(LocalMenuContext);
 	if (!localContext) {
-		throw new Error("usePopupMenu must be used within a PopupMenu");
+		throw new Error("useLocalMenu must be used within a PopupMenu");
 	}
 	const { menuId, ...menuConfigs } = localContext;
 
