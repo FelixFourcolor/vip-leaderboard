@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu, usePopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { ALL_MONTHS, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
+import { ALL_MONTHS, FIRST_MONTH, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { type RankingOptions, Route } from "@/routes/index";
 import type { YyyyMm } from "@/utils/time";
@@ -67,6 +67,27 @@ export function HomeControls() {
 								}}
 							>
 								Auto-hide
+							</PopupMenu.Item>
+							<hr />
+							<PopupMenu.Item
+								selected={since === LAST_MONTH && until === LAST_MONTH}
+								setSelected={() =>
+									setTimeout(() =>
+										setOptions({ since: LAST_MONTH, until: LAST_MONTH }),
+									)
+								}
+							>
+								Last month
+							</PopupMenu.Item>
+							<PopupMenu.Item
+								selected={since === FIRST_MONTH && until === LAST_MONTH}
+								setSelected={() =>
+									setTimeout(() =>
+										setOptions({ since: FIRST_MONTH, until: LAST_MONTH }),
+									)
+								}
+							>
+								All time
 							</PopupMenu.Item>
 							<hr />
 							<PopupMenu.Item {...resetButtonProps} stayOpenOnClick />
