@@ -85,6 +85,7 @@ export function ChartControls() {
 						<PopupMenu.Item
 							disabled={isEqual(options, defaultOptions)}
 							onClick={() => setTimeout(() => setOptions(defaultOptions), 0)}
+							stayOpenOnClick
 							className={cx("menu-item")}
 						>
 							Reset

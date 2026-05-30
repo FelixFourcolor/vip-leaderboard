@@ -70,10 +70,7 @@ export function HomeControls() {
 								Auto-hide
 							</PopupMenu.Item>
 							<hr />
-							<PopupMenu.Item
-								{...resetButtonProps}
-								stayOpenOnClick={autoHide}
-							/>
+							<PopupMenu.Item {...resetButtonProps} />
 						</PopupMenu.Menu>
 					</PopupMenu>
 				)}
