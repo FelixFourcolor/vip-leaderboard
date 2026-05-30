@@ -1,4 +1,8 @@
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+	createHashHistory,
+	createRouter,
+	RouterProvider,
+} from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { GrabManager } from "./components/RangeSlider";
@@ -9,11 +13,17 @@ import { PopupMenu } from "./components/PopupMenu";
 
 const router = createRouter({
 	routeTree,
-	basepath: "/vip-leaderboard/",
+	history: createHashHistory(),
 	defaultPreload: "intent",
 	defaultPreloadStaleTime: 0,
 	scrollRestoration: true,
 });
+
+declare module "@tanstack/react-router" {
+	interface Register {
+		router: typeof router;
+	}
+}
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -26,9 +36,3 @@ createRoot(document.getElementById("root")!).render(
 		</PopupMenu.Manager>
 	</StrictMode>,
 );
-
-declare module "@tanstack/react-router" {
-	interface Register {
-		router: typeof router;
-	}
-}
