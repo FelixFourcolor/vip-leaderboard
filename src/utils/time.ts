@@ -30,7 +30,7 @@ export function monthsInRange(
 	);
 }
 
-export function offset(
+export function timeOffset(
 	date: YyyyMm | Date,
 	offset: Partial<Record<"days" | "months" | "years", number>>,
 ): YyyyMm {

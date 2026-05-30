@@ -1,14 +1,13 @@
-import { lastUpdated } from "virtual:db/last-updated";
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu, usePopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
-import { VALID_MONTHS } from "@/db/time";
+import { ALL_MONTHS, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { type RankingOptions, Route } from "@/routes/index";
-import { offset, toYyyyMm, type YyyyMm } from "@/utils/time";
+import type { YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
 import styles from "./HomePage.module.css";
 
@@ -36,7 +35,7 @@ export function HomeControls() {
 
 	const resetButtonProps = {
 		disabled: isEqual(options, defaultOptions),
-		onClick: () => setTimeout(() => setOptions(defaultOptions), 0),
+		onClick: () => setTimeout(() => setOptions(defaultOptions)),
 		children: "Reset",
 	};
 
@@ -45,7 +44,7 @@ export function HomeControls() {
 			<div className={cx("controls")}>
 				<RangeSlider
 					className={cx("slider")}
-					domain={VALID_MONTHS}
+					domain={ALL_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
 					debounce={0}
@@ -70,7 +69,7 @@ export function HomeControls() {
 								Auto-hide
 							</PopupMenu.Item>
 							<hr />
-							<PopupMenu.Item {...resetButtonProps} />
+							<PopupMenu.Item {...resetButtonProps} stayOpenOnClick />
 						</PopupMenu.Menu>
 					</PopupMenu>
 				)}
@@ -80,8 +79,8 @@ export function HomeControls() {
 }
 
 const defaultOptions = {
-	until: toYyyyMm(lastUpdated),
-	since: offset(lastUpdated, { years: -2, months: 1 }),
+	since: TWO_YEARS_AGO,
+	until: LAST_MONTH,
 	sortBy: "total",
 } satisfies Required<RankingOptions>;
 

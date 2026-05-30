@@ -1,4 +1,4 @@
-import { lastUpdated } from "virtual:db/last-updated";
+import LAST_UPDATE from "virtual:db/last-update";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
 import { type RefObject, useEffect, useState } from "react";
@@ -45,7 +45,7 @@ export function Header({ position = "sticky", containerRef }: Props) {
 				<h1>VIP leaderboard</h1>
 				<dl>
 					<dt>Last update</dt>
-					<dd>{lastUpdated.toLocaleDateString()}</dd>
+					<dd>{LAST_UPDATE.toLocaleDateString()}</dd>
 				</dl>
 			</div>
 			<nav>

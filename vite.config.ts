@@ -15,7 +15,7 @@ export default defineConfig({
 		tanstackRouter({ target: "react", autoCodeSplitting: true }),
 		react(),
 		sqlWasmBundler(),
-		lastUpdatedBundler(),
+		lastUpdateDateBundler(),
 	],
 	resolve: {
 		alias: {
@@ -27,24 +27,26 @@ export default defineConfig({
 });
 
 // so that the page can render before db is loaded
-function lastUpdatedBundler(): Plugin {
+function lastUpdateDateBundler(): Plugin {
 	return {
-		name: "last-updated",
+		name: "last-update",
 		resolveId(id) {
-			if (id === "virtual:db/last-updated") {
-				return `\0virtual:db/last-updated`;
+			if (id === "virtual:db/last-update") {
+				return `\0virtual:db/last-update`;
 			}
 		},
 		load(id) {
-			if (id !== `\0virtual:db/last-updated`) {
+			if (id !== `\0virtual:db/last-update`) {
 				return;
 			}
+
 			const db = new DatabaseSync(res("public/db.sqlite"));
 			const { date } = db
 				.prepare("SELECT date FROM activity ORDER BY date DESC LIMIT 1")
 				.get() as { date: number };
 			db.close();
-			return `export const lastUpdated = new Date(${date * 1000});`;
+
+			return `export default new Date(${date * 1000});`;
 		},
 	};
 }

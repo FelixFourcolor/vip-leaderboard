@@ -1,4 +1,3 @@
-import { lastUpdated } from "virtual:db/last-updated";
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
 import { useCallback, useMemo } from "react";
@@ -6,9 +5,9 @@ import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
 import { activityIcons, activityLabels, activityTypes } from "@/db/activity";
-import { VALID_MONTHS } from "@/db/time";
+import { ALL_MONTHS, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { type ChartOptions, Route } from "@/routes/chart";
-import { offset, toYyyyMm, type YyyyMm } from "@/utils/time";
+import type { YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
 import styles from "./ChartPage.module.css";
 
@@ -29,7 +28,7 @@ export function ChartControls() {
 			<div className={cx("control-panel")}>
 				<RangeSlider
 					className={cx("slider")}
-					domain={VALID_MONTHS}
+					domain={ALL_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
 					debounce={50}
@@ -53,7 +52,7 @@ export function ChartControls() {
 											} else {
 												setOptions({ types: types.filter((x) => x !== t) });
 											}
-										}, 0);
+										});
 									}}
 									className={cx("menu-item")}
 								>
@@ -98,8 +97,8 @@ export function ChartControls() {
 }
 
 const defaultOptions = {
-	until: toYyyyMm(lastUpdated),
-	since: offset(lastUpdated, { years: -2, months: 1 }),
+	since: TWO_YEARS_AGO,
+	until: LAST_MONTH,
 	cumulative: false,
 	stacked: false,
 	types: [],

@@ -3,7 +3,7 @@ import { groupBy } from "es-toolkit";
 import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
 import { fromEntries, pick, values } from "@/utils/object";
-import { offset, type YyyyMm } from "@/utils/time";
+import { timeOffset, type YyyyMm } from "@/utils/time";
 import { type ActivityType, activityTypes } from "./activity";
 import { loadDb } from "./db";
 import { activity, user } from "./schema";
@@ -33,7 +33,7 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	types,
 }: UserStatsParams<T>): Promise<UserStats<T>[]> {
 	// make "until" include the last month
-	until = until ? offset(until, { months: 1 }) : undefined;
+	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
 
 	const rows = db
@@ -96,7 +96,7 @@ export async function getUserMonthlyStats({
 	types,
 }: UserStatsParams): Promise<UserMonthlyStats[]> {
 	// make "until" include the last month
-	until = until ? offset(until, { months: 1 }) : undefined;
+	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
 
 	const rows = db
