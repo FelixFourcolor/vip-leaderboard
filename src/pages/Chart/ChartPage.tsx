@@ -27,7 +27,7 @@ export function ChartPage() {
 
 		const { overflow, maxHeight } = document.body.style;
 		document.body.style.overflow = "hidden";
-		root.style.maxHeight = "100vh";
+		root.style.maxHeight = "100dvh";
 		return () => {
 			document.body.style.overflow = overflow;
 			root.style.maxHeight = maxHeight;
