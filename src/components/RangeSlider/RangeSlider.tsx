@@ -1,5 +1,5 @@
 import { isEqual } from "es-toolkit";
-import debounceFn from "es-toolkit/compat/debounce";
+import { debounce as debounceFn } from "es-toolkit/function";
 import { type Dispatch, useCallback, useMemo, useRef, useState } from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";

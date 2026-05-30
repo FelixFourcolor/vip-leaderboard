@@ -1,5 +1,14 @@
 import classNames from "classnames/bind";
-import { type FC, type KeyboardEvent, type ReactNode, useMemo } from "react";
+import { debounce } from "es-toolkit/function";
+import {
+	type FC,
+	type KeyboardEvent,
+	type ReactNode,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { entries, keys, values } from "@/utils/object";
 import type { EitherOr } from "@/utils/types";
 import styles from "./DataBarTable.module.css";
@@ -72,6 +81,97 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 		return rows.map((r) => r.data[activeColumn]! / max);
 	}, [rows, activeColumn, isSorted]);
 
+	const tableRef = useRef<HTMLTableElement>(null);
+	const containerRef = useRef<HTMLElement | Window>(null);
+	useEffect(() => {
+		const table = tableRef.current;
+		if (!table) {
+			return;
+		}
+
+		const getScrollParent = (node: HTMLElement | null) => {
+			if (!node) {
+				return window;
+			}
+			const { overflowY } = window.getComputedStyle(node);
+			if (overflowY === "scroll" || overflowY === "auto") {
+				return node;
+			}
+			return getScrollParent(node.parentElement);
+		};
+
+		containerRef.current = getScrollParent(table);
+	}, []);
+
+	// to stay on the same index when data change
+	const topVisibleRowRef = useRef<{ index: number; offset: number }>(null);
+	useEffect(() => {
+		const table = tableRef.current;
+		const scrollParent = containerRef.current;
+		if (!table || !scrollParent) {
+			return;
+		}
+
+		const handleScroll = debounce(() => {
+			const containerTop =
+				scrollParent instanceof HTMLElement
+					? scrollParent.getBoundingClientRect().top
+					: 0;
+
+			const tableRows = table.tBodies[0]!.rows;
+			const topVisibleRowIdx = (() => {
+				for (let i = 0; i < tableRows.length; i++) {
+					const row = tableRows[i];
+					if (
+						row?.hasAttribute("data-row") &&
+						row.getBoundingClientRect().bottom > containerTop
+					) {
+						return i;
+					}
+				}
+				return -1;
+			})();
+			const topVisibleRow = tableRows[topVisibleRowIdx];
+
+			if (topVisibleRow) {
+				const offset = topVisibleRow.getBoundingClientRect().top - containerTop;
+				topVisibleRowRef.current = { index: topVisibleRowIdx, offset };
+			}
+		}, 100);
+
+		scrollParent.addEventListener("scroll", handleScroll, { passive: true });
+		return () => scrollParent.removeEventListener("scroll", handleScroll);
+	}, []);
+	useLayoutEffect(() => {
+		const table = tableRef.current;
+		const scrollParent = containerRef.current;
+		const topVisibleRow = topVisibleRowRef.current;
+		if (!table || !scrollParent || rows.length === 0 || !topVisibleRow) {
+			return;
+		}
+
+		const { index, offset } = topVisibleRow;
+		const tableRows = table.tBodies[0]!.rows;
+		const targetIndex = Math.min(index, tableRows.length - 1);
+		const targetRow = tableRows[targetIndex];
+
+		if (targetRow) {
+			const containerTop =
+				scrollParent instanceof HTMLElement
+					? scrollParent.getBoundingClientRect().top
+					: 0;
+
+			const currentTop = targetRow.getBoundingClientRect().top;
+			const scrollAmount = currentTop - (containerTop + offset);
+
+			if (scrollParent instanceof HTMLElement) {
+				scrollParent.scrollTop += scrollAmount;
+			} else {
+				window.scrollBy(0, scrollAmount);
+			}
+		}
+	}, [rows]);
+
 	if (rows.length === 0) {
 		return;
 	}
@@ -101,7 +201,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	});
 
 	return (
-		<table className={cx("data-bar-table", className)}>
+		<table className={cx("data-bar-table", className)} ref={tableRef}>
 			<tbody>
 				{title && (
 					<tr>
@@ -123,7 +223,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 					</tr>
 				)}
 				{rows.map((row, i) => (
-					<tr key={String(row[primaryKey])}>
+					<tr key={String(row[primaryKey])} data-row>
 						{entries(columns).map(([col, { cell: CellRenderer }]) =>
 							isDataColumn(col) ? (
 								<td key={col} {...dataRowProps(col, i)}>
