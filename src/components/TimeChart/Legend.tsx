@@ -113,10 +113,9 @@ export function Legend<S extends TimeSeries>({
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
-	// biome-ignore lint/correctness/useExhaustiveDependencies: to stay on the same index when data change
 	useLayoutEffect(() => {
 		const legend = legendRef.current;
-		if (!legend || !entryHeight) {
+		if (!legend || !entryHeight || !chartSeries) {
 			return;
 		}
 
@@ -131,7 +130,7 @@ export function Legend<S extends TimeSeries>({
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [chartSeries, setVisibleFrom]);
+	}, [chartSeries, setVisibleFrom, entryHeight, gap]);
 
 	const onScroll = useCallback<UIEventHandler>(
 		({ currentTarget: { scrollTop } }) => {
