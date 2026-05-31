@@ -14,9 +14,7 @@ import { PopupMenu } from "./components/PopupMenu";
 const router = createRouter({
 	routeTree,
 	history: createHashHistory(),
-	defaultPreload: "intent",
-	defaultPreloadStaleTime: 0,
-	scrollRestoration: true,
+	defaultPreload: "render",
 });
 
 declare module "@tanstack/react-router" {
