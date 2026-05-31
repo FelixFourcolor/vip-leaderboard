@@ -30,24 +30,26 @@ export function countActivities(channels: Channel[]) {
 	}
 
 	const countTickets = (messages: Message[]) =>
-		messages.forEach(({ author, reactions, timestamp }) => {
+		messages.forEach(({ id, author, reactions, timestamp }) => {
+			const date = new Date(timestamp);
 			const authorId = getOrCreateUser(author);
+
 			reactions
 				.filter((r) => TICKET_RESOLVED_REACTIONS.has(r.emoji.code))
 				.flatMap((r) => r.users)
 				.map(getOrCreateUser)
 				.filter((userId) => userId !== authorId)
 				.forEach((userId) =>
-					activitiesMap.set(`${timestamp}-${userId}`, {
+					activitiesMap.set(`${id}-${userId}`, {
 						userId,
-						date: new Date(timestamp),
+						date,
 						type: "ticket",
 					}),
 				);
 		});
 
 	const countWarnings = (messages: Message[]) =>
-		messages.forEach(({ author, content, timestamp }) => {
+		messages.forEach(({ id, author, content, timestamp }) => {
 			const recipientIds = content.match(USER_ID_REGEX);
 			if (!recipientIds?.length) {
 				return;
@@ -61,7 +63,7 @@ export function countActivities(channels: Channel[]) {
 			}
 
 			recipientIds.forEach((recipientId) =>
-				activitiesMap.set(`${timestamp}-${recipientId}`, {
+				activitiesMap.set(`${id}-${recipientId}`, {
 					date,
 					userId: getOrCreateUser(author),
 					type: "warning",
@@ -70,7 +72,8 @@ export function countActivities(channels: Channel[]) {
 		});
 
 	const countBans = (messages: Message[]) =>
-		messages.forEach(({ author, content, reactions, embeds, timestamp }) => {
+		// biome-ignore format: one line
+		messages.forEach(({ id, author, content, reactions, embeds, timestamp }) => {
 			// Count the :verified: reactions on auto ban announcements
 			const autoban = embeds.find((e) => e.title === "Auto banned user");
 			if (autoban) {
@@ -83,6 +86,8 @@ export function countActivities(channels: Channel[]) {
 						.flatMap((r) => r.users)
 						.map(getOrCreateUser)
 						.forEach((userId) =>
+							// intentionally not including message ID in the key
+							// because sometimes autobans have duplicate user IDs
 							activitiesMap.set(`${recipientId}-${userId}`, {
 								date,
 								userId,
@@ -95,15 +100,12 @@ export function countActivities(channels: Channel[]) {
 
 			// Normal bans: count the message's author and those reacting with BAN_SUPPORT_REACTIONS
 			// It doesn't matter whether the recipient was actually banned.
-
 			const recipientIds = content.match(USER_ID_REGEX);
 			if (!recipientIds?.length) {
 				return;
 			}
 
 			const date = new Date(timestamp);
-			// Before this date, bans and warnings were in the same channel.
-			// So only count if the message contains the word "ban"
 			if (date < bansChannelCreationDate && !content.match(/ban/i)) {
 				return;
 			}
@@ -111,7 +113,7 @@ export function countActivities(channels: Channel[]) {
 			const authorId = getOrCreateUser(author);
 
 			recipientIds.forEach((recipientId) =>
-				activitiesMap.set(`${timestamp}-${recipientId}`, {
+				activitiesMap.set(`${id}-${recipientId}`, {
 					date,
 					userId: authorId,
 					type: "ban",
@@ -124,7 +126,7 @@ export function countActivities(channels: Channel[]) {
 				.map(getOrCreateUser)
 				.filter((userId) => userId !== authorId)
 				.forEach((userId) =>
-					activitiesMap.set(`${timestamp}-${userId}`, {
+					activitiesMap.set(`${id}-${userId}`, {
 						date,
 						userId,
 						type: "ban",
