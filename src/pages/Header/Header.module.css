@@ -110,6 +110,12 @@
 		align-items: center;
 		font-weight: var(--weight-semi-bold);
 
+		/* bypassing main.css media queries for font size */
+		font-size: 15px;
+		@media (max-width: 450px) {
+			font-size: 14px;
+		}
+
 		gap: 32px;
 		@media (max-width: 850px) {
 			gap: 24px;

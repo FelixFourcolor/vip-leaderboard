@@ -102,16 +102,6 @@
 }
 
 .table {
-	@media (max-width: 500px) {
-		font-size: var(--text-semi-small);
-	}
-	@media (max-width: 450px) {
-		font-size: var(--text-small);
-	}
-	@media (max-width: 400px) {
-		font-size: var(--text-very-small);
-	}
-
 	th {
 		padding: 4px;
 	}
