@@ -61,7 +61,7 @@ export function ChartWrapper<S extends TimeSeries>({
 		[visibleData],
 	);
 	// A bunch of badly written glue code to
-	// sync activeSeries, hoveredPoint and visibleIdx.
+	// sync activeSeries, hoveredPoint, and visibleIdx.
 	// If something breaks, it's probbably here.
 	const prevActiveSeries = useRef(activeSeries);
 	useEffect(() => {
@@ -69,7 +69,7 @@ export function ChartWrapper<S extends TimeSeries>({
 			// inactivate series if it becomes invisible
 			if (!visibleIds.has(activeSeries)) {
 				setActiveSeries(undefined);
-				prevActiveSeries.current = undefined;
+				prevActiveSeries.current = activeSeries;
 			}
 			// hide tooltip if hovered point doesn't belong to active series anymore
 			else if (hoveredPoint && hoveredPoint.seriesId !== activeSeries) {
