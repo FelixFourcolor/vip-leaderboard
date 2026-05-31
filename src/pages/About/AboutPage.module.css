@@ -8,11 +8,11 @@
 	--margin-h: 32px;
 	@media (max-width: 600px) {
 		--margin-v: 20px;
-		--margin-h: 28px;
+		--margin-h: 24px;
 	}
 	@media (max-width: 450px) {
 		--margin-v: 16px;
-		--margin-h: 24px;
+		--margin-h: 12px;
 	}
 
 	a {
@@ -37,11 +37,6 @@ section {
 	--large-space: 32px;
 	--medium-space: 24px;
 	--small-space: 14px;
-	@media (max-width: 500px) {
-		--large-space: 28px;
-		--medium-space: 20px;
-		--small-space: 10px;
-	}
 
 	&:not(:last-child) {
 		margin-bottom: var(--large-space);
@@ -49,7 +44,13 @@ section {
 
 	.header {
 		padding: 4px 12px;
-		margin-left: -12px;
+		margin: 0 -12px;
+		@media (max-width: 600px) {
+			margin: 0 -8px;
+		}
+		@media (max-width: 450px) {
+			margin: 0 -4px;
+		}
 		margin-bottom: var(--small-space);
 		background: var(--bg-secondary);
 		display: flex;
@@ -77,7 +78,7 @@ section {
 				outline: 1px solid var(--accent);
 			}
 
-			@media (max-width: 400px) {
+			@media (max-width: 350px) {
 				display: none;
 			}
 		}
@@ -114,7 +115,7 @@ section {
 		margin-bottom: var(--small-space);
 
 		li {
-			margin: 6px 0;
+			margin: 7px 0;
 		}
 	}
 
