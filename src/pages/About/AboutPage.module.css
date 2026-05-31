@@ -117,6 +117,12 @@ section {
 			margin: 6px 0;
 		}
 	}
+
+	code {
+		font: inherit;
+		padding: 0 4px;
+		background-color: var(--bg-secondary);
+	}
 }
 
 .discord-link {

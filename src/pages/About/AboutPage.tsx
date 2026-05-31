@@ -164,18 +164,6 @@ function Content() {
 						propose a ban whether it&apos;s approved or not, that&apos;s why
 						approved and rejected bans are counted the same.
 					</p>
-					<p>
-						<img
-							src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
-							alt="interaction reminder"
-						/>{" "}
-						If you have other ideas for how to count points, let&apos;s talk
-						about it in the server and I&apos;ll follow the consensus opinion.{" "}
-						<img
-							src="https://wiki.sponsor.ajay.app/images/thumb/5/5b/Icon_interaction_reminder.svg/16px-Icon_interaction_reminder.svg.png"
-							alt="interaction reminder"
-						/>
-					</p>
 				</Subsection>
 
 				<Subsection title="Why only count the last 2 years?">
@@ -201,8 +189,14 @@ function Content() {
 					<p>Of course, just let me know.</p>
 				</Subsection>
 
-				<Subsection title="Why is it buggy?">
-					<p>Incompetence.</p>
+				<Subsection title="Is this vibe coded?">
+					<p>
+						Vibe coding is a shameful thing and <em>if</em> I ever did it, I
+						would never admit it and would take all measures to hide all
+						evidence of it (e.g. you would never find an <code>agents.md</code>{" "}
+						or a bot-authored commit in my repo). Just hypothetically, of
+						course, I&apos;m not admitting anything. 🙃
+					</p>
 				</Subsection>
 			</Section>
 		</main>
