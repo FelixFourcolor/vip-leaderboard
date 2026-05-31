@@ -15,7 +15,7 @@
 		--margin: 8px;
 	}
 	@media (max-width: 450px) {
-		font-size: var(--text-small);
+		font-size: var(--text-semi-small);
 	}
 
 	.main-container {
@@ -122,9 +122,6 @@
 
 	td {
 		height: 24px;
-		@media (max-width: 600px) {
-			height: 20px;
-		}
 	}
 
 	tr {
