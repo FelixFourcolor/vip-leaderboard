@@ -6,13 +6,16 @@
 	--text-semi-small: 14px;
 	--text-small: 13px;
 	--text-very-small: 12px;
-	@media (max-width: 500px) {
+	@media (max-width: 550px) {
 		--text-very-large: 19px;
 		--text-large: 16px;
 		--text-semi-large: 15px;
 		--text-normal: 14px;
 		--text-semi-small: 13px;
 		--text-small: 12px;
+	}
+	@media (max-width: 450px) {
+		--text-very-large: 18px;
 	}
 
 	--bg-primary: #222130;
