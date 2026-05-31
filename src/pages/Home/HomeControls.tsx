@@ -33,12 +33,6 @@ export function HomeControls() {
 		if (isTouch) setAutoHide(false);
 	});
 
-	const resetButtonProps = {
-		disabled: isEqual(options, defaultOptions),
-		onClick: () => setTimeout(() => setOptions(defaultOptions)),
-		children: "Reset",
-	};
-
 	return (
 		<div className={cx("controls-container", { floating })}>
 			<div className={cx("controls")}>
@@ -90,7 +84,13 @@ export function HomeControls() {
 							All time
 						</PopupMenu.Item>
 						<hr />
-						<PopupMenu.Item {...resetButtonProps} stayOpenOnClick />
+						<PopupMenu.Item
+							disabled={isEqual(options, defaultOptions)}
+							onClick={() => setTimeout(() => setOptions(defaultOptions))}
+							stayOpenOnClick
+						>
+							Reset
+						</PopupMenu.Item>
 					</PopupMenu.Menu>
 				</PopupMenu>
 			</div>

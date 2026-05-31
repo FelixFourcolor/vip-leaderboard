@@ -67,7 +67,6 @@ export function ThumbWrapper<Value>({
 	labelStyle = labelStyle as CSSProperties | undefined;
 
 	const isMergedLabel = labelValue?.includes(" - ");
-
 	const showLabel =
 		!autoHideLabel ||
 		(isMergedLabel ? isActive.some(Boolean) : isActive[index]);

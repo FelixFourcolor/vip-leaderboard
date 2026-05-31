@@ -28,7 +28,13 @@ export function RangeSlider<Value>({
 	className,
 	autoHideLabel = false,
 }: RangeSliderProps<Value>) {
+	const onChangeDebounced = useMemo(
+		() => (debounceMs !== false ? debounce(onChange, debounceMs) : onChange),
+		[onChange, debounceMs],
+	);
+
 	const [values, _setValues] = useSyncedState(
+		// need to sync, value might be updated externally (e.g. reset button)
 		useCallback((): Pair<number> => {
 			const fromIndex = domain.indexOf(selectedFrom);
 			const toIndex = domain.indexOf(selectedTo);
@@ -38,36 +44,27 @@ export function RangeSlider<Value>({
 			];
 		}, [domain, selectedFrom, selectedTo]),
 	);
-
-	const onChangeDebounced = useMemo(
-		() => (debounceMs !== false ? debounce(onChange, debounceMs) : onChange),
-		[onChange, debounceMs],
-	);
-
-	const setValues = useCallback(
-		(updater: (_: Pair<number>) => Pair<number>) => {
-			_setValues((current) => {
-				const updated = updater(current);
-				if (isEqual(current, updated)) {
-					return current;
-				}
-				const fromValue = domain[updated[0]];
-				const toValue = domain[updated[1]];
-				if (fromValue !== undefined && toValue !== undefined) {
-					onChangeDebounced([fromValue, toValue]);
-				}
-				return updated;
-			});
-		},
-		[_setValues, domain, onChangeDebounced],
-	);
+	const setValues = (updater: (_: Pair<number>) => Pair<number>) => {
+		_setValues((current) => {
+			const updated = updater(current);
+			if (isEqual(current, updated)) {
+				return current;
+			}
+			const fromValue = domain[updated[0]];
+			const toValue = domain[updated[1]];
+			if (fromValue !== undefined && toValue !== undefined) {
+				onChangeDebounced([fromValue, toValue]);
+			}
+			return updated;
+		});
+	};
 
 	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
 	const activeTimeoutRef = useRef<Pair<number | undefined>>([
 		undefined,
 		undefined,
 	]);
-	const activateThumb = useCallback((...indices: number[]) => {
+	const activateThumb = (...indices: number[]) => {
 		if (indices.length === 0) {
 			indices = [0, 1];
 		}
@@ -86,7 +83,7 @@ export function RangeSlider<Value>({
 				});
 			}, 2000);
 		});
-	}, []);
+	};
 
 	const onDrag = (values: number[]) => {
 		let [from, to] = values as [number, number];
