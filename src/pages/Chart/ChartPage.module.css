@@ -70,7 +70,8 @@
 	}
 	.control-panel {
 		display: flex;
-		padding: 12px 32px 22px 32px;
+		padding: 20px;
+		padding-top: 10px;
 		gap: 48px;
 		align-items: center;
 		justify-content: space-evenly;
