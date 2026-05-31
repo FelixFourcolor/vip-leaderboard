@@ -31,7 +31,6 @@ export function ChartControls() {
 					domain={ALL_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
-					debounce={50}
 					autoHideLabel
 				/>
 
