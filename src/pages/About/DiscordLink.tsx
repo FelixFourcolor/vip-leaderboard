@@ -1,13 +1,10 @@
 import classNames from "classnames/bind";
+import type { OneOf } from "@/utils/types";
 import styles from "./AboutPage.module.css";
 
 const cx = classNames.bind(styles);
 
-type Props<T extends ChannelName = ChannelName> = T extends T
-	? { [k in T]: true } & { [k in Exclude<ChannelName, T>]?: never }
-	: never;
-
-export function DiscordLink(channel: Props) {
+export function DiscordLink(channel: OneOf<Record<ChannelName, true>>) {
 	const channelName = Object.keys(channel)[0] as ChannelName;
 	return (
 		<a

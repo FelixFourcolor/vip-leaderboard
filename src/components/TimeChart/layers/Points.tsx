@@ -4,9 +4,9 @@ import { type Ref, useMemo } from "react";
 import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
 import type { NivoPoint, NivoSeries } from "../Chart";
+import type { TimePoint, TimeSeries } from "../ChartWrapper";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
-import type { TimePoint, TimeSeries } from "../ChartWrapper";
 
 const cx = classNames.bind(styles);
 

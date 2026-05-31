@@ -18,6 +18,10 @@ export type EitherOr<A extends object, B extends object> =
 	| (A & Partial<Record<Exclude<keyof B, keyof A>, never>>)
 	| (B & Partial<Record<Exclude<keyof A, keyof B>, never>>);
 
-export type AtLeastOne<T extends object> = {
+export type AtLeastOneOf<T extends object> = {
 	[K in keyof T]: Required<Pick<T, K>> & Partial<T>;
 }[keyof T];
+
+export type OneOf<T extends object, K extends keyof T = keyof T> = K extends K
+	? Required<Pick<T, K>> & Partial<Record<Exclude<keyof T, K>, never>>
+	: never;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import type { AtLeastOne } from "@/utils/types";
+import type { AtLeastOneOf } from "@/utils/types";
 
-type Options = AtLeastOne<{
+type Options = AtLeastOneOf<{
 	maxWidth: number;
 	minWidth: number;
 }> & { onChange?: (isMatched: boolean) => void };
