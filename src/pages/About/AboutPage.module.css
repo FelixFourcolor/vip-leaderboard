@@ -34,11 +34,11 @@ section {
 		background: var(--bg-secondary);
 		display: flex;
 		justify-content: space-between;
-		container-type: inline-size;
 
 		h1 {
 			font-weight: var(--weight-bold);
 			font-size: var(--text-very-large);
+			white-space: nowrap;
 			margin: 0;
 		}
 
@@ -47,6 +47,7 @@ section {
 			outline: none;
 			padding: 0 2px;
 			background: none;
+			white-space: nowrap;
 
 			color: var(--text-secondary);
 			&:hover {
@@ -56,7 +57,7 @@ section {
 				outline: 1px solid var(--accent);
 			}
 
-			@container (max-width: 400px) {
+			@media (max-width: 400px) {
 				display: none;
 			}
 		}
