@@ -14,13 +14,6 @@
 		--text-semi-small: 13px;
 		--text-small: 12px;
 	}
-	@media (max-width: 450px) {
-		--text-very-large: 17px;
-		--text-large: 15px;
-		--text-semi-large: 14px;
-		--text-normal: 13px;
-		--text-semi-small: 12px;
-	}
 
 	--bg-primary: #222130;
 	--bg-secondary: #181622;

@@ -14,6 +14,9 @@
 	@media (max-width: 500px) {
 		--side-margin: 12px;
 	}
+	@media (max-width: 450px) {
+		font-size: var(--text-small);
+	}
 
 	.main-container {
 		overflow-y: auto;
