@@ -189,14 +189,8 @@ function Content() {
 					<p>Of course, just let me know.</p>
 				</Subsection>
 
-				<Subsection title="Is this vibe coded?">
-					<p>
-						Vibe coding is a shameful thing that <em>if</em> I ever did it, I
-						would never admit it and would take all measures to hide all
-						evidence of it (e.g. you would never find an <code>agents.md</code>{" "}
-						or a bot-authored commit in my repo). Just hypothetically, of
-						course, I&apos;m not admitting anything.
-					</p>
+				<Subsection title="Why is it buggy?">
+					<p>Incompetence.</p>
 				</Subsection>
 			</Section>
 		</main>
