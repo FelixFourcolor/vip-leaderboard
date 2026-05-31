@@ -39,11 +39,11 @@
 			gap: 36px;
 			@media (max-width: 600px) {
 				margin-top: 20px;
-				gap: 28px;
+				gap: 30px;
 			}
 			@media (max-width: 450px) {
 				margin-top: 16px;
-				gap: 20px;
+				gap: 24px;
 			}
 		}
 	}
@@ -120,6 +120,13 @@
 		padding: 4px;
 	}
 
+	td {
+		height: 24px;
+		@media (max-width: 600px) {
+			height: 20px;
+		}
+	}
+
 	tr {
 		&:first-child {
 			background-color: rgb(from var(--accent) r g b / 0.9);
@@ -150,10 +157,6 @@
 	}
 
 	td {
-		@media (min-width: 601px) {
-			height: 24px;
-		}
-
 		&:first-child {
 			text-align: left;
 			width: 25%;
