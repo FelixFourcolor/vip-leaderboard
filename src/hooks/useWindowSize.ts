@@ -1,18 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import type { EitherOr } from "@/utils/types";
+import type { AtLeastOne } from "@/utils/types";
 
-type Props = EitherOr<{ maxWidth: number }, { minWidth: number }> & {
-	onChange?: (isMatched: boolean) => void;
-};
+type Options = AtLeastOne<{
+	maxWidth: number;
+	minWidth: number;
+}> & { onChange?: (isMatched: boolean) => void };
 
-export function useWindowSize({ maxWidth, minWidth, onChange }: Props) {
+export function useWindowSize({ maxWidth, minWidth, onChange }: Options) {
 	const [matches, setMatches] = useState(false);
 	const onChangeRef = useRef(onChange);
 
-	const query = `(max-width: ${maxWidth}px), (min-width: ${minWidth}px)`;
 	useEffect(() => {
-		const mediaQuery = window.matchMedia(query);
-		const matches = mediaQuery.matches;
+		const query = window.matchMedia(
+			(() => {
+				if (maxWidth && minWidth) {
+					return `(max-width: ${maxWidth}px) and (min-width: ${minWidth}px)`;
+				}
+				if (maxWidth) {
+					return `(max-width: ${maxWidth}px)`;
+				}
+				if (minWidth) {
+					return `(min-width: ${minWidth}px)`;
+				}
+				throw new Error("Either maxWidth or minWidth must be provided");
+			})(),
+		);
+		const matches = query.matches;
 
 		const listener = (e: { matches: boolean }) => {
 			setMatches(e.matches);
@@ -20,9 +33,9 @@ export function useWindowSize({ maxWidth, minWidth, onChange }: Props) {
 		};
 		listener({ matches: matches });
 
-		mediaQuery.addEventListener("change", listener);
-		return () => mediaQuery.removeEventListener("change", listener);
-	}, [query]);
+		query.addEventListener("change", listener);
+		return () => query.removeEventListener("change", listener);
+	}, [maxWidth, minWidth]);
 
 	return matches;
 }
