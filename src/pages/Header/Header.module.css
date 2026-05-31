@@ -109,30 +109,29 @@
 		display: flex;
 		align-items: center;
 		font-weight: var(--weight-semi-bold);
-
 		/* bypassing main.css media queries for font size */
 		font-size: 15px;
-		@media (max-width: 450px) {
-			font-size: 14px;
-		}
 
 		gap: 32px;
 		@media (max-width: 850px) {
 			gap: 24px;
 		}
-		@media (max-width: 650px) {
+		@media (500px < width <= 650px) {
 			gap: 16px;
 		}
 
 		a {
 			text-decoration: none;
-			&:hover {
+			&:hover:not([aria-disabled="true"]) {
 				text-decoration: underline;
 			}
 
 			color: var(--text-secondary);
 			&.active {
 				color: var(--accent);
+			}
+			&[aria-disabled="true"] {
+				color: var(--text-tertiary);
 			}
 		}
 	}
@@ -143,7 +142,7 @@
 		align-items: center;
 
 		gap: 24px;
-		@media (500 < width <= 650px) {
+		@media (500px < width <= 650px) {
 			gap: 16px;
 		}
 
@@ -162,5 +161,18 @@
 		[data-is-zack="true"] & {
 			outline-width: 2px;
 		}
+	}
+}
+
+.tooltip {
+	text-align: center;
+	max-width: 130px;
+	font-size: var(--text-small);
+	background: var(--bg-secondary);
+	padding: 2px;
+
+	border: 1px solid var(--accent);
+	[data-is-zack="true"] & {
+		border-width: 2px;
 	}
 }

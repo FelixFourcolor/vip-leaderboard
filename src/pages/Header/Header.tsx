@@ -2,6 +2,8 @@ import LAST_UPDATE from "virtual:db/last-update";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
 import { type RefObject, useEffect, useState } from "react";
+import { Tooltip } from "@/components/Tooltip";
+import { useWindowSize } from "@/hooks/useWindowSize";
 import styles from "./Header.module.css";
 import { ZackToggle } from "./ZackToggle";
 
@@ -30,6 +32,8 @@ export function Header({ position = "sticky", containerRef }: Props) {
 			(container ?? window).removeEventListener("scroll", handleScroll);
 	}, [position, containerRef]);
 
+	const isScreenSmall = useWindowSize({ maxWidth: 500 });
+
 	return (
 		<header
 			className={cx("header", position, {
@@ -52,9 +56,26 @@ export function Header({ position = "sticky", containerRef }: Props) {
 				<Link activeProps={{ className: cx("active") }} to="/">
 					Home
 				</Link>
-				<Link activeProps={{ className: cx("active") }} to="/chart">
-					Chart
-				</Link>
+				<Tooltip
+					disabled={!isScreenSmall}
+					offset={3}
+					trigger={(props) => (
+						<Link
+							{...props}
+							activeProps={{ className: cx("active") }}
+							to="/chart"
+							disabled={isScreenSmall}
+						>
+							Chart
+						</Link>
+					)}
+					content={(props) => (
+						<div {...props} className={cx("tooltip")}>
+							Screen is too small for this page
+						</div>
+					)}
+				/>
+
 				<Link activeProps={{ className: cx("active") }} to="/about">
 					About
 				</Link>

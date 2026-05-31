@@ -27,6 +27,7 @@ type Props = {
 	offset?: number;
 	placement?: Placement;
 	open?: boolean;
+	disabled?: boolean;
 };
 
 export function Tooltip({
@@ -35,6 +36,7 @@ export function Tooltip({
 	placement,
 	offset = 4,
 	open,
+	disabled,
 }: Props) {
 	const { refs, floatingStyles } = useFloating({
 		placement,
@@ -58,7 +60,7 @@ export function Tooltip({
 		<>
 			<Trigger
 				ref={refs.setReference}
-				{...(open === undefined ? hoverEvents : undefined)}
+				{...(open === undefined && !disabled ? hoverEvents : undefined)}
 			/>
 			{isOpen &&
 				createPortal(

@@ -1,8 +1,10 @@
+import { useNavigate } from "@tanstack/react-router";
 import classNames from "classnames/bind";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
 import { activityLabels } from "@/db/activity";
 import { getUserMonthlyStats, type UserMonthlyStats } from "@/db/user";
+import { useWindowSize } from "@/hooks/useWindowSize";
 import { Header } from "../Header";
 import { ChartControls, useChartControls } from "./ChartControls";
 import styles from "./ChartPage.module.css";
@@ -33,6 +35,26 @@ export function ChartPage() {
 			root.style.maxHeight = maxHeight;
 		};
 	}, []);
+
+	const navigate = useNavigate();
+	const ignoreScreenSizeWarning = useRef(false);
+	useWindowSize({
+		maxWidth: 500,
+		onChange: (isMatched) => {
+			if (!isMatched || ignoreScreenSizeWarning.current) {
+				return;
+			}
+			if (
+				window.confirm(
+					"Screen is too small to effectively use this page. Exit to home?",
+				)
+			) {
+				navigate({ to: "/" });
+			} else {
+				ignoreScreenSizeWarning.current = true;
+			}
+		},
+	});
 
 	return (
 		<>
