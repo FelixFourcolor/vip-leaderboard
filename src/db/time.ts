@@ -7,5 +7,7 @@ import { monthsInRange, timeOffset, toYyyyMm } from "@/utils/time";
 export const FIRST_MONTH = "2020-01";
 export const LAST_MONTH = toYyyyMm(LAST_UPDATE);
 
-export const TWO_YEARS_AGO = timeOffset(LAST_UPDATE, { years: -2, months: 1 });
-export const ALL_MONTHS = monthsInRange(FIRST_MONTH, LAST_UPDATE);
+export const TWO_YEARS_AGO = timeOffset(LAST_MONTH, { years: -2, months: 1 });
+export const ALL_MONTHS = monthsInRange(FIRST_MONTH, LAST_MONTH);
+
+console.log(LAST_UPDATE, TWO_YEARS_AGO, ALL_MONTHS);
