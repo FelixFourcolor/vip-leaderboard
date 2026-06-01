@@ -15,7 +15,6 @@
 		"@nivo/core": "^0.99.0",
 		"@nivo/line": "^0.99.0",
 		"@nivo/theming": "^0.99.0",
-		"@react-spring/web": "^10.1.0",
 		"@tanstack/react-router": "^1.170.10",
 		"@tanstack/router-plugin": "^1.168.13",
 		"classnames": "^2.5.1",

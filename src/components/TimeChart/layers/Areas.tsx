@@ -1,6 +1,5 @@
-import { curveFromProp, useAnimatedPath } from "@nivo/core";
+import { curveFromProp } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
-import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import { zip } from "es-toolkit";
@@ -59,8 +58,8 @@ function Area({ id, path, color }: AreaProps) {
 	const { isHighlighted, isMuted } = useChart();
 
 	return (
-		<animated.path
-			d={useAnimatedPath(path)}
+		<path
+			d={path}
 			style={{ ["--series-color" as string]: color }}
 			className={cx("area", {
 				highlighted: isHighlighted(id),

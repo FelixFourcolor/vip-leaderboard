@@ -1,6 +1,4 @@
-import { useAnimatedPath } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
-import { animated } from "@react-spring/web";
 import classNames from "classnames/bind";
 import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
@@ -33,18 +31,14 @@ type LineProps = {
 };
 function Line({ id, path, color }: LineProps) {
 	const { stacked, isHighlighted, isMuted } = useChart();
-	const animatedPath = useAnimatedPath(path);
 
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
-			<animated.path
-				d={animatedPath}
+			<path
+				d={path}
 				className={cx("outline", { visible: !stacked && isHighlighted(id) })}
 			/>
-			<animated.path
-				d={animatedPath}
-				className={cx("line", { stacked, muted: isMuted(id) })}
-			/>
+			<path d={path} className={cx("line", { stacked, muted: isMuted(id) })} />
 		</g>
 	);
 }
