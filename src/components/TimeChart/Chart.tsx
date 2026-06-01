@@ -131,16 +131,27 @@ function useNivoData(): NivoSeries[] | undefined {
 }
 
 function useColors() {
-	const { colorMapping, isMuted, isHighlighted } = useChart();
-	return ({ id }: { id: string }) => {
-		const color = colorMapping[id]!;
-		if (isHighlighted(id)) {
-			return color;
-		} else if (isMuted(id)) {
-			return `rgb(from ${color} r g b / 0.45)`;
+	const { chartSeries, colors } = useChart();
+
+	const colorMapping = useMemo(() => {
+		if (!chartSeries) {
+			return {};
 		}
-		return `rgb(from ${color} r g b / 0.85)`;
-	};
+		return Object.fromEntries(
+			chartSeries.map(({ id }, i) => [id, colors[i % colors.length]]),
+		);
+	}, [chartSeries, colors]);
+
+	// Cannot use array index because `useNivoData` may reorder series
+	return (series: { id: string }) => colorMapping[series.id]!;
+
+	// TODO: move to CSS
+	// if (isHighlighted(id)) {
+	// 	return color;
+	// } else if (isMuted(id)) {
+	// 	return `rgb(from ${color} r g b / 0.45)`;
+	// }
+	// return `rgb(from ${color} r g b / 0.85)`;
 }
 
 const fontSize = 12;

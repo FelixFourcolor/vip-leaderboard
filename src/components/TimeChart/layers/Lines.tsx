@@ -6,23 +6,21 @@ import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export function Lines({
+export const Lines = ({
 	series,
 	lineGenerator,
-}: LineCustomSvgLayerProps<NivoSeries>) {
-	return (
-		<g>
-			{series.map(({ id, data, color }) => (
-				<Line
-					key={id}
-					id={id}
-					path={lineGenerator(data.map((d) => d.position)) ?? ""}
-					color={color}
-				/>
-			))}
-		</g>
-	);
-}
+}: LineCustomSvgLayerProps<NivoSeries>) => (
+	<g>
+		{series.map(({ id, data, color }) => (
+			<Line
+				key={id}
+				id={id}
+				path={lineGenerator(data.map((d) => d.position)) ?? ""}
+				color={color}
+			/>
+		))}
+	</g>
+);
 
 type LineProps = {
 	id: string;
@@ -31,14 +29,16 @@ type LineProps = {
 };
 function Line({ id, path, color }: LineProps) {
 	const { stacked, isHighlighted, isMuted } = useChart();
+	const highlighted = isHighlighted(id);
+	const muted = isMuted(id);
 
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
 			<path
 				d={path}
-				className={cx("outline", { visible: !stacked && isHighlighted(id) })}
+				className={cx("outline", { visible: !stacked && highlighted })}
 			/>
-			<path d={path} className={cx("line", { stacked, muted: isMuted(id) })} />
+			<path d={path} className={cx("line", { stacked, highlighted, muted })} />
 		</g>
 	);
 }

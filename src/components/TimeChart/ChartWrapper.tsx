@@ -93,7 +93,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				chartSeries: renderReady ? data : undefined,
 				chartData: renderReady ? chartData : undefined,
 				xValues,
-				colorMapping: useColorMapping(data, colors),
+				colors,
 				stacked,
 				cumulative,
 				PointTooltip: PointTooltip as any, // generics
@@ -182,14 +182,6 @@ function useTransform<S extends TimeSeries>(
 	}, [filteredData, xValues, stacked, cumulative]);
 
 	return transformedData as S[] | undefined;
-}
-
-function useColorMapping(data: TimeSeries[] = [], colors: readonly string[]) {
-	return useMemo(() => {
-		return Object.fromEntries(
-			data.map(({ id }, index) => [id, colors[index % colors.length]!]),
-		);
-	}, [data, colors]);
 }
 
 const useIsolatedPoints = (data: TimeSeries[] = []) =>

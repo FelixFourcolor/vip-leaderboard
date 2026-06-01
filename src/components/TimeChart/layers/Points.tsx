@@ -51,18 +51,19 @@ function Point({ data, series, color }: PointProps) {
 }
 
 function IsolatedPoint({ series, color, data: { x } }: PointProps) {
-	const { isHighlighted, isPointIsolated } = useChart();
+	const { isMuted, isHighlighted, isPointIsolated } = useChart();
 
 	if (!isPointIsolated({ seriesId: series.id, x })) {
 		return null;
 	}
 
 	const highlighted = isHighlighted(series.id);
+	const muted = isMuted(series.id);
 
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
-			<circle className={cx("outline", { visible: highlighted })} />
-			<circle className={cx("point", { highlighted })} />
+			<circle className={cx("outline", { highlighted })} />
+			<circle className={cx("point", { highlighted, muted })} />
 		</g>
 	);
 }
@@ -77,11 +78,9 @@ function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
 	const { stacked, PointTooltip } = useChart();
 
 	if (!PointTooltip) {
-		if (stacked) {
-			return null;
-		}
-
-		return <HighlightedPoint color={color} stacked={stacked} />;
+		return stacked ? null : (
+			<HighlightedPoint color={color} stacked={stacked} />
+		);
 	}
 
 	return (
@@ -110,11 +109,9 @@ type HighlightedPointProps = {
 	stacked: boolean;
 	ref?: Ref<SVGGElement>;
 };
-function HighlightedPoint({ color, stacked, ref }: HighlightedPointProps) {
-	return (
-		<g style={{ ["--series-color" as string]: color }} ref={ref}>
-			<circle className={cx("hovered", "outer", { visible: !stacked })} />
-			<circle className={cx("hovered", "inner", { visible: !stacked })} />
-		</g>
-	);
-}
+const HighlightedPoint = ({ color, ref, stacked }: HighlightedPointProps) => (
+	<g ref={ref} style={{ ["--series-color" as string]: color }}>
+		<circle className={cx("hovered", "outer", { stacked })} />
+		<circle className={cx("hovered", "inner", { stacked })} />
+	</g>
+);

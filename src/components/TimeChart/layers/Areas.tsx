@@ -52,15 +52,14 @@ type AreaProps = {
 };
 function Area({ seriesId, path, color }: AreaProps) {
 	const { isHighlighted, isMuted } = useChart();
+	const highlighted = isHighlighted(seriesId);
+	const muted = isMuted(seriesId);
 
 	return (
 		<path
 			d={path ?? undefined}
 			style={{ ["--series-color" as string]: color }}
-			className={cx("area", {
-				highlighted: isHighlighted(seriesId),
-				muted: isMuted(seriesId),
-			})}
+			className={cx("area", { highlighted, muted })}
 		/>
 	);
 }

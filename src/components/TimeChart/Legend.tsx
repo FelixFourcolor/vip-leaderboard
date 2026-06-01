@@ -6,7 +6,6 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
-	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -42,17 +41,13 @@ export function Legend<S extends TimeSeries>({
 }: Props<S>) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
-
-	const { chartSeries, colorMapping } = useChart<S>();
-	const colors = useMemo(
-		() => [...new Set(Object.values(colorMapping))],
-		[colorMapping],
-	);
 	const {
+		colors,
 		visibleIdx = colorRange(colors),
+		chartSeries,
 		setVisibleIdx,
 		setActiveSeries,
-	} = useChart();
+	} = useChart<S>();
 
 	const setVisibleFrom = useCallback(
 		(index: number) =>
@@ -170,7 +165,7 @@ export function Legend<S extends TimeSeries>({
 						series={series}
 						seriesIndex={i}
 						ref={i === 0 ? entryRef : undefined}
-						seriesColor={colorMapping[series.id]!}
+						seriesColor={colors[i % colors.length]!}
 						onMouseEnter={() => {
 							if (!isResizing && !isGrabbing) {
 								setActiveSeries(series.id);
@@ -221,7 +216,10 @@ export function Legend<S extends TimeSeries>({
 	);
 }
 
-const colorRange = (colors: string[]) => ({ from: 0, to: colors.length - 1 });
+const colorRange = (colors: readonly string[]) => ({
+	from: 0,
+	to: colors.length - 1,
+});
 
 const visibleCount = (visibleIdx: { from: number; to: number }) =>
 	visibleIdx.to - visibleIdx.from + 1;

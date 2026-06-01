@@ -1,4 +1,4 @@
-import { createContext, type ReactElement, use, useCallback } from "react";
+import { createContext, type ReactElement, use } from "react";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
@@ -15,7 +15,7 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
-	colorMapping: Record<string, string>;
+	colors: readonly string[];
 	isolatedPoints: Record<string, Set<string>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 }
@@ -29,36 +29,15 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 	}
 
 	const { hoveredPoint, isolatedPoints, activeSeries, ...rest } = context;
-
-	const isPointHovered = useCallback(
-		(point: InteractivePoint) =>
-			hoveredPoint?.seriesId === point.seriesId &&
-			hoveredPoint?.x.getTime() === point.x.getTime(),
-		[hoveredPoint],
-	);
-
-	const isPointIsolated = useCallback(
-		(point: InteractivePoint) =>
-			isolatedPoints[point.seriesId]?.has(toYyyyMm(point.x)),
-		[isolatedPoints],
-	);
-
-	const isHighlighted = useCallback(
-		(seriesId: string) => activeSeries === seriesId,
-		[activeSeries],
-	);
-
-	const isMuted = useCallback(
-		(seriesId: string) => activeSeries && activeSeries !== seriesId,
-		[activeSeries],
-	);
-
 	return {
 		...rest,
 		activeSeries,
-		isPointHovered,
-		isPointIsolated,
-		isHighlighted,
-		isMuted,
+		isHighlighted: (seriesId: string) => activeSeries === seriesId,
+		isMuted: (seriesId: string) => activeSeries && activeSeries !== seriesId,
+		isPointIsolated: ({ seriesId, x }: InteractivePoint) =>
+			isolatedPoints[seriesId]?.has(toYyyyMm(x)),
+		isPointHovered: ({ seriesId, x }: InteractivePoint) =>
+			hoveredPoint?.seriesId === seriesId &&
+			hoveredPoint.x.getTime() === x.getTime(),
 	};
 }

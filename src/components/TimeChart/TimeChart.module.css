@@ -9,12 +9,15 @@
 		&.line {
 			fill: none;
 
-			stroke: var(--series-color);
+			stroke: rgb(from var(--series-color) r g b / 0.85);
 			stroke-width: 2px;
 			&.muted {
+				stroke: rgb(from var(--series-color) r g b / 0.45);
 				stroke-width: 1px;
 			}
-
+			.highlighted {
+				stroke: var(--series-color);
+			}
 			&.stacked {
 				stroke: var(--text-secondary);
 				stroke-width: 1px;
@@ -41,23 +44,24 @@
 		}
 
 		&.area {
-			fill: var(--series-color);
-
+			fill: rgb(from var(--series-color) r g b / 0.85);
 			fill-opacity: 0.45;
 			&.muted {
+				fill: rgb(from var(--series-color) r g b / 0.45);
 				fill-opacity: 0.25;
 			}
 			&.highlighted {
+				fill: var(--series-color);
 				fill-opacity: 0.65;
 			}
 
 			[data-is-zack="false"] & {
 				&:not(.highlighted) {
-					fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10));
+					fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10) / 0.85);
 				}
-
 				fill-opacity: 0.35;
 				&.muted {
+					fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10) / 0.45);
 					fill-opacity: 0.15;
 				}
 				&.highlighted {
@@ -78,11 +82,15 @@
 
 	circle {
 		&.point {
+			fill: rgb(from var(--series-color) r g b / 0.85);
 			r: 3.5px;
 			&.highlighted {
+				fill: var(--series-color);
 				r: 4px;
 			}
-			fill: var(--series-color);
+			&.muted {
+				fill: rgb(from var(--series-color) r g b / 0.45);
+			}
 		}
 
 		&.outline {
@@ -95,7 +103,7 @@
 				opacity: 0.35;
 			}
 
-			&:not(.visible) {
+			&:not(.highlighted) {
 				display: none;
 			}
 		}
@@ -109,7 +117,7 @@
 				r: 4px;
 				fill: var(--bg-primary);
 			}
-			&:not(.visible) {
+			&.stacked {
 				/* cannot use `display: none`, tooltip needs to know its position */
 				visibility: hidden;
 			}
