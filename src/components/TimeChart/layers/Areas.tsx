@@ -2,7 +2,6 @@ import { curveFromProp } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
-import { zip } from "es-toolkit";
 import { windowed } from "@/utils/array";
 import type { NivoSeries } from "../Chart";
 import { useChart } from "../context";
@@ -28,42 +27,39 @@ export function Areas({
 
 	return (
 		<g>
-			{windowed(series, 2).map(([prev, { id, data, color }]) => {
-				const upper = data.map((d) => d.position);
-				const lower = prev
-					? prev.data.map((d) => d.position)
-					: upper.map(({ x }) => ({ x, y: yScale(0) }));
-
-				const path =
-					bandGenerator(
-						zip(lower, upper).map(([L, U]) => ({
-							x: L.x,
-							y0: L.y,
-							y1: U.y,
+			{windowed(series, 2).map(([prev, { id, data, color }]) => (
+				<Area
+					key={id}
+					seriesId={id}
+					color={color}
+					path={bandGenerator(
+						data.map((d, i) => ({
+							x: d.position.x,
+							y1: d.position.y,
+							y0: prev ? prev.data[i]!.position.y : yScale(0),
 						})),
-					) ?? "";
-
-				return <Area key={id} id={id} path={path} color={color} />;
-			})}
+					)}
+				/>
+			))}
 		</g>
 	);
 }
 
 type AreaProps = {
-	id: string;
-	path: string;
+	seriesId: string;
+	path: string | null;
 	color: string;
 };
-function Area({ id, path, color }: AreaProps) {
+function Area({ seriesId, path, color }: AreaProps) {
 	const { isHighlighted, isMuted } = useChart();
 
 	return (
 		<path
-			d={path}
+			d={path ?? undefined}
 			style={{ ["--series-color" as string]: color }}
 			className={cx("area", {
-				highlighted: isHighlighted(id),
-				muted: isMuted(id),
+				highlighted: isHighlighted(seriesId),
+				muted: isMuted(seriesId),
 			})}
 		/>
 	);
