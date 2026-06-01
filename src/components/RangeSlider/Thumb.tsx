@@ -60,7 +60,7 @@ export function ThumbWrapper<Value>({
 		index,
 		1, // step
 		" - ", // separator (e.g. date - date)
-		(value) => String(domain[parseInt(value, 10)]),
+		(value) => String(domain[Number(value)]),
 	);
 	// fuck react-range's types, this is so stupid!
 	labelValue = labelValue as string | undefined;

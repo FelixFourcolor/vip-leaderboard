@@ -7,11 +7,9 @@
 				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
+				"noConsole": "warn",
 				"noExplicitAny": "off",
 				"useIterableCallbackReturn": "off"
-			},
-			"correctness": {
-				"useParseIntRadix": "off"
 			},
 			"a11y": "off"
 		}
