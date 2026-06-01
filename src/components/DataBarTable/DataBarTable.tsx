@@ -2,7 +2,6 @@ import classNames from "classnames/bind";
 import { debounce } from "es-toolkit/function";
 import {
 	type FC,
-	type KeyboardEvent,
 	type ReactNode,
 	useEffect,
 	useLayoutEffect,
@@ -70,6 +69,8 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	type Col = Row extends DataRow<infer U> ? U : never;
 
 	const isSorted = onSort !== undefined;
+	const sortBy = isSorted ? activeColumn : undefined;
+
 	const scales = useMemo(() => {
 		if (rows.length === 0) {
 			return [];
@@ -146,7 +147,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 		const table = tableRef.current;
 		const scrollParent = containerRef.current;
 		const topVisibleRow = topVisibleRowRef.current;
-		if (!table || !scrollParent || rows.length === 0 || !topVisibleRow) {
+		if (!table || !scrollParent || !sortBy || !topVisibleRow || !rows.length) {
 			return;
 		}
 
@@ -170,35 +171,14 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 				window.scrollBy(0, scrollAmount);
 			}
 		}
-	}, [rows]);
+	}, [rows, sortBy]);
 
 	if (rows.length === 0) {
 		return;
 	}
 
-	const dataColumns = keys(rows[0]!.data);
+	const dataColumns = keys(rows[0]!.data) as Col[];
 	const isDataColumn = (col: any): col is Col => dataColumns.includes(col);
-
-	const headerSortProps = (col: Col) => ({
-		className: cx("sortable", { sorted: activeColumn === col }),
-		"aria-sort": activeColumn === col ? ("descending" as const) : undefined,
-		onClick: () => onSort?.(col),
-		tabIndex: activeColumn === col ? -1 : 0,
-		onKeyDown: (e: KeyboardEvent) => {
-			if (e.key === "Enter" || e.key === " ") {
-				onSort?.(col);
-				e.preventDefault();
-			}
-		},
-	});
-	const dataRowProps = (col: Col, index: number) => ({
-		className: cx("data", { scaled: activeColumn === col }),
-		style: {
-			["--bar-scale" as string]: scales[index],
-			["--bar-color" as string]:
-				columnColors?.[col] ?? rowColors?.[rows[index]![primaryKey]],
-		},
-	});
 
 	return (
 		<table className={cx("data-bar-table", className)} ref={tableRef}>
@@ -211,8 +191,20 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 				{values(columns).some((c) => c.header) && (
 					<tr>
 						{entries(columns).map(([col, { header }]) =>
-							isDataColumn(col) && isSorted ? (
-								<th key={col} {...headerSortProps(col)}>
+							sortBy && isDataColumn(col) ? (
+								<th
+									key={col}
+									className={cx("sortable", { sorted: sortBy === col })}
+									aria-sort={sortBy === col ? "descending" : undefined}
+									onClick={() => onSort?.(col)}
+									tabIndex={sortBy === col ? -1 : 0}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											onSort?.(col);
+											e.preventDefault();
+										}
+									}}
+								>
 									{header}
 									<SortIcon />
 								</th>
@@ -226,7 +218,15 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 					<tr key={String(row[primaryKey])} data-row>
 						{entries(columns).map(([col, { cell: CellRenderer }]) =>
 							isDataColumn(col) ? (
-								<td key={col} {...dataRowProps(col, i)}>
+								<td
+									key={col}
+									className={cx("data", { scaled: activeColumn === col })}
+									style={{
+										["--bar-scale" as string]: scales[i],
+										["--bar-color" as string]:
+											columnColors?.[col] ?? rowColors?.[row[primaryKey]],
+									}}
+								>
 									{CellRenderer ? (
 										<CellRenderer {...{ ...row, "[index]": i }} />
 									) : (
