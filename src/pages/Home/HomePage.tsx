@@ -9,6 +9,7 @@ import {
 	activityLabels,
 	getActivityCount,
 } from "@/db/activity";
+import { FIRST_MONTH, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { getUserStats, type UserStats } from "@/db/user";
 import { Header } from "../Header";
 import { HomeControls, useHomeControls } from "./HomeControls";
@@ -38,6 +39,21 @@ export function HomePage() {
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
+	const timePeriod = useMemo(() => {
+		if (since === until) {
+			return since;
+		}
+		if (until === LAST_MONTH) {
+			if (since === TWO_YEARS_AGO) {
+				return "last 2 years";
+			}
+			if (since === FIRST_MONTH) {
+				return "all time";
+			}
+		}
+		return `${since} - ${until}`;
+	}, [since, until]);
+
 	return (
 		<div className={cx("home-page")}>
 			<div className={cx("main-container")} ref={containerRef} tabIndex={-1}>
@@ -47,7 +63,7 @@ export function HomePage() {
 						<DataBarTable
 							rows={activityData}
 							primaryKey="type"
-							title="Global stats"
+							title={`Summary (${timePeriod})`}
 							columns={{
 								type: {
 									cell: ({ type }) => (
