@@ -58,7 +58,6 @@ export function Header({ position = "sticky", containerRef }: Props) {
 				</Link>
 				<Tooltip
 					disabled={!isScreenSmall}
-					offset={3}
 					trigger={(props) => (
 						<Link
 							{...props}

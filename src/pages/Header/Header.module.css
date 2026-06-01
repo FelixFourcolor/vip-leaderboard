@@ -127,11 +127,11 @@
 			}
 
 			color: var(--text-secondary);
-			&.active {
-				color: var(--accent);
-			}
 			&[aria-disabled="true"] {
 				color: var(--text-tertiary);
+			}
+			&.active {
+				color: var(--accent);
 			}
 		}
 	}
