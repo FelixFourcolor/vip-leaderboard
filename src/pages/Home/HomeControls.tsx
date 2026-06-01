@@ -7,6 +7,7 @@ import { RangeSlider } from "@/components/RangeSlider";
 import { ALL_MONTHS, FIRST_MONTH, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { type RankingOptions, Route } from "@/routes/index";
+import { keys, pick } from "@/utils/object";
 import type { YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
 import styles from "./HomePage.module.css";
@@ -85,7 +86,7 @@ export function HomeControls() {
 						</PopupMenu.Item>
 						<hr />
 						<PopupMenu.Item
-							disabled={isEqual(options, defaultOptions)}
+							disabled={isDefaultOptions(options)}
 							onClick={() => setTimeout(() => setOptions(defaultOptions))}
 							stayOpenOnClick
 						>
@@ -103,6 +104,9 @@ const defaultOptions = {
 	until: LAST_MONTH,
 	sortBy: "total",
 } satisfies Required<RankingOptions>;
+
+const isDefaultOptions = (options: RankingOptions) =>
+	isEqual(pick(options, keys(defaultOptions)), defaultOptions);
 
 export function useHomeControls() {
 	const search = Route.useSearch();

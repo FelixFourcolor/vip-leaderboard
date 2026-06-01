@@ -7,6 +7,7 @@ import { RangeSlider } from "@/components/RangeSlider";
 import { activityIcons, activityLabels, activityTypes } from "@/db/activity";
 import { ALL_MONTHS, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { type ChartOptions, Route } from "@/routes/chart";
+import { keys, pick } from "@/utils/object";
 import type { YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
 import styles from "./ChartPage.module.css";
@@ -81,8 +82,8 @@ export function ChartControls() {
 						</PopupMenu.Group>
 						<hr />
 						<PopupMenu.Item
-							disabled={isEqual(options, defaultOptions)}
-							onClick={() => setTimeout(() => setOptions(defaultOptions), 0)}
+							disabled={isDefaultOptions(options)}
+							onClick={() => setTimeout(() => setOptions(defaultOptions))}
 							stayOpenOnClick
 							className={cx("menu-item")}
 						>
@@ -102,6 +103,9 @@ const defaultOptions = {
 	stacked: false,
 	types: [],
 } satisfies Required<ChartOptions>;
+
+const isDefaultOptions = (options: ChartOptions) =>
+	isEqual(pick(options, keys(defaultOptions)), defaultOptions);
 
 export function useChartControls() {
 	const search = Route.useSearch();
