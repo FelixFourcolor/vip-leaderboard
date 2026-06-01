@@ -1,3 +1,5 @@
+import type { AtLeastOneOf } from "./types";
+
 export type YyyyMm = `${number}-${number}`;
 
 export function toYyyyMm(date: Date): YyyyMm {
@@ -9,10 +11,7 @@ export function toDate(yyyyMm: YyyyMm): Date {
 	return new Date(year!, month! - 1, 1);
 }
 
-export function monthsInRange(
-	since: YyyyMm | Date,
-	until: YyyyMm | Date,
-): YyyyMm[] {
+export function monthsInRange(since: YyyyMm, until: YyyyMm): YyyyMm[] {
 	const sinceDate = new Date(since);
 	const sinceYear = sinceDate.getUTCFullYear();
 	const sinceMonth = sinceDate.getUTCMonth();
@@ -31,10 +30,10 @@ export function monthsInRange(
 }
 
 export function timeOffset(
-	date: YyyyMm | Date,
-	offset: Partial<Record<"days" | "months" | "years", number>>,
+	from: YyyyMm,
+	offset: AtLeastOneOf<Record<"days" | "months" | "years", number>>,
 ): YyyyMm {
-	date = new Date(date);
+	const date = new Date(from);
 	if (offset.days) {
 		date.setUTCDate(date.getUTCDate() + offset.days);
 	}
