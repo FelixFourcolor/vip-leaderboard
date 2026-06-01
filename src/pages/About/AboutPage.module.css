@@ -12,7 +12,7 @@
 	}
 	@media (max-width: 450px) {
 		--margin-v: 16px;
-		--margin-h: 12px;
+		--margin-h: 16px;
 	}
 
 	a {
@@ -46,10 +46,10 @@ section {
 		padding: 4px 12px;
 		margin: 0 -12px;
 		@media (max-width: 600px) {
-			margin: 0 -8px;
+			margin: 0 -10px;
 		}
 		@media (max-width: 450px) {
-			margin: 0 -4px;
+			margin: 0 -8px;
 		}
 		margin-bottom: var(--small-space);
 		background: var(--bg-secondary);
