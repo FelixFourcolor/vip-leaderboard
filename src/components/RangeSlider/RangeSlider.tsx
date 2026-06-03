@@ -141,7 +141,7 @@ export function RangeSlider<Value>({
 		if (!delta) {
 			return;
 		}
-		_setValues(([currentFrom, currentTo]) => {
+		setValues(([currentFrom, currentTo]) => {
 			let from = currentFrom - delta;
 			let to = currentTo + delta;
 			if (from < 0) {
