@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import type { User } from "./loader/types";
 
 const SQL_WASM = {
 	origin: res("node_modules/sql.js/dist/sql-wasm.wasm"),
@@ -15,7 +16,7 @@ export default defineConfig({
 		tanstackRouter({ target: "react", autoCodeSplitting: true }),
 		react(),
 		sqlWasmBundler(),
-		lastUpdateDateBundler(),
+		dbBundler(),
 	],
 	resolve: {
 		alias: {
@@ -27,26 +28,39 @@ export default defineConfig({
 });
 
 // so that the page can render before db is loaded
-function lastUpdateDateBundler(): Plugin {
+function dbBundler(): Plugin {
 	return {
-		name: "last-update",
+		name: "db-bundler",
 		resolveId(id) {
-			if (id === "virtual:db/last-update") {
-				return `\0virtual:db/last-update`;
+			if (id === "virtual:db") {
+				return `\0virtual:db`;
 			}
 		},
 		load(id) {
-			if (id !== `\0virtual:db/last-update`) {
+			if (id !== `\0virtual:db`) {
 				return;
 			}
 
 			const db = new DatabaseSync(res("public/db.sqlite"));
+
 			const { date } = db
 				.prepare("SELECT date FROM activity ORDER BY date DESC LIMIT 1")
 				.get() as { date: number };
+
+			const { avatarUrl, color } = db
+				.prepare(
+					`SELECT 
+						avatar_url as avatarUrl,
+						color 
+					FROM user
+					WHERE id = 'zackwb'`,
+				)
+				.get() as Pick<User, "avatarUrl" | "color">;
+
 			db.close();
 
-			return `export default new Date(${date * 1000});`;
+			return `export const LAST_UPDATE = new Date(${date * 1000});
+					export const ZACK = { avatarUrl: "${avatarUrl}", color: "${color}" };`;
 		},
 	};
 }

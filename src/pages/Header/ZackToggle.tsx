@@ -1,29 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { ZACK } from "virtual:db";
+import { useRef } from "react";
 import { Toggle } from "@/components/Toggle";
-import { getUser, type User } from "@/db/user";
 import { setIsZack, useIsZack } from "@/hooks/useIsZack";
 
 export function ZackToggle() {
 	const isZack = useIsZack();
 
-	const [zackData, setZackData] = useState<User | undefined>();
-	useEffect(() => {
-		getUser("zackwb").then(setZackData);
-	}, []);
-
-	const zackAvatarUrl = zackData
-		? `https://cdn.discordapp.com/${zackData.avatarUrl}?size=16`
-		: undefined;
-
-	// prefetch image to avoid delay when toggling
-	const fetchedRef = useRef(false);
-	useEffect(() => {
-		if (zackAvatarUrl && !fetchedRef.current) {
+	const fetchedRef = useRef(isZack);
+	const prefetch = () => {
+		if (!fetchedRef.current) {
 			const img = new Image();
 			img.src = zackAvatarUrl;
 			fetchedRef.current = true;
 		}
-	}, [zackAvatarUrl]);
+	};
 
 	return (
 		<Toggle
@@ -31,20 +21,24 @@ export function ZackToggle() {
 			onChange={setIsZack}
 			customStyles={{
 				container: {
-					backgroundColor: isZack ? (zackData?.color ?? undefined) : undefined,
+					backgroundColor: isZack ? ZACK.color : undefined,
 				},
 				slider: {
 					backgroundImage: isZack
-						? zackAvatarUrl
-							? `url("${zackAvatarUrl}")`
-							: undefined
-						: `url("${moonSvgUrl}")`,
+						? `url("${zackAvatarUrl}")`
+						: `url("${moonIconUrl}")`,
 				},
 			}}
+			onMouseEnter={prefetch}
+			onFocus={prefetch}
 		/>
 	);
 }
 
-const moonSvgUrl = `data:image/svg+xml,${encodeURIComponent(
+// The toggle is only 15px, but fetch the 24px version because
+// it's likely already fetched elsewhere, reusing the cache
+const zackAvatarUrl = `https://cdn.discordapp.com/${ZACK.avatarUrl}?size=24`;
+
+const moonIconUrl = `data:image/svg+xml,${encodeURIComponent(
 	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#21202f"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
 )}`;

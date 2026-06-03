@@ -1,4 +1,4 @@
-import LAST_UPDATE from "virtual:db/last-update";
+import { LAST_UPDATE } from "virtual:db";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
 import { type RefObject, useEffect, useState } from "react";

@@ -18,17 +18,18 @@ label {
 		height: 20px;
 		display: inline-flex;
 		align-items: center;
-		transition: background 0.3s ease;
-		background: var(--text-tertiary);
+		transition: background-color 0.3s ease;
+		background-color: var(--text-tertiary);
 
 		.slider {
 			width: 15px;
 			height: 15px;
-			transition: background 0.4s ease;
+			background-size: contain;
+			transition: background-color 0.4s ease;
 
-			background: var(--text-primary);
+			background-color: var(--text-primary);
 			[data-is-zack="true"] & {
-				background: var(--bg-primary);
+				background-color: var(--bg-primary);
 			}
 		}
 
@@ -38,9 +39,9 @@ label {
 		}
 
 		&.isOn {
-			background: #286983;
+			background-color: #286983;
 			[data-is-zack="true"] & {
-				background: #3e8fb0;
+				background-color: #3e8fb0;
 			}
 
 			.dummy {

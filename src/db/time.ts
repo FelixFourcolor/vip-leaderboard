@@ -1,4 +1,4 @@
-import LAST_UPDATE from "virtual:db/last-update";
+import { LAST_UPDATE } from "virtual:db";
 import { monthsInRange, timeOffset, toYyyyMm } from "@/utils/time";
 
 // Earliest month with meaningful data.

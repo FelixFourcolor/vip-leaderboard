@@ -1,4 +1,4 @@
-declare module "virtual:db/last-update" {
-	const LAST_UPDATE: Date;
-	export default LAST_UPDATE;
+declare module "virtual:db" {
+	export const LAST_UPDATE: Date;
+	export const ZACK: { color: string; avatarUrl: string };
 }

@@ -1,10 +1,10 @@
 import classNames from "classnames/bind";
-import type { CSSProperties, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import styles from "./Toggle.module.css";
 
 const cx = classNames.bind(styles);
 
-interface ToggleProps {
+interface ToggleProps extends Omit<ComponentProps<"label">, "onChange"> {
 	value: boolean;
 	onChange: (isOn: boolean) => void;
 	customStyles?: Partial<Record<"container" | "slider", CSSProperties>>;
@@ -17,11 +17,10 @@ export function Toggle({
 	onChange,
 	customStyles = {},
 	children,
-	className,
 	...props
 }: ToggleProps) {
 	return (
-		<label {...props} className={cx(className)}>
+		<label {...props}>
 			<input
 				type="checkbox"
 				checked={isOn}
