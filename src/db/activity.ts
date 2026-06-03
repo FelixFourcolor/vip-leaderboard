@@ -4,7 +4,7 @@ import { groupBy } from "es-toolkit";
 import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
 import { timeOffset, type YyyyMm } from "@/utils/time";
-import { loadDb } from "./db";
+import { loadDb } from "./loader";
 import { activity } from "./schema";
 
 export const activityTypes = activity.type.enumValues;
@@ -28,11 +28,12 @@ export const activityColors = {
 	total: "#6e9cf7",
 } as const satisfies Record<ActivityType | "total", string>;
 
-type ActivityStatsParams = {
+type ActivityParams = {
 	since?: YyyyMm;
 	until?: YyyyMm;
 	user?: string;
 };
+
 export interface ActivityStats extends DataRow<"count"> {
 	type: ActivityType | "total";
 }
@@ -40,7 +41,7 @@ export async function getActivityCount({
 	since,
 	until,
 	user,
-}: ActivityStatsParams): Promise<ActivityStats[]> {
+}: ActivityParams): Promise<ActivityStats[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -73,7 +74,7 @@ export async function getActivityCount({
 	];
 }
 
-export interface ActivityMonthlyStats extends TimeSeries {
+export interface ActivityMonthlyCount extends TimeSeries {
 	type: ActivityType;
 	count: number;
 }
@@ -81,7 +82,7 @@ export async function getActivityMonthlyStats({
 	since,
 	until,
 	user,
-}: ActivityStatsParams): Promise<ActivityMonthlyStats[]> {
+}: ActivityParams): Promise<ActivityMonthlyCount[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();

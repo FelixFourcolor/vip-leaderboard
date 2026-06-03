@@ -22,20 +22,11 @@ export function HomePage() {
 	const { until, since, sortBy } = options;
 
 	const [users, setUsers] = useState<UserStats[]>();
-	const [activityData, setActivityData] = useState<ActivityStats[]>();
+	const [activityStats, setActivityStats] = useState<ActivityStats[]>();
 	useEffect(() => {
-		getActivityCount({ since, until }).then(setActivityData);
+		getActivityCount({ since, until }).then(setActivityStats);
 		getUserStats({ since, until }).then(setUsers);
 	}, [since, until]);
-
-	const rankings = useMemo(() => {
-		return users?.sort(
-			(a, b) =>
-				b.data[sortBy] - a.data[sortBy] ||
-				b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
-				b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf(),
-		);
-	}, [users, sortBy]);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +50,9 @@ export function HomePage() {
 			<div className={cx("main-container")} ref={containerRef} tabIndex={-1}>
 				<Header containerRef={containerRef} />
 				<main>
-					{activityData && (
+					{activityStats && (
 						<DataBarTable
-							rows={activityData}
+							data={activityStats}
 							primaryKey="type"
 							title={`Summary (${timePeriod})`}
 							columns={{
@@ -84,9 +75,9 @@ export function HomePage() {
 							className={cx("table", "summary-table")}
 						/>
 					)}
-					{rankings && (
+					{users && (
 						<DataBarTable
-							rows={rankings}
+							data={users}
 							columns={{
 								"[index]": {
 									header: "#",
@@ -128,7 +119,12 @@ export function HomePage() {
 							primaryKey="id"
 							columnColors={activityColors}
 							activeColumn={sortBy}
-							onSort={(sortBy) => setOptions({ sortBy })}
+							onColumnChange={(sortBy) => setOptions({ sortBy })}
+							compare={(a, b, by) =>
+								a.data[by] - b.data[by] ||
+								a.lastActiveDate.valueOf() - b.lastActiveDate.valueOf() ||
+								a.firstActiveDate.valueOf() - b.firstActiveDate.valueOf()
+							}
 							className={cx("table", "ranking-table")}
 						/>
 					)}

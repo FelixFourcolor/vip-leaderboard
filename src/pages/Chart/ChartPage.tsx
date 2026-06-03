@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 import { useEffect, useRef, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
 import { activityLabels } from "@/db/activity";
-import { getUserMonthlyStats, type UserMonthlyStats } from "@/db/user";
+import { getUserMonthlyCount, type UserMonthlyCount } from "@/db/user";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { Header } from "../Header";
 import { ChartControls, useChartControls } from "./ChartControls";
@@ -18,9 +18,9 @@ export function ChartPage() {
 	const [options] = useChartControls();
 	const { since, until, types } = options;
 
-	const [data, setData] = useState<UserMonthlyStats[]>();
+	const [data, setData] = useState<UserMonthlyCount[]>();
 	useEffect(() => {
-		getUserMonthlyStats({ since, until, types }).then(setData);
+		getUserMonthlyCount({ since, until, types }).then(setData);
 	}, [since, until, types]);
 
 	useEffect(() => {

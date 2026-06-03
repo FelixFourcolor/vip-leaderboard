@@ -5,7 +5,7 @@ import type { TimeSeries } from "@/components/TimeChart";
 import { fromEntries, pick, values } from "@/utils/object";
 import { timeOffset, type YyyyMm } from "@/utils/time";
 import { type ActivityType, activityTypes } from "./activity";
-import { loadDb } from "./db";
+import { loadDb } from "./loader";
 import { activity, user } from "./schema";
 
 const userFields = pick(user, ["id", "name", "avatarUrl", "color"]);
@@ -16,11 +16,12 @@ export async function getUser(userId: string): Promise<User | undefined> {
 	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
 
-type UserStatsParams<T extends ActivityType = ActivityType> = {
+type UserParams<T extends ActivityType = ActivityType> = {
 	since?: YyyyMm;
 	until?: YyyyMm;
 	types?: T[];
 };
+
 export interface UserStats<T extends ActivityType = ActivityType>
 	extends User,
 		DataRow<T | "total"> {
@@ -31,7 +32,7 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	since,
 	until,
 	types,
-}: UserStatsParams<T>): Promise<UserStats<T>[]> {
+}: UserParams<T>): Promise<UserStats<T>[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -87,14 +88,14 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	});
 }
 
-export interface UserMonthlyStats extends User, TimeSeries {
+export interface UserMonthlyCount extends User, TimeSeries {
 	total: number;
 }
-export async function getUserMonthlyStats({
+export async function getUserMonthlyCount({
 	since,
 	until,
 	types,
-}: UserStatsParams): Promise<UserMonthlyStats[]> {
+}: UserParams): Promise<UserMonthlyCount[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
