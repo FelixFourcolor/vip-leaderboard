@@ -69,7 +69,7 @@
 			transition: width 0.3s ease;
 			z-index: -1;
 			background-color: var(--bar-color);
-			opacity: 0.5;
+			opacity: 0.4;
 		}
 		&.scaled::before {
 			width: calc(100% * var(--bar-scale) - var(--bar-padding) * 2);
