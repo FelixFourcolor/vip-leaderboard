@@ -41,11 +41,12 @@ type Props<
 	PK extends PrimaryKey<Row>,
 	Col extends string = Row extends DataRow<infer U> ? U : never,
 > = {
-	data: Row[];
+	rows: Row[];
 	primaryKey: PK;
 	columns: Columns<Col, Row, "with-header"> | Columns<Col, Row, "no-header">;
 	activeColumn: Col;
 	onColumnChange?: (col: Col) => void;
+	sorted?: "ascending" | "descending";
 	title?: ReactNode;
 	className?: string;
 } & EitherOr<
@@ -53,21 +54,16 @@ type Props<
 	// but TS doesn't know that
 	{ rowColors: string | Record<Row[PK], string> },
 	{ columnColors: string | Record<Col, string> }
-> &
-	EitherOr<
-		{ sorted?: true; compare?: (a: Row, b: Row, by: Col) => number },
-		{ sorted?: false; compare?: never }
-	>;
+>;
 
 export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
-	data,
+	rows,
 	columns,
 	primaryKey,
 	title,
 	activeColumn,
 	onColumnChange,
-	compare,
-	sorted = !!compare,
+	sorted,
 	columnColors,
 	rowColors,
 	className,
@@ -75,21 +71,20 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	type Col = Row extends DataRow<infer U> ? U : never;
 
 	const sortBy = sorted ? activeColumn : undefined;
-	const compareRef = useRef(compare ?? defaultCompare);
-	const rows = useMemo(() => {
-		return sortBy
-			? data.sort((a, b) => compareRef.current(b, a, sortBy))
-			: data;
-	}, [data, sortBy]);
 
 	const scales = useMemo(() => {
 		if (rows.length === 0) {
 			return [];
 		}
-		const max = sorted
-			? rows[0]!.data[activeColumn]!
-			: Math.max(...rows.map((r) => r.data[activeColumn]!));
-
+		const max = (() => {
+			if (sorted === "descending") {
+				return rows[0]!.data[activeColumn]!;
+			}
+			if (sorted === "ascending") {
+				return rows[rows.length - 1]!.data[activeColumn]!;
+			}
+			return Math.max(...rows.map((r) => r.data[activeColumn]!));
+		})();
 		return rows.map((r) => r.data[activeColumn]! / max);
 	}, [rows, activeColumn, sorted]);
 
@@ -158,7 +153,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 		const table = tableRef.current;
 		const scrollParent = containerRef.current;
 		const topVisibleRow = topVisibleRowRef.current;
-		if (!table || !scrollParent || !sortBy || !topVisibleRow || !rows.length) {
+		if (!table || !scrollParent || !topVisibleRow || rows.length === 0) {
 			return;
 		}
 
@@ -182,7 +177,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 				window.scrollBy(0, scrollAmount);
 			}
 		}
-	}, [rows, sortBy]);
+	}, [rows]);
 
 	if (rows.length === 0) {
 		return;
@@ -206,7 +201,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 								<th
 									key={col}
 									className={cx("sortable", { sorted: sortBy === col })}
-									aria-sort={sortBy === col ? "descending" : undefined}
+									aria-sort={sortBy === col ? sorted : undefined}
 									onClick={() => onColumnChange?.(col)}
 									tabIndex={sortBy === col ? -1 : 0}
 									onKeyDown={(e) => {
@@ -271,12 +266,6 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 		</table>
 	);
 }
-
-const defaultCompare = <Row extends DataRow>(
-	a: Row,
-	b: Row,
-	col: Row extends DataRow<infer U> ? U : never,
-) => a.data[col]! - b.data[col]!;
 
 const SortIcon = () => (
 	<svg
