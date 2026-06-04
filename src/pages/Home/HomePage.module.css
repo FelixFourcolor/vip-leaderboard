@@ -129,7 +129,11 @@
 
 .table {
 	th {
-		padding: 4px;
+		background-color: rgb(from var(--accent) r g b / 0.9);
+		color: var(--bg-primary);
+		[data-is-zack="true"] & {
+			color: white;
+		}
 	}
 
 	td {
@@ -137,13 +141,6 @@
 	}
 
 	tr {
-		&:first-child {
-			background-color: rgb(from var(--accent) r g b / 0.9);
-			color: var(--bg-primary);
-			[data-is-zack="true"] & {
-				color: white;
-			}
-		}
 		&:not(:first-child) {
 			&:nth-child(even) {
 				background-color: var(--bg-primary);
@@ -211,6 +208,11 @@
 		display: contents;
 	}
 
+	tr:first-child {
+		background-color: var(--bg-primary);
+		padding-top: 12px;
+	}
+
 	th,
 	td {
 		min-width: 0;
@@ -231,10 +233,25 @@
 		}
 	}
 	th {
-		overflow: hidden;
 		border-top: 1px solid var(--text-tertiary);
 		&:focus-visible {
 			outline-offset: -2px;
+		}
+
+		position: relative;
+		svg {
+			position: absolute;
+			@media (min-width: 701px) {
+				top: 50%;
+				left: 100%;
+				transform: translateY(-50%) translateX(-100%);
+			}
+			@media (max-width: 700px) {
+				color: var(--accent);
+				bottom: 100%;
+				left: 50%;
+				transform: translateY(4px) translateX(-50%);
+			}
 		}
 	}
 	tr {

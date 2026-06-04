@@ -16,39 +16,14 @@
 		cursor: default;
 		font-weight: var(--weight-bold);
 
-		&.sortable {
-			display: grid;
-			grid-template-columns: 1fr auto 1fr;
-			align-items: center;
+		&.sortable:not(.sorted) {
+			cursor: pointer;
 
-			&:not(.sorted) {
-				cursor: pointer;
-
-				&:is(:hover, :focus-visible) svg {
-					opacity: 0.4;
-				}
-				&:not(:hover, :focus-visible) svg {
-					display: none;
-				}
+			&:is(:hover, :focus-visible) svg {
+				opacity: 0.4;
 			}
-
-			&::before {
-				content: "";
-				justify-self: start;
-			}
-			div {
-				justify-self: center;
-			}
-			svg {
-				justify-self: end;
-				margin-right: -4px;
-				margin-left: -4px;
-			}
-
-			@media (max-width: 700px) {
-				svg {
-					display: none;
-				}
+			&:not(:hover, :focus-visible) svg {
+				display: none;
 			}
 		}
 	}
