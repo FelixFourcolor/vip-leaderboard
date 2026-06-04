@@ -231,6 +231,50 @@
 			align-items: center;
 			justify-content: center;
 		}
+
+		.rank {
+			gap: 8px;
+
+			.rank-number {
+				min-width: 2ch;
+				text-align: right;
+			}
+
+			.rank-change {
+				font-size: var(--text-very-small);
+				width: 3ch;
+				text-align: center;
+
+				@media (max-width: 500px) {
+					display: none;
+				}
+
+				&.positive {
+					&::before {
+						content: "▲";
+					}
+					color: #5cc639;
+					[data-is-zack="true"] & {
+						color: #00a800;
+					}
+				}
+				&.negative {
+					&::before {
+						content: "▼";
+					}
+					color: #ff6673;
+					[data-is-zack="true"] & {
+						color: #ff5757;
+					}
+				}
+				&:not(.positive, .negative) {
+					&::before {
+						content: "-";
+					}
+					color: var(--text-secondary);
+				}
+			}
+		}
 	}
 	th {
 		border-top: 1px solid var(--text-tertiary);

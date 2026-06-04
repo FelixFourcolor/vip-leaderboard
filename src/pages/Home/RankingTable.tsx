@@ -2,8 +2,10 @@ import classNames from "classnames/bind";
 import { useEffect, useMemo, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
-import { activityColors } from "@/db/activity";
+import { type ActivityType, activityColors } from "@/db/activity";
 import { getUserStats, type UserStats } from "@/db/user";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import { timeOffset } from "@/utils/time";
 import { useHomeControls } from "./HomeControls";
 import styles from "./HomePage.module.css";
 
@@ -14,19 +16,31 @@ export function RankingTable() {
 	const { until, since, sortBy } = options;
 
 	const [users, setUsers] = useState<UserStats[]>();
+	const [usersLastMonth, setUsersLastMonth] = useState<UserStats[]>();
 	useEffect(() => {
 		getUserStats({ since, until }).then(setUsers);
+		getUserStats({
+			since: timeOffset(since, { months: -1 }),
+			until: timeOffset(until, { months: -1 }),
+		}).then(setUsersLastMonth);
 	}, [since, until]);
 
 	const rankings = useMemo(() => {
-		// `toSorted` rather than `sort` to trigger table to re-render
-		return users?.toSorted(
-			(a, b) =>
-				b.data[sortBy] - a.data[sortBy] ||
-				b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
-				b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf(),
+		if (!users || !usersLastMonth) {
+			return;
+		}
+		const lastMonthIndex = Object.fromEntries(
+			usersLastMonth
+				.sort(userCompare(sortBy))
+				.map(({ id }, index) => [id, index]),
 		);
-	}, [users, sortBy]);
+		return users.sort(userCompare(sortBy)).map((user, index) => ({
+			...user,
+			rankChange: (lastMonthIndex[user.id] ?? usersLastMonth.length) - index,
+		}));
+	}, [users, usersLastMonth, sortBy]);
+
+	const isLargeScreen = useWindowSize({ minWidth: 501 });
 
 	if (!rankings) {
 		return;
@@ -38,9 +52,21 @@ export function RankingTable() {
 			primaryKey="id"
 			columns={{
 				"[index]": {
-					header: "#",
-					cell: ({ "[index]": index }) => (
-						<div className={cx("cell")}>{index + 1}</div>
+					header: isLargeScreen ? "Rank" : "#",
+					cell: ({ "[index]": index, rankChange }) => (
+						<div className={cx("cell", { rank: isLargeScreen })}>
+							<span className={cx("rank-number")}>{index + 1}</span>
+							{isLargeScreen && (
+								<span
+									className={cx("rank-change", {
+										positive: rankChange > 0,
+										negative: rankChange < 0,
+									})}
+								>
+									{rankChange === 0 ? "" : Math.abs(rankChange)}
+								</span>
+							)}
+						</div>
 					),
 				},
 				name: {
@@ -85,3 +111,9 @@ export function RankingTable() {
 		/>
 	);
 }
+
+const userCompare =
+	(sortBy: ActivityType | "total") => (a: UserStats, b: UserStats) =>
+		b.data[sortBy] - a.data[sortBy] ||
+		b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
+		b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf();
