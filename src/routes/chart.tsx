@@ -1,16 +1,13 @@
 import { createFileRoute, retainSearchParams } from "@tanstack/react-router";
 import { mapValues } from "es-toolkit";
-import { type ActivityType, activityTypes } from "@/db/activity";
+import { activityTypes } from "@/db/activity";
+import type { UserMonthlyCountParams } from "@/db/user";
 import { ChartPage } from "@/pages/Chart";
-import type { YyyyMm } from "@/utils/time";
 
-export type ChartOptions = {
-	until?: YyyyMm;
-	since?: YyyyMm;
+export interface ChartOptions extends UserMonthlyCountParams {
 	cumulative?: boolean;
 	stacked?: boolean;
-	types?: ActivityType[];
-};
+}
 
 export const Route = createFileRoute("/chart")({
 	component: ChartPage,

@@ -16,23 +16,18 @@ export async function getUser(userId: string): Promise<User | undefined> {
 	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
 
-type UserParams<T extends ActivityType = ActivityType> = {
+export interface UserStatsParams {
 	since?: YyyyMm;
 	until?: YyyyMm;
-	types?: T[];
-};
-
-export interface UserStats<T extends ActivityType = ActivityType>
-	extends User,
-		DataRow<T | "total"> {
+}
+export interface UserStats extends User, DataRow<ActivityType | "total"> {
 	lastActiveDate: Date;
 	firstActiveDate: Date;
 }
-export async function getUserStats<T extends ActivityType = ActivityType>({
+export async function getUserStats({
 	since,
 	until,
-	types,
-}: UserParams<T>): Promise<UserStats<T>[]> {
+}: UserStatsParams): Promise<UserStats[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
@@ -51,7 +46,6 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 			and(
 				since ? gte(activity.date, new Date(since)) : undefined,
 				until ? lt(activity.date, new Date(until)) : undefined,
-				types?.length ? inArray(activity.type, types) : undefined,
 			),
 		)
 		.groupBy(user.id, activity.type)
@@ -61,7 +55,7 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 		const { name, color, avatarUrl } = rows[0]!;
 
 		const activitiesCount = fromEntries(
-			(types ?? activityTypes).map((type) => [
+			activityTypes.map((type) => [
 				type,
 				rows.find((r) => r.type === type)?.count ?? 0,
 			]),
@@ -88,6 +82,9 @@ export async function getUserStats<T extends ActivityType = ActivityType>({
 	});
 }
 
+export interface UserMonthlyCountParams extends UserStatsParams {
+	types?: ActivityType[];
+}
 export interface UserMonthlyCount extends User, TimeSeries {
 	total: number;
 }
@@ -95,7 +92,7 @@ export async function getUserMonthlyCount({
 	since,
 	until,
 	types,
-}: UserParams): Promise<UserMonthlyCount[]> {
+}: UserMonthlyCountParams): Promise<UserMonthlyCount[]> {
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
