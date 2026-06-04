@@ -1,5 +1,5 @@
 import classNames from "classnames/bind";
-import { useEffect, useState } from "react";
+import { useDelay } from "@/hooks/useDelay";
 import styles from "./LoadingSpinner.module.css";
 
 const cx = classNames.bind(styles);
@@ -9,12 +9,8 @@ type Props = {
 	thickness?: number;
 	delay?: number;
 };
-export function LoadingSpinner({ size, thickness = 3, delay = 0 }: Props) {
-	const [visible, setVisible] = useState(false);
-	useEffect(() => {
-		const timer = setTimeout(() => setVisible(true), delay);
-		return () => clearTimeout(timer);
-	}, [delay]);
+export function LoadingSpinner({ size, thickness = 3, delay }: Props) {
+	const visible = useDelay(delay) || delay === undefined;
 
 	if (visible) {
 		return (

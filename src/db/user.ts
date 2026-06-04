@@ -28,6 +28,7 @@ export async function getUserStats({
 	since,
 	until,
 }: UserStatsParams): Promise<UserStats[]> {
+	console.log("fetching");
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();

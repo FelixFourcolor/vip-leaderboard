@@ -37,7 +37,7 @@ type ActivityParams = {
 export interface ActivityStats extends DataRow<"count"> {
 	type: ActivityType | "total";
 }
-export async function getActivityCount({
+export async function getActivityStats({
 	since,
 	until,
 	user,
