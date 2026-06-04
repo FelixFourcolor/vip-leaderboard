@@ -46,7 +46,6 @@ type Props<
 	columns: Columns<Col, Row, "with-header"> | Columns<Col, Row, "no-header">;
 	activeColumn: Col;
 	onColumnChange?: (col: Col) => void;
-	sorted?: "ascending" | "descending";
 	title?: ReactNode;
 	className?: string;
 } & EitherOr<
@@ -54,7 +53,11 @@ type Props<
 	// but TS doesn't know that
 	{ rowColors: string | Record<Row[PK], string> },
 	{ columnColors: string | Record<Col, string> }
->;
+> &
+	EitherOr<
+		{ sorted: "ascending" | "descending"; SortIcon: FC<{ sorted: boolean }> },
+		object
+	>;
 
 export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	rows,
@@ -64,6 +67,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 	activeColumn,
 	onColumnChange,
 	sorted,
+	SortIcon,
 	columnColors,
 	rowColors,
 	className,
@@ -201,7 +205,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 								<th
 									key={col}
 									className={cx("sortable", { sorted: sortBy === col })}
-									aria-sort={sortBy === col ? sorted : undefined}
+									aria-sort={sorted && sortBy === col ? sorted : undefined}
 									onClick={() => onColumnChange?.(col)}
 									tabIndex={sortBy === col ? -1 : 0}
 									onKeyDown={(e) => {
@@ -212,7 +216,7 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 									}}
 								>
 									{header}
-									<SortIcon />
+									{SortIcon && <SortIcon sorted={sortBy === col} />}
 								</th>
 							) : (
 								<th key={col.toString()}>{header}</th>
@@ -266,15 +270,3 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 		</table>
 	);
 }
-
-const SortIcon = () => (
-	<svg
-		xmlns="http://www.w3.org/2000/svg"
-		width="20"
-		height="20"
-		viewBox="0 0 24 24"
-		fill="currentColor"
-	>
-		<path d="M6 8l6 8 6-8z" />
-	</svg>
-);

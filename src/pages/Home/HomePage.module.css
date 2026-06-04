@@ -239,18 +239,27 @@
 		}
 
 		position: relative;
-		svg {
+		.sort-icon {
+			font-size: var(--text-small);
+
 			position: absolute;
 			@media (min-width: 701px) {
 				top: 50%;
 				left: 100%;
-				transform: translateY(-50%) translateX(-100%);
+				transform: translateY(-50%) translateX(-125%);
 			}
 			@media (max-width: 700px) {
 				color: var(--accent);
 				bottom: 100%;
 				left: 50%;
-				transform: translateY(4px) translateX(-50%);
+				transform: translateY(2px) translateX(-50%);
+			}
+
+			th:is(:hover, :focus-visible) &:not(.sorted) {
+				opacity: 0.4;
+			}
+			th:not(:hover, :focus-visible) &:not(.sorted) {
+				display: none;
 			}
 		}
 	}

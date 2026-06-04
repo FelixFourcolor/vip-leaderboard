@@ -18,13 +18,6 @@
 
 		&.sortable:not(.sorted) {
 			cursor: pointer;
-
-			&:is(:hover, :focus-visible) svg {
-				opacity: 0.4;
-			}
-			&:not(:hover, :focus-visible) svg {
-				display: none;
-			}
 		}
 	}
 

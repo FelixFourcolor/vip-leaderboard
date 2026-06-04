@@ -78,6 +78,9 @@ export function RankingTable() {
 			activeColumn={sortBy}
 			onColumnChange={(sortBy) => setOptions({ sortBy })}
 			sorted="descending"
+			SortIcon={({ sorted }) => (
+				<span className={cx("sort-icon", { sorted })}>▼</span>
+			)}
 			className={cx("table", "ranking-table")}
 		/>
 	);
