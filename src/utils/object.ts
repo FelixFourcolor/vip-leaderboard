@@ -4,14 +4,13 @@ export const pick = <T, const K extends keyof T>(obj: T, keys: readonly K[]) =>
 
 // better typing than builtins
 
-export const values = <T extends object>(obj: T) =>
-	Object.values(obj) as T[keyof T][];
+export const values: <T extends object>(obj: T) => T[keyof T][] = Object.values;
 
-export const keys = <T extends object>(obj: T) =>
-	Object.keys(obj) as (keyof T)[];
+export const keys: <T extends object>(obj: T) => (keyof T)[] = Object.keys;
 
-export const entries = <T extends object>(obj: T) =>
-	Object.entries(obj) as [keyof T, T[keyof T]][];
+export const entries: <T extends object>(obj: T) => [keyof T, T[keyof T]][] =
+	Object.entries;
 
-export const fromEntries = <K extends PropertyKey, V>(entries: [K, V][]) =>
-	Object.fromEntries(entries) as Record<K, V>;
+export const fromEntries: <K extends PropertyKey, V>(
+	entries: [K, V][],
+) => Record<K, V> = Object.fromEntries;
