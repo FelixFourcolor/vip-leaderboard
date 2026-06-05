@@ -222,7 +222,7 @@
 		border-bottom: 1px solid var(--text-tertiary);
 		&:first-child {
 			border-left: 1px solid var(--text-tertiary);
-			min-width: 3ch;
+			min-width: 2ch;
 		}
 
 		.cell {
