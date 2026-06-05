@@ -293,7 +293,7 @@
 				transform: translateY(-50%) translateX(-125%);
 			}
 			@media (max-width: 700px) {
-				color: var(--accent);
+				color: rgb(from var(--accent) r g b / 0.9);
 				bottom: 100%;
 				left: 50%;
 				transform: translateY(2px) translateX(-50%);
