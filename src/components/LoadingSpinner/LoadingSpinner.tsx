@@ -10,7 +10,7 @@ type Props = {
 	delay?: number;
 };
 export function LoadingSpinner({ size, thickness = 3, delay }: Props) {
-	const visible = useDelay(delay) || delay === undefined;
+	const visible = useDelay(delay);
 
 	if (visible) {
 		return (

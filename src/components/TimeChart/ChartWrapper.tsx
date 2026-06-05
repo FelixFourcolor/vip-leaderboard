@@ -86,7 +86,7 @@ export function ChartWrapper<S extends TimeSeries>({
 		}
 	}, [visibleIds, activeSeries, hoveredPoint]);
 
-	const renderReady = useDelay(renderDelay) || renderDelay === undefined;
+	const renderReady = useDelay(renderDelay);
 	return (
 		<ChartContext
 			value={{
