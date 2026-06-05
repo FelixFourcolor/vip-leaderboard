@@ -2,8 +2,8 @@ import classNames from "classnames/bind";
 import { useEffect, useMemo, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
-import { type ActivityType, activityColors } from "@/db/activity";
-import { getUserStats, type UserStats } from "@/db/user";
+import { activityColors } from "@/db/activity";
+import { getUserStats, type UserStats, userSortBy } from "@/db/user";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { timeOffset } from "@/utils/time";
 import { useHomeControls } from "./HomeControls";
@@ -31,10 +31,10 @@ export function RankingTable() {
 		}
 		const lastMonthIndex = Object.fromEntries(
 			usersLastMonth
-				.sort(userCompare(sortBy))
+				.sort(userSortBy((u) => u.data[sortBy]))
 				.map(({ id }, index) => [id, index]),
 		);
-		return users.sort(userCompare(sortBy)).map((user, index) => ({
+		return users.sort(userSortBy((u) => u.data[sortBy])).map((user, index) => ({
 			...user,
 			rankChange: (lastMonthIndex[user.id] ?? usersLastMonth.length) - index,
 		}));
@@ -116,9 +116,3 @@ export function RankingTable() {
 		/>
 	);
 }
-
-const userCompare =
-	(sortBy: ActivityType | "total") => (a: UserStats, b: UserStats) =>
-		b.data[sortBy] - a.data[sortBy] ||
-		b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
-		b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf();

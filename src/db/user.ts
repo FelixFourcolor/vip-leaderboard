@@ -17,14 +17,25 @@ export async function getUser(userId: string): Promise<Maybe<User>> {
 	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
 
+interface UserActivity {
+	lastActiveDate: Date;
+	firstActiveDate: Date;
+}
+export const userSortBy =
+	<U extends UserActivity>(getValue: (user: U) => number) =>
+	(a: U, b: U) =>
+		getValue(b) - getValue(a) ||
+		b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
+		b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf();
+
 export interface UserStatsParams {
 	since?: YyyyMm;
 	until?: YyyyMm;
 }
-export interface UserStats extends User, DataRow<ActivityType | "total"> {
-	lastActiveDate: Date;
-	firstActiveDate: Date;
-}
+export interface UserStats
+	extends User,
+		UserActivity,
+		DataRow<ActivityType | "total"> {}
 export async function getUserStats({
 	since,
 	until,
@@ -145,10 +156,5 @@ export async function getUserMonthlyCount({
 		};
 	});
 
-	return users.sort(
-		(a, b) =>
-			b.total - a.total ||
-			b.lastActiveDate.valueOf() - a.lastActiveDate.valueOf() ||
-			b.firstActiveDate.valueOf() - a.firstActiveDate.valueOf(),
-	);
+	return users.sort(userSortBy((u) => u.total));
 }
