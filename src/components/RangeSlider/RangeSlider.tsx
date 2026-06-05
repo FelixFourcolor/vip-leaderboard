@@ -3,7 +3,7 @@ import { debounce } from "es-toolkit/function";
 import { type Dispatch, useCallback, useMemo, useRef, useState } from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";
-import type { Pair } from "@/utils/types";
+import type { Maybe, Pair } from "@/utils/types";
 import { ThumbWrapper } from "./Thumb";
 import { Track } from "./Track";
 
@@ -60,10 +60,7 @@ export function RangeSlider<Value>({
 	};
 
 	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
-	const activeTimeoutRef = useRef<Pair<number | undefined>>([
-		undefined,
-		undefined,
-	]);
+	const activeTimeoutRef = useRef<Pair<Maybe<number>>>([undefined, undefined]);
 	const activateThumb = (...indices: number[]) => {
 		if (indices.length === 0) {
 			indices = [0, 1];

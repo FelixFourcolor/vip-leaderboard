@@ -8,7 +8,9 @@ import {
 } from "react";
 import { useDelay } from "@/hooks/useDelay";
 import { windowed } from "@/utils/array";
+import { fromEntries } from "@/utils/object";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
+import type { Maybe } from "@/utils/types";
 import { category10 } from "./colors";
 import { ChartContext } from "./context";
 import type { VisibleIdx } from "./Legend";
@@ -25,7 +27,7 @@ export type TimeSeries = {
 };
 
 type Props<S extends TimeSeries> = {
-	data: S[] | undefined;
+	data: Maybe<readonly S[]>;
 	since: YyyyMm;
 	until: YyyyMm;
 	stacked?: boolean;
@@ -56,13 +58,11 @@ export function ChartWrapper<S extends TimeSeries>({
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
 
+	// Sync activeSeries, hoveredPoint, and visibleIdx
 	const visibleIds = useMemo(
 		() => new Set(visibleData?.map(({ id }) => id)),
 		[visibleData],
 	);
-	// A bunch of badly written glue code to
-	// sync activeSeries, hoveredPoint, and visibleIdx.
-	// If something breaks, it's probbably here.
 	const prevActiveSeries = useRef(activeSeries);
 	useEffect(() => {
 		if (activeSeries) {
@@ -96,7 +96,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				colors,
 				stacked,
 				cumulative,
-				PointTooltip: PointTooltip as any, // generics
+				PointTooltip,
 				isolatedPoints: useIsolatedPoints(chartData),
 				activeSeries,
 				setActiveSeries,
@@ -112,27 +112,30 @@ export function ChartWrapper<S extends TimeSeries>({
 }
 
 function useFilter<S extends TimeSeries>(
-	data: S[] | undefined,
-	visibleIdx: VisibleIdx | undefined,
-): S[] | undefined {
+	data: Maybe<readonly S[]>,
+	visibleIdx: Maybe<VisibleIdx>,
+): Maybe<readonly S[]> {
 	return useMemo(() => {
-		return data && visibleIdx
-			? data.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
+		return visibleIdx
+			? data?.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
 			: data;
 	}, [data, visibleIdx]);
 }
 
-type TransformOptions = { stacked: boolean; cumulative: boolean };
+export interface TransformOptions {
+	stacked?: boolean;
+	cumulative?: boolean;
+}
 function useTransform<S extends TimeSeries>(
-	filteredData: S[] | undefined,
+	filteredData: Maybe<readonly S[]>,
 	xValues: YyyyMm[],
 	{ stacked, cumulative }: TransformOptions,
-): S[] | undefined {
+): Maybe<readonly S[]> {
 	type Accumulator = { data: TimePoint[]; sum: number };
 
-	const transformedData = useMemo<TimeSeries[] | undefined>(() => {
+	const transformedData = useMemo<Maybe<TimeSeries[]>>(() => {
 		return filteredData?.map(({ data: points, ...rest }) => {
-			const pointMapping = Object.fromEntries(points.map(({ x, y }) => [x, y]));
+			const pointMapping = fromEntries(points.map(({ x, y }) => [x, y]));
 
 			if (!cumulative) {
 				const data = xValues.map((x) => ({
@@ -143,6 +146,7 @@ function useTransform<S extends TimeSeries>(
 			}
 
 			if (stacked) {
+				// cumulative + stacked is simpler because all null values become 0
 				const { data } = xValues.reduce<Accumulator>(
 					({ data, sum }, x) => {
 						const y = pointMapping[x] ?? 0;
@@ -155,11 +159,10 @@ function useTransform<S extends TimeSeries>(
 				return { ...rest, data };
 			}
 
+			// cumulative + not stacked: Only interpolate points between the first and last non-null values
 			const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
 			const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
 			const continuousPoints = xValues.map((x, index) => {
-				// Only interpolate the points between the first and last non-null values
-				// to keep the Chart clean
 				if (firstNonNull <= index && index <= lastNonNull) {
 					return { x, y: pointMapping[x] ?? 0 };
 				}
@@ -181,10 +184,10 @@ function useTransform<S extends TimeSeries>(
 		});
 	}, [filteredData, xValues, stacked, cumulative]);
 
-	return transformedData as S[] | undefined;
+	return transformedData as Maybe<readonly S[]>;
 }
 
-const useIsolatedPoints = (data: TimeSeries[] = []) =>
+const useIsolatedPoints = (data: readonly TimeSeries[] = []) =>
 	useMemo(() => {
 		return Object.fromEntries(
 			data.map(({ id, data }) => {

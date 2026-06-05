@@ -12,6 +12,7 @@ import {
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
+import type { Maybe } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./context";
 import styles from "./TimeChart.module.css";
@@ -69,7 +70,7 @@ export function Legend<S extends TimeSeries>({
 		[colors, setVisibleIdx],
 	);
 
-	const [entryHeight, setEntryHeight] = useState<number | undefined>();
+	const [entryHeight, setEntryHeight] = useState<Maybe<number>>();
 	const entryRef = (entry: HTMLLIElement | null) => {
 		if (entry && !entryHeight) {
 			const { height } = entry.getBoundingClientRect();

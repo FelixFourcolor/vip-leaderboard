@@ -2,7 +2,7 @@ import classNames from "classnames/bind";
 import type { ComponentProps, CSSProperties, RefObject } from "react";
 import { type Range, useThumbOverlap } from "react-range";
 import type { IThumbProps } from "react-range/lib/types";
-import type { Pair } from "@/utils/types";
+import type { Maybe, Pair } from "@/utils/types";
 import styles from "./RangeSlider.module.css";
 
 const cx = classNames.bind(styles);
@@ -63,8 +63,8 @@ export function ThumbWrapper<Value>({
 		(value) => String(domain[Number(value)]),
 	);
 	// fuck react-range's types, this is so stupid!
-	labelValue = labelValue as string | undefined;
-	labelStyle = labelStyle as CSSProperties | undefined;
+	labelValue = labelValue as Maybe<string>;
+	labelStyle = labelStyle as Maybe<CSSProperties>;
 
 	const isMergedLabel = labelValue?.includes(" - ");
 	const showLabel =

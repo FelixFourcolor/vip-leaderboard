@@ -4,6 +4,7 @@ import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
 import { fromEntries, pick, values } from "@/utils/object";
 import { timeOffset, type YyyyMm } from "@/utils/time";
+import type { Maybe } from "@/utils/types";
 import { type ActivityType, activityTypes } from "./activity";
 import { loadDb } from "./loader";
 import { activity, user } from "./schema";
@@ -11,7 +12,7 @@ import { activity, user } from "./schema";
 const userFields = pick(user, ["id", "name", "avatarUrl", "color"]);
 
 export type User = typeof user.$inferSelect;
-export async function getUser(userId: string): Promise<User | undefined> {
+export async function getUser(userId: string): Promise<Maybe<User>> {
 	const db = await loadDb();
 	return db.select(userFields).from(user).where(eq(user.id, userId)).get();
 }
@@ -28,7 +29,6 @@ export async function getUserStats({
 	since,
 	until,
 }: UserStatsParams): Promise<UserStats[]> {
-	console.log("fetching");
 	// make "until" include the last month
 	until = until ? timeOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();

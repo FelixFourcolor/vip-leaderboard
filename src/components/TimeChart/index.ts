@@ -1,4 +1,7 @@
-export type { TimeSeries } from "./ChartWrapper";
+export type {
+	TimeSeries,
+	TransformOptions,
+} from "./ChartWrapper";
 export { useChart } from "./context";
 export type { LegendEntryProps } from "./Legend";
 export type { PointTooltipProps } from "./layers/Points.tsx";

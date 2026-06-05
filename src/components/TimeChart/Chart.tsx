@@ -18,6 +18,7 @@ import { Labels } from "./layers/Labels";
 import { Lines } from "./layers/Lines";
 import { Points } from "./layers/Points";
 import styles from "./TimeChart.module.css";
+import type { Maybe } from "@/utils/types";
 
 const cx = classNames.bind(styles);
 
@@ -103,7 +104,7 @@ const DEFAULT_CONFIGS = {
 	},
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
 
-function useNivoData(): NivoSeries[] | undefined {
+function useNivoData(): Maybe<NivoSeries[]> {
 	const { activeSeries, chartData, stacked } = useChart();
 
 	const data = useMemo(() => {

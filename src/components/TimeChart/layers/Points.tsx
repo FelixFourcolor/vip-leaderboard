@@ -20,12 +20,7 @@ export function Points({ series }: LineCustomSvgLayerProps<NivoSeries>) {
 		<g>
 			{series.map(({ id, data, color }) => {
 				return data.map(({ data, position: { x, y } }) => (
-					<g
-						key={`${id}-${data.x}`}
-						// idk why some ys are null, they aren't rendered anyway,
-						// set it to 0 to supress console error
-						transform={`translate(${x},${y ?? 0})`}
-					>
+					<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
 						<Point series={seriesMap[id]!} color={color} data={data} />
 					</g>
 				));

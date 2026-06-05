@@ -10,12 +10,12 @@ type Props = Partial<User> & {
 };
 export function UserHeader({ name, avatarUrl, color, className }: Props) {
 	const [isAvatarUrlValid, setAvatarUrlValid] = useState(
-		() => !invalidAvatarURLs.has(avatarUrl),
+		() => avatarUrl && !invalidAvatarURLs.has(avatarUrl),
 	);
 
 	return (
 		<div className={cx("header", className)}>
-			{isAvatarUrlValid && (
+			{avatarUrl && isAvatarUrlValid && (
 				<img
 					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}
 					onError={() => {
@@ -33,4 +33,4 @@ export function UserHeader({ name, avatarUrl, color, className }: Props) {
 	);
 }
 
-const invalidAvatarURLs: Set<string | undefined> = new Set();
+const invalidAvatarURLs: Set<string> = new Set();

@@ -10,8 +10,8 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	extends State<"activeSeries", Maybe<string>>,
 		State<"hoveredPoint", Maybe<InteractivePoint>>,
 		State<"visibleIdx", Maybe<VisibleIdx>> {
-	chartSeries: readonly Omit<S, "data">[] | undefined;
-	chartData: readonly S[] | undefined;
+	chartSeries: Maybe<readonly Omit<S, "data">[]>;
+	chartData: Maybe<readonly S[]>;
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
@@ -20,7 +20,7 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 }
 
-export const ChartContext = createContext<ChartContextValue | null>(null);
+export const ChartContext = createContext<ChartContextValue<any> | null>(null);
 
 export function useChart<S extends TimeSeries = TimeSeries>() {
 	const context = use(ChartContext) as ChartContextValue<S> | null;
