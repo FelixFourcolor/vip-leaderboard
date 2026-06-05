@@ -102,7 +102,7 @@ export function RankingTable() {
 			}}
 			columnColors={activityColors}
 			activeColumn={sortBy}
-			onColumnChange={(sortBy) => setOptions({ sortBy })}
+			onColumnChange={(sortBy) => setTimeout(() => setOptions({ sortBy }))}
 			sorted="descending"
 			SortIcon={({ sorted }) => (
 				<span className={cx("sort-icon", { sorted })}>▼</span>
