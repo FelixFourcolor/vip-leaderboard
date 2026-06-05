@@ -62,8 +62,13 @@ export function RankingTable() {
 										positive: rankChange > 0,
 										negative: rankChange < 0,
 									})}
+									aria-label={
+										!rankChange
+											? "rank unchanged"
+											: `${rankChange > 0 ? "up" : "down"} ${Math.abs(rankChange)}`
+									}
 								>
-									{rankChange === 0 ? "" : Math.abs(rankChange)}
+									{!!rankChange && Math.abs(rankChange)}
 								</span>
 							)}
 						</div>

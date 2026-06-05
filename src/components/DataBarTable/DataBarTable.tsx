@@ -214,12 +214,15 @@ export function DataBarTable<Row extends DataRow, PK extends PrimaryKey<Row>>({
 											e.preventDefault();
 										}
 									}}
+									scope="col"
 								>
 									{header}
 									{SortIcon && <SortIcon sorted={sortBy === col} />}
 								</th>
 							) : (
-								<th key={col.toString()}>{header}</th>
+								<th key={col.toString()} scope="col">
+									{header}
+								</th>
 							),
 						)}
 					</tr>

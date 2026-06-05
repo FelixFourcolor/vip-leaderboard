@@ -13,6 +13,7 @@ export function LegendEntry({
 	...props
 }: LegendEntryProps<UserMonthlyCount>) {
 	const { isHighlighted } = useChart();
+	const rank = seriesIndex + 1;
 
 	return (
 		<li
@@ -22,12 +23,12 @@ export function LegendEntry({
 			{...props}
 		>
 			<UserHeader {...user} />
-			<dl>
-				<dt className={"sr-only"}>Rank</dt>
-				<dd className={cx("rank")}>{seriesIndex + 1}</dd>
-				<dt className={"sr-only"}>Activities</dt>
-				<dd>{total}</dd>
-			</dl>
+			<div className={cx("details")}>
+				<span className={cx("rank")} aria-label={`rank ${rank}`}>
+					#{rank}
+				</span>
+				<span aria-label={`total score ${total}`}>{total}</span>
+			</div>
 		</li>
 	);
 }

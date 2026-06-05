@@ -105,19 +105,16 @@
 	align-items: center;
 	gap: 4px;
 
-	dl {
+	.details {
 		margin: 0;
 		display: flex;
 		gap: 4px;
 
-		dd {
+		span {
 			margin: 0;
 
 			&:nth-of-type(1) {
 				color: var(--text-secondary);
-				&.rank::before {
-					content: "#";
-				}
 				&::after {
 					content: "|";
 					padding-left: 4px;

@@ -20,12 +20,10 @@ export function PointTooltip({
 			className={cx("info-box", "tooltip")}
 		>
 			<UserHeader {...series} />
-			<dl>
-				<dt className={"sr-only"}>Month</dt>
-				<dd>{x}</dd>
-				<dt className={"sr-only"}>Count</dt>
-				<dd>{y}</dd>
-			</dl>
+			<div className={cx("details")}>
+				<span>{x}</span>
+				<span aria-label={`${y} points`}>{y}</span>
+			</div>
 		</div>
 	);
 }
