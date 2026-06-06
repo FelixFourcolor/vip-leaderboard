@@ -1,5 +1,6 @@
 import classNames from "classnames/bind";
-import { useRef } from "react";
+import { Activity, useRef } from "react";
+import { useDelay } from "@/hooks/useDelay";
 import { Header } from "../Header";
 import { HomeControls } from "./HomeControls";
 import styles from "./HomePage.module.css";
@@ -16,8 +17,10 @@ export function HomePage() {
 			<div className={cx("main-container")} ref={containerRef} tabIndex={-1}>
 				<Header containerRef={containerRef} />
 				<main>
-					<SummaryTable />
-					<RankingTable />
+					<Activity mode={useDelay(0) ? "visible" : "hidden"}>
+						<SummaryTable />
+						<RankingTable />
+					</Activity>
 				</main>
 			</div>
 			<HomeControls />
