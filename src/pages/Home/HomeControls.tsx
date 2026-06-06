@@ -58,6 +58,7 @@ export function HomeControls() {
 											closeMenu();
 										}
 									}}
+									callbackDelay={false}
 								>
 									Auto-hide
 								</PopupMenu.Item>
@@ -67,9 +68,7 @@ export function HomeControls() {
 						<PopupMenu.Item
 							selected={since === LAST_MONTH && until === LAST_MONTH}
 							setSelected={() =>
-								setTimeout(() =>
-									setOptions({ since: LAST_MONTH, until: LAST_MONTH }),
-								)
+								setOptions({ since: LAST_MONTH, until: LAST_MONTH })
 							}
 						>
 							Last month
@@ -77,9 +76,7 @@ export function HomeControls() {
 						<PopupMenu.Item
 							selected={since === FIRST_MONTH && until === LAST_MONTH}
 							setSelected={() =>
-								setTimeout(() =>
-									setOptions({ since: FIRST_MONTH, until: LAST_MONTH }),
-								)
+								setOptions({ since: FIRST_MONTH, until: LAST_MONTH })
 							}
 						>
 							All time
@@ -87,7 +84,7 @@ export function HomeControls() {
 						<hr />
 						<PopupMenu.Item
 							disabled={isDefaultOptions(options)}
-							onClick={() => setTimeout(() => setOptions(defaultOptions))}
+							onClick={() => setOptions(defaultOptions)}
 							stayOpenOnClick
 						>
 							Reset

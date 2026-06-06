@@ -1,46 +1,61 @@
 import classNames from "classnames/bind";
-import type { ReactNode } from "react";
+import { type ComponentProps, type ReactNode, useState } from "react";
 import type { EitherOr, State } from "@/utils/types";
 import styles from "./PopupMenu.module.css";
 import { useLocalMenu } from "./PopupWrapper";
 
 const cx = classNames.bind(styles);
 
-type Props = EitherOr<
+type ItemProps = EitherOr<
 	{ onClick: () => void; stayOpenOnClick?: boolean },
 	State<"selected", boolean, { action: false }>
 > & {
 	disabled?: boolean;
+	callbackDelay?: number | false;
 	children: ReactNode;
 	className?: string;
 };
 
 export function Item({
-	onClick,
+	onClick: clickCallback,
 	stayOpenOnClick,
-	selected,
-	setSelected,
+	selected: selectedExternal,
+	setSelected: selectedCallback,
 	disabled,
+	callbackDelay = 0,
 	className,
 	children,
-}: Props) {
+	...nativeProps
+}: ItemProps & ComponentProps<"li">) {
 	const { setMenuOpen } = useLocalMenu();
+	const [selected, setSelected] = useState(selectedExternal);
+
+	const onClick = () => {
+		if (selectedCallback) {
+			setSelected(!selected);
+			if (callbackDelay !== false) {
+				setTimeout(() => selectedCallback(!selected), callbackDelay);
+			} else {
+				selectedCallback(!selected);
+			}
+		} else {
+			if (callbackDelay !== false) {
+				setTimeout(clickCallback);
+			} else {
+				clickCallback();
+			}
+			if (!stayOpenOnClick) {
+				setMenuOpen(false);
+			}
+		}
+	};
 
 	return (
-		<li className={cx("item", { disabled })}>
+		<li {...nativeProps} className={cx("item", { disabled })}>
 			<CheckIcon className={cx("icon", { selected })} />
 			<button
 				type="button"
-				onClick={() => {
-					if (setSelected) {
-						setSelected(!selected);
-					} else {
-						onClick();
-						if (!stayOpenOnClick) {
-							setMenuOpen(false);
-						}
-					}
-				}}
+				onClick={onClick}
 				disabled={disabled}
 				className={className}
 			>
