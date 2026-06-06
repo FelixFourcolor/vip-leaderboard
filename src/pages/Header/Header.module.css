@@ -34,13 +34,13 @@
 				height: 100%;
 				transition: height 0.3s ease;
 			}
-			&:is(:hover, :focus-within) {
+			&:is(:hover, :has(:focus-visible)) {
 				z-index: 2;
 				&::after {
 					height: 0;
 				}
 			}
-			&:not(:hover, :focus-within) {
+			&:not(:hover, :has(:focus-visible)) {
 				transform: translateY(-100%);
 			}
 		}

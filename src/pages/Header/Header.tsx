@@ -1,7 +1,7 @@
 import { LAST_UPDATE } from "virtual:db";
 import { Link } from "@tanstack/react-router";
 import classNames from "classnames/bind";
-import { type RefObject, useEffect, useState } from "react";
+import { type CSSProperties, type RefObject, useEffect, useState } from "react";
 import { Tooltip } from "@/components/Tooltip";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import styles from "./Header.module.css";
@@ -21,21 +21,28 @@ export function Header({ position = "sticky", containerRef }: Props) {
 		}
 
 		const container = containerRef?.current;
-
 		const handleScroll = () =>
 			setScrolled((container ? container.scrollTop : window.scrollY) > 32);
 
-		(container ?? window).addEventListener("scroll", handleScroll, {
-			passive: true,
-		});
-		return () =>
-			(container ?? window).removeEventListener("scroll", handleScroll);
+		const eventTarget = container ?? window;
+		eventTarget.addEventListener("scroll", handleScroll, { passive: true });
+		return () => eventTarget.removeEventListener("scroll", handleScroll);
 	}, [position, containerRef]);
 
 	const isScreenSmall = useWindowSize({ maxWidth: 500 });
 
+	// To keep the header position stable when switching
+	const [style, setStyle] = useState<CSSProperties>();
+	useEffect(() => {
+		if (position === "absolute") {
+			setStyle({ transition: "none" });
+			setTimeout(() => setStyle(undefined));
+		}
+	}, [position]);
+
 	return (
 		<header
+			style={style}
 			className={cx("header", position, {
 				floating: position === "absolute" || scrolled,
 			})}
