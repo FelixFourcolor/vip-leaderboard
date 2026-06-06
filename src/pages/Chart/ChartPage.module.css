@@ -113,12 +113,17 @@
 		span {
 			margin: 0;
 
-			&:nth-of-type(1) {
+			&:first-child {
 				color: var(--text-secondary);
-				&::after {
+			}
+			&:not(:first-child) {
+				&::before {
 					content: "|";
-					padding-left: 4px;
+					padding-right: 4px;
 					color: var(--text-tertiary);
+				}
+				&:not(:nth-child(2))::before {
+					color: var(--text-secondary);
 				}
 			}
 		}

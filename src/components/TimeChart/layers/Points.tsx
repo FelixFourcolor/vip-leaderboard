@@ -65,13 +65,17 @@ function IsolatedPoint({ series, color, data: { x } }: PointProps) {
 }
 
 export type PointTooltipProps<S extends TimeSeries> = TooltipContentProps & {
-	data: TimePoint;
+	data: TimePoint & { rank?: number };
 	series: Omit<S, "data">;
 	seriesColor: string;
 };
 
-function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
-	const { stacked, PointTooltip } = useChart();
+function HoveredPoint({
+	series,
+	color,
+	data: { x, y, originalY },
+}: PointProps) {
+	const { stacked, bump, PointTooltip } = useChart();
 
 	if (!PointTooltip) {
 		return stacked ? null : (
@@ -91,7 +95,10 @@ function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
 				<PointTooltip
 					ref={ref}
 					style={style}
-					data={{ month: toYyyyMm(x), value: y ?? 0 }}
+					data={{
+						month: toYyyyMm(x),
+						...(bump ? { rank: y!, value: originalY! } : { value: y ?? 0 }),
+					}}
 					series={series}
 					seriesColor={color}
 				/>

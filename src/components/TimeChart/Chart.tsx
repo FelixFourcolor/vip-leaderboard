@@ -22,7 +22,11 @@ import styles from "./TimeChart.module.css";
 const cx = classNames.bind(styles);
 
 export type ChartSeries = { id: string; data: ChartPoint[] };
-export type ChartPoint = { x: Date; y: number | null };
+export type ChartPoint = {
+	x: Date;
+	y: number | null;
+	originalY?: number;
+};
 
 type NivoProps = ComponentProps<typeof ResponsiveLine<ChartSeries>>;
 type ChartProps = {

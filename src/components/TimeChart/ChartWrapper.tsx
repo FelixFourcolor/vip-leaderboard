@@ -211,12 +211,12 @@ function useTransform(
 					.map(({ id, isNull }, index) => [id, isNull ? null : index + 1]),
 			),
 		);
-		return transformedData.map(({ id, data, ...series }) => ({
-			...series,
+		return transformedData.map(({ id, data }) => ({
 			id,
-			data: data.map(({ x }, i) => ({
+			data: data.map(({ x, y }, i) => ({
 				x,
 				y: monthlyRanks[i]?.[id] ?? null,
+				originalY: y ?? 0,
 			})),
 		}));
 	}, [transformedData, bump, xValues.length]);
