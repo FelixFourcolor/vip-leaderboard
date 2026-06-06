@@ -47,7 +47,7 @@ export function HomeControls() {
 					<PopupMenu.Trigger>
 						{(props) => <Button {...props}>Options</Button>}
 					</PopupMenu.Trigger>
-					<PopupMenu.Menu>
+					<PopupMenu.Menu className={cx("control-menu")}>
 						{!isTouch && (
 							<>
 								<PopupMenu.Item

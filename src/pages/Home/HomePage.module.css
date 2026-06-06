@@ -90,6 +90,10 @@
 				transform: translateY(calc(100% + 5px));
 			}
 		}
+
+		.control-menu {
+			z-index: 1;
+		}
 	}
 }
 
