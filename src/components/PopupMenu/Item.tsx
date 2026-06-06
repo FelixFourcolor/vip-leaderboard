@@ -1,5 +1,6 @@
 import classNames from "classnames/bind";
-import { type ComponentProps, type ReactNode, useState } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { useSyncedState } from "@/hooks/useSyncedState";
 import type { EitherOr, State } from "@/utils/types";
 import styles from "./PopupMenu.module.css";
 import { useLocalMenu } from "./PopupWrapper";
@@ -28,7 +29,7 @@ export function Item({
 	...nativeProps
 }: ItemProps & ComponentProps<"li">) {
 	const { setMenuOpen } = useLocalMenu();
-	const [selected, setSelected] = useState(selectedExternal);
+	const [selected, setSelected] = useSyncedState(selectedExternal);
 
 	const onClick = () => {
 		if (selectedCallback) {
