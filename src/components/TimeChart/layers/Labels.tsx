@@ -13,6 +13,7 @@ export function Labels({
 }: LineCustomSvgLayerProps<NivoSeries>) {
 	const shouldShowLabel = useVisibility();
 	const getYPosition = useYPosition();
+	const { bump } = useChart();
 
 	return (
 		<g>
@@ -28,6 +29,7 @@ export function Labels({
 							y={getYPosition(series, innerHeight, seriesIndex, pointIndex)}
 							className={cx("label")}
 						>
+							{bump && "#"}
 							{String(data.y)}
 						</text>
 					);
