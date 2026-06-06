@@ -1,7 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useMemo } from "react";
-import type { NivoPoint, NivoSeries } from "../Chart";
+import type { ChartPoint, ChartSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
 
@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 export function Labels({
 	series,
 	innerHeight,
-}: LineCustomSvgLayerProps<NivoSeries>) {
+}: LineCustomSvgLayerProps<ChartSeries>) {
 	const shouldShowLabel = useVisibility();
 	const getYPosition = useYPosition();
 	const { bump } = useChart();
@@ -72,7 +72,7 @@ function useVisibility() {
 		// reversed to show label at the end
 		(-i + (lastIndex?.[seriesId] ?? xValues.length - 1)) % labelInterval === 0;
 
-	return (seriesId: string, index: number, { x, y }: NivoPoint) =>
+	return (seriesId: string, index: number, { x, y }: ChartPoint) =>
 		y &&
 		isHighlighted(seriesId) &&
 		(stacked || !PointTooltip || !isPointHovered({ seriesId, x })) &&
@@ -83,7 +83,7 @@ function useYPosition() {
 	const { stacked } = useChart();
 
 	return (
-		series: LineCustomSvgLayerProps<NivoSeries>["series"],
+		series: LineCustomSvgLayerProps<ChartSeries>["series"],
 		innerHeight: number,
 		seriesIndex: number,
 		pointIndex: number,

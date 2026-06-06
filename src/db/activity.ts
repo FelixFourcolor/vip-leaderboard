@@ -110,7 +110,7 @@ export async function getActivityMonthlyStats({
 			id: type,
 			type: type as ActivityType,
 			count: rows.reduce((sum, r) => sum + r.count, 0),
-			data: rows.map((r) => ({ x: r.month as YyyyMm, y: r.count })),
+			data: rows.map((r) => ({ month: r.month as YyyyMm, value: r.count })),
 		}))
 		.sort(
 			(a, b) => activityTypes.indexOf(a.type) - activityTypes.indexOf(b.type),

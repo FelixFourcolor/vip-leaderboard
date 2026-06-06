@@ -3,7 +3,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import { windowed } from "@/utils/array";
-import type { NivoSeries } from "../Chart";
+import type { ChartSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
 
@@ -13,7 +13,7 @@ export function Areas({
 	series,
 	curve,
 	yScale,
-}: LineCustomSvgLayerProps<NivoSeries>) {
+}: LineCustomSvgLayerProps<ChartSeries>) {
 	const { stacked } = useChart();
 	if (!stacked) {
 		return null;

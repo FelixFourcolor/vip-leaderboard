@@ -7,7 +7,7 @@ import styles from "./ChartPage.module.css";
 const cx = classNames.bind(styles);
 
 export function PointTooltip({
-	data: { x, y },
+	data: { month, value },
 	series,
 	seriesColor,
 	ref,
@@ -23,10 +23,10 @@ export function PointTooltip({
 		>
 			<UserHeader {...series} />
 			<div className={cx("details")}>
-				<span>{x}</span>
-				<span aria-label={bump ? `rank ${y}` : `${y} points`}>
+				<span>{month}</span>
+				<span aria-label={bump ? `rank ${value}` : `${value} points`}>
 					{bump && "#"}
-					{y}
+					{value}
 				</span>
 			</div>
 		</div>

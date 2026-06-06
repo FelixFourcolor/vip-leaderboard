@@ -9,8 +9,9 @@ import {
 import { useDelay } from "@/hooks/useDelay";
 import { windowed } from "@/utils/array";
 import { fromEntries } from "@/utils/object";
-import { monthsInRange, type YyyyMm } from "@/utils/time";
+import { monthsInRange, toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
+import type { ChartPoint, ChartSeries } from "./Chart";
 import { category10 } from "./colors";
 import { ChartContext } from "./context";
 import type { VisibleIdx } from "./Legend";
@@ -18,8 +19,8 @@ import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
 export type TimePoint = {
-	x: YyyyMm;
-	y: number | null;
+	month: YyyyMm;
+	value: number;
 };
 export type TimeSeries = {
 	id: string;
@@ -59,6 +60,7 @@ export function ChartWrapper<S extends TimeSeries>({
 		cumulative,
 		bump,
 	});
+	const isolatedPoints = useIsolatedPoints(transformedData);
 	const chartData = useFilter(transformedData, visibleIdx);
 
 	// Sync activeSeries, hoveredPoint, and visibleIdx
@@ -93,7 +95,7 @@ export function ChartWrapper<S extends TimeSeries>({
 	return (
 		<ChartContext
 			value={{
-				chartSeries: renderReady ? data : undefined,
+				seriesData: renderReady ? data : undefined,
 				chartData: renderReady ? chartData : undefined,
 				xValues,
 				colors,
@@ -101,7 +103,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				cumulative,
 				bump,
 				PointTooltip,
-				isolatedPoints: useIsolatedPoints(chartData),
+				isolatedPoints,
 				activeSeries,
 				setActiveSeries,
 				hoveredPoint,
@@ -115,10 +117,10 @@ export function ChartWrapper<S extends TimeSeries>({
 	);
 }
 
-function useFilter<S extends TimeSeries>(
-	data: Maybe<readonly S[]>,
+function useFilter(
+	data: Maybe<readonly ChartSeries[]>,
 	visibleIdx: Maybe<VisibleIdx>,
-): Maybe<readonly S[]> {
+): Maybe<readonly ChartSeries[]> {
 	return useMemo(() => {
 		return visibleIdx
 			? data?.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
@@ -131,47 +133,50 @@ export interface TransformOptions {
 	bump?: boolean;
 	cumulative?: boolean;
 }
-function useTransform<S extends TimeSeries>(
-	data: Maybe<readonly S[]>,
+function useTransform(
+	data: Maybe<readonly TimeSeries[]>,
 	xValues: YyyyMm[],
 	{ stacked, bump, cumulative }: Required<TransformOptions>,
-): Maybe<readonly S[]> {
-	type Accumulator = { data: TimePoint[]; sum: number };
+): Maybe<readonly ChartSeries[]> {
+	type Accumulator = { data: ChartPoint[]; sum: number };
 
-	const transformedData = useMemo<Maybe<TimeSeries[]>>(() => {
-		return data?.map(({ data: points, ...rest }) => {
-			const pointMapping = fromEntries(points.map(({ x, y }) => [x, y]));
+	const transformedData = useMemo(() => {
+		return data?.map(({ id, data: points }) => {
+			const yValues = fromEntries(
+				points.map(({ month, value }) => [month, value]),
+			);
 
 			if (!cumulative) {
-				const data = xValues.map((x) => ({
-					x,
-					y: pointMapping[x] ?? (stacked ? 0 : null),
+				const data = xValues.map((month) => ({
+					x: new Date(month),
+					y: yValues[month] ?? (stacked ? 0 : null),
 				}));
-				return { ...rest, data };
+				return { id, data };
 			}
 
 			if (stacked) {
 				// apply cumulative, all nulls become 0
 				const { data } = xValues.reduce<Accumulator>(
-					({ data, sum }, x) => {
-						const y = pointMapping[x] ?? 0;
+					({ data, sum }, month) => {
+						const y = yValues[month] ?? 0;
 						sum += y;
-						data.push({ x, y: sum });
+						data.push({ x: new Date(month), y: sum });
 						return { data, sum };
 					},
 					{ data: [], sum: 0 },
 				);
-				return { ...rest, data };
+				return { id, data };
 			}
 
 			// only interpolate points between the first and last non-null values
-			const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
+			const firstNonNull = xValues.findIndex((x) => yValues[x]);
 			const lastNonNull = bump
 				? xValues.length
-				: xValues.findLastIndex((x) => pointMapping[x]);
-			const continuousPoints = xValues.map((x, index) => {
+				: xValues.findLastIndex((x) => yValues[x]);
+			const continuousPoints = xValues.map((month, index) => {
+				const x = new Date(month);
 				if (firstNonNull <= index && index <= lastNonNull) {
-					return { x, y: pointMapping[x] ?? 0 };
+					return { x, y: yValues[month] ?? 0 };
 				}
 				return { x, y: null };
 			});
@@ -187,11 +192,11 @@ function useTransform<S extends TimeSeries>(
 				},
 				{ data: [], sum: 0 },
 			);
-			return { ...rest, data };
+			return { id, data };
 		});
 	}, [data, xValues, stacked, bump, cumulative]);
 
-	return useMemo<Maybe<TimeSeries[]>>(() => {
+	return useMemo(() => {
 		if (!transformedData || !bump) {
 			return transformedData;
 		}
@@ -199,22 +204,25 @@ function useTransform<S extends TimeSeries>(
 			fromEntries(
 				transformedData
 					.map(({ id, data }) => {
-						const value = data[i]?.y;
-						return { id, value: value ?? 0, isNull: !value };
+						const y = data[i]?.y;
+						return { id, y: y ?? 0, isNull: !y };
 					})
-					.sort((a, b) => b.value - a.value)
+					.sort((a, b) => b.y - a.y)
 					.map(({ id, isNull }, index) => [id, isNull ? null : index + 1]),
 			),
 		);
 		return transformedData.map(({ id, data, ...series }) => ({
 			...series,
 			id,
-			data: data.map(({ x }, i) => ({ x, y: monthlyRanks[i]?.[id] ?? null })),
+			data: data.map(({ x }, i) => ({
+				x,
+				y: monthlyRanks[i]?.[id] ?? null,
+			})),
 		}));
-	}, [transformedData, bump, xValues.length]) as Maybe<readonly S[]>;
+	}, [transformedData, bump, xValues.length]);
 }
 
-const useIsolatedPoints = (data: readonly TimeSeries[] = []) =>
+const useIsolatedPoints = (data: readonly ChartSeries[] = []) =>
 	useMemo(() => {
 		return Object.fromEntries(
 			data.map(({ id, data }) => {
@@ -223,7 +231,7 @@ const useIsolatedPoints = (data: readonly TimeSeries[] = []) =>
 						.filter(([prev, curr, next]) => {
 							return prev?.y == null && curr.y != null && next?.y == null;
 						})
-						.map(([, { x }]) => x),
+						.map(([, { x }]) => toYyyyMm(x)),
 				);
 				return [id, isolatedXValues];
 			}),

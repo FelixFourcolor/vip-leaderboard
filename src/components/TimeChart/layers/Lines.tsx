@@ -1,6 +1,6 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
-import type { NivoSeries } from "../Chart";
+import type { ChartSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
 
@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 export const Lines = ({
 	series,
 	lineGenerator,
-}: LineCustomSvgLayerProps<NivoSeries>) => (
+}: LineCustomSvgLayerProps<ChartSeries>) => (
 	<g>
 		{series.map(({ id, data, color }) => (
 			<Line

@@ -3,18 +3,19 @@ import classNames from "classnames/bind";
 import { type Ref, useMemo } from "react";
 import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
-import type { NivoPoint, NivoSeries } from "../Chart";
+import type { ChartPoint, ChartSeries } from "../Chart";
 import type { TimePoint, TimeSeries } from "../ChartWrapper";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export function Points({ series }: LineCustomSvgLayerProps<NivoSeries>) {
-	const { chartData = [] } = useChart();
-	const seriesMap = useMemo(() => {
-		return Object.fromEntries(chartData.map((series) => [series.id, series]));
-	}, [chartData]);
+export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
+	const { seriesData = [] } = useChart();
+	const seriesMap = useMemo(
+		() => Object.fromEntries(seriesData.map((series) => [series.id, series])),
+		[seriesData],
+	);
 
 	return (
 		<g>
@@ -32,7 +33,7 @@ export function Points({ series }: LineCustomSvgLayerProps<NivoSeries>) {
 type PointProps = {
 	series: TimeSeries;
 	color: string;
-	data: NivoPoint;
+	data: ChartPoint;
 };
 
 function Point({ data, series, color }: PointProps) {
@@ -90,7 +91,7 @@ function HoveredPoint({ series, color, data: { x, y } }: PointProps) {
 				<PointTooltip
 					ref={ref}
 					style={style}
-					data={{ x: toYyyyMm(x), y }}
+					data={{ month: toYyyyMm(x), value: y ?? 0 }}
 					series={series}
 					seriesColor={color}
 				/>

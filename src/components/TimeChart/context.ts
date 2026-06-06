@@ -1,6 +1,7 @@
 import { createContext, type ReactElement, use } from "react";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
+import type { ChartSeries } from "./Chart";
 import type { TimeSeries } from "./ChartWrapper";
 import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
@@ -10,14 +11,14 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	extends State<"activeSeries", Maybe<string>>,
 		State<"hoveredPoint", Maybe<InteractivePoint>>,
 		State<"visibleIdx", Maybe<VisibleIdx>> {
-	chartSeries: Maybe<readonly Omit<S, "data">[]>;
-	chartData: Maybe<readonly S[]>;
+	seriesData: Maybe<readonly S[]>;
+	chartData: Maybe<readonly ChartSeries[]>;
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
 	bump: boolean;
 	colors: readonly string[];
-	isolatedPoints: Record<string, Set<string>>;
+	isolatedPoints: Record<string, Set<YyyyMm>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 }
 

@@ -134,7 +134,10 @@ export async function getUserMonthlyCount({
 		const { name, color, avatarUrl } = rows[0]!;
 
 		const total = rows.reduce((sum, r) => sum + r.count, 0);
-		const data = rows.map((r) => ({ x: r.month as YyyyMm, y: r.count }));
+		const data = rows.map((r) => ({
+			month: r.month as YyyyMm,
+			value: r.count,
+		}));
 
 		const firstActiveDate = rows
 			.map((r) => r.minDate!)

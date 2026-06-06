@@ -45,7 +45,7 @@ export function Legend<S extends TimeSeries>({
 	const {
 		colors,
 		visibleIdx = colorRange(colors),
-		chartSeries,
+		seriesData,
 		setVisibleIdx,
 		setActiveSeries,
 	} = useChart<S>();
@@ -111,7 +111,7 @@ export function Legend<S extends TimeSeries>({
 	const prevFromIdx = useRef(0);
 	useLayoutEffect(() => {
 		const legend = legendRef.current;
-		if (!legend || !entryHeight || !chartSeries) {
+		if (!legend || !entryHeight || !seriesData) {
 			return;
 		}
 
@@ -126,7 +126,7 @@ export function Legend<S extends TimeSeries>({
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [chartSeries, setVisibleFrom, entryHeight, gap]);
+	}, [seriesData, setVisibleFrom, entryHeight, gap]);
 
 	const onScroll = useCallback<UIEventHandler>(
 		({ currentTarget: { scrollTop } }) => {
@@ -159,8 +159,8 @@ export function Legend<S extends TimeSeries>({
 				}
 			}}
 		>
-			{chartSeries ? (
-				chartSeries.map((series, i) => (
+			{seriesData ? (
+				seriesData.map((series, i) => (
 					<Entry
 						key={series.id}
 						series={series}

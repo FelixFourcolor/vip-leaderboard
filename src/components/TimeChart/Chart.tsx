@@ -11,7 +11,6 @@ import {
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toDate } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
-import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./context";
 import { Areas } from "./layers/Areas";
 import { Interaction } from "./layers/Interaction";
@@ -22,12 +21,11 @@ import styles from "./TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export type NivoSeries = { id: string; data: NivoPoint[] };
-export type NivoPoint = { x: Date; y: number | null };
+export type ChartSeries = { id: string; data: ChartPoint[] };
+export type ChartPoint = { x: Date; y: number | null };
 
-type NivoProps = ComponentProps<typeof ResponsiveLine<NivoSeries>>;
-
-type LineProps = {
+type NivoProps = ComponentProps<typeof ResponsiveLine<ChartSeries>>;
+type ChartProps = {
 	margin?: NivoProps["margin"];
 	axisLeft?: Pick<
 		NonNullable<NivoProps["axisLeft"]>,
@@ -36,8 +34,8 @@ type LineProps = {
 	className?: string;
 };
 
-export function Chart({ className, ...configs }: LineProps) {
-	const data = useNivoData();
+export function Chart({ className, ...configs }: ChartProps) {
+	const data = useDataOrdering();
 	const colors = useColors();
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(configs);
 	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
@@ -102,46 +100,42 @@ const DEFAULT_CONFIGS = {
 			},
 		},
 	},
-} satisfies Partial<ComponentProps<typeof ResponsiveLine<NivoSeries>>>;
+} satisfies Partial<ComponentProps<typeof ResponsiveLine<ChartSeries>>>;
 
-function useNivoData(): Maybe<NivoSeries[]> {
-	const { activeSeries, chartData, stacked } = useChart();
-
-	const data = useMemo(() => {
-		return chartData?.map(({ id, data }) => ({
-			id: String(id),
-			data: data.map(({ x, y }) => ({ x: new Date(x), y })),
-		}));
-	}, [chartData]);
+function useDataOrdering(): Maybe<readonly ChartSeries[]> {
+	const { chartData, stacked, activeSeries } = useChart();
 
 	return useMemo(() => {
-		if (!data) {
+		if (!chartData) {
 			return;
 		}
 		if (stacked) {
 			// to draw higher-ranked series above (idk why nivo does it reversed)
-			return [...data].reverse();
+			return [...chartData].reverse();
 		}
 		if (activeSeries) {
 			// to draw the active series on top
-			const [active, others] = partition(data, (s) => s.id === activeSeries);
+			const [active, others] = partition(
+				chartData,
+				(s) => s.id === activeSeries,
+			);
 			return [...others, ...active];
 		}
-		return data;
-	}, [data, stacked, activeSeries]);
+		return chartData;
+	}, [chartData, stacked, activeSeries]);
 }
 
 function useColors() {
-	const { chartSeries, colors } = useChart();
+	const { seriesData, colors } = useChart();
 
 	const colorMapping = useMemo(() => {
-		if (!chartSeries) {
+		if (!seriesData) {
 			return {};
 		}
 		return Object.fromEntries(
-			chartSeries.map(({ id }, i) => [id, colors[i % colors.length]]),
+			seriesData.map(({ id }, i) => [id, colors[i % colors.length]]),
 		);
-	}, [chartSeries, colors]);
+	}, [seriesData, colors]);
 
 	// Cannot use array index because `useNivoData` may reorder series
 	return (series: { id: string }) => colorMapping[series.id]!;
@@ -158,7 +152,7 @@ function useColors() {
 const fontSize = 12;
 const gap = 12;
 const labelWidth = 7 * fontSize * 0.6 + gap;
-function useHorizontalScale({ margin }: LineProps) {
+function useHorizontalScale({ margin }: ChartProps) {
 	const { xValues } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
@@ -200,7 +194,7 @@ function useHorizontalScale({ margin }: LineProps) {
 }
 
 function findMaxClamped(
-	chartData: readonly TimeSeries[],
+	chartData: readonly ChartSeries[],
 	stacked: boolean,
 	threshold: number,
 ) {
@@ -243,7 +237,7 @@ function findMaxClamped(
 
 	return stacked ? whenStacked() : whenNotStacked();
 }
-function useVerticalScale({ axisLeft }: LineProps) {
+function useVerticalScale({ axisLeft }: ChartProps) {
 	const { chartData = [], stacked, bump } = useChart();
 
 	return useMemo(() => {

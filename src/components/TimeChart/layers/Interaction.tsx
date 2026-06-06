@@ -1,7 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
-import type { NivoSeries } from "../Chart";
+import type { ChartSeries } from "../Chart";
 import { useChart } from "../context";
 
 export type InteractivePoint = { x: Date; seriesId: string };
@@ -11,7 +11,7 @@ export function Interaction({
 	innerHeight,
 	series,
 	yScale,
-}: LineCustomSvgLayerProps<NivoSeries>) {
+}: LineCustomSvgLayerProps<ChartSeries>) {
 	const { setActiveSeries, setHoveredPoint, stacked } = useChart();
 
 	const { isGrabbing } = useGrab();
@@ -58,7 +58,7 @@ type XY = { x: number; y: number };
 
 function getClosestPoint(
 	mouse: XY,
-	series: LineCustomSvgLayerProps<NivoSeries>["series"],
+	series: LineCustomSvgLayerProps<ChartSeries>["series"],
 ): InteractivePoint | null {
 	const points = series.flatMap(({ data: seriesData, id: seriesId }) =>
 		seriesData
@@ -78,8 +78,8 @@ function getClosestPoint(
 
 function getHoveredStackedSeries(
 	mouse: XY,
-	series: LineCustomSvgLayerProps<NivoSeries>["series"],
-	yScale: LineCustomSvgLayerProps<NivoSeries>["yScale"],
+	series: LineCustomSvgLayerProps<ChartSeries>["series"],
+	yScale: LineCustomSvgLayerProps<ChartSeries>["yScale"],
 ): InteractivePoint | null {
 	const xPoints = series[0]!.data.map(({ position, data }) => ({
 		data: data.x,
