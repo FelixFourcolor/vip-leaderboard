@@ -16,7 +16,7 @@ const cx = classNames.bind(styles);
 
 export function ChartPage() {
 	const [options] = useChartControls();
-	const { since, until, types } = options;
+	const { since, until, types, bump } = options;
 
 	const [data, setData] = useState<UserMonthlyCount[]>();
 	useEffect(() => {
@@ -72,9 +72,10 @@ export function ChartPage() {
 							margin={{ top: 22, right: 34, bottom: 30, left: 70 }}
 							axisLeft={{
 								legendOffset: -54,
-								legend:
-									types.map((t) => activityLabels[t]).join(" + ") ||
-									"Activities",
+								legend: bump
+									? "Rank"
+									: types.map((t) => activityLabels[t]).join(" + ") ||
+										"Activities",
 							}}
 						/>
 					</fieldset>

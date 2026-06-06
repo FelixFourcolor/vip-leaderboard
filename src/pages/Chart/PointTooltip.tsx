@@ -1,5 +1,5 @@
 import classNames from "classnames/bind";
-import type { PointTooltipProps } from "@/components/TimeChart";
+import { type PointTooltipProps, useChart } from "@/components/TimeChart";
 import { UserHeader } from "@/components/UserHeader";
 import type { UserMonthlyCount } from "@/db/user";
 import styles from "./ChartPage.module.css";
@@ -13,6 +13,8 @@ export function PointTooltip({
 	ref,
 	style,
 }: PointTooltipProps<UserMonthlyCount>) {
+	const { bump } = useChart();
+
 	return (
 		<div
 			ref={ref}
@@ -22,7 +24,10 @@ export function PointTooltip({
 			<UserHeader {...series} />
 			<div className={cx("details")}>
 				<span>{x}</span>
-				<span aria-label={`${y} points`}>{y}</span>
+				<span aria-label={bump ? `rank ${y}` : `${y} points`}>
+					{bump && "#"}
+					{y}
+				</span>
 			</div>
 		</div>
 	);

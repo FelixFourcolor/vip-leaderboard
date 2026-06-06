@@ -10,6 +10,7 @@ import {
 } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toDate } from "@/utils/time";
+import type { Maybe } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./context";
 import { Areas } from "./layers/Areas";
@@ -18,7 +19,6 @@ import { Labels } from "./layers/Labels";
 import { Lines } from "./layers/Lines";
 import { Points } from "./layers/Points";
 import styles from "./TimeChart.module.css";
-import type { Maybe } from "@/utils/types";
 
 const cx = classNames.bind(styles);
 
@@ -244,23 +244,23 @@ function findMaxClamped(
 	return stacked ? whenStacked() : whenNotStacked();
 }
 function useVerticalScale({ axisLeft }: LineProps) {
-	const { chartData = [], stacked } = useChart();
+	const { chartData = [], stacked, bump } = useChart();
 
 	return useMemo(() => {
 		const maxClamped = findMaxClamped(chartData, stacked, 8);
 
 		const max = maxClamped >= 8 ? ("auto" as const) : maxClamped;
-		const min = stacked ? 0 : 1;
+		const min = bump ? ("auto" as const) : stacked ? 0 : 1;
 
 		const tickValues =
-			maxClamped >= 8
+			maxClamped >= 8 || min === "auto"
 				? undefined
 				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
 
 		return {
-			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked },
+			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked, reverse: bump },
 			axisLeft: { ...axisLeft, tickValues },
 			gridYValues: tickValues,
 		};
-	}, [chartData, stacked, axisLeft]);
+	}, [chartData, stacked, bump, axisLeft]);
 }

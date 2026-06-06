@@ -15,6 +15,7 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	xValues: readonly YyyyMm[];
 	stacked: boolean;
 	cumulative: boolean;
+	bump: boolean;
 	colors: readonly string[];
 	isolatedPoints: Record<string, Set<string>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;

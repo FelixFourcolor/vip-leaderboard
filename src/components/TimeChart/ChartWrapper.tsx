@@ -26,18 +26,16 @@ export type TimeSeries = {
 	data: readonly TimePoint[];
 };
 
-type Props<S extends TimeSeries> = {
+interface Props<S extends TimeSeries> extends TransformOptions {
 	data: Maybe<readonly S[]>;
 	since: YyyyMm;
 	until: YyyyMm;
-	stacked?: boolean;
-	cumulative?: boolean;
 	colors?: readonly string[];
 	/** Delay ms before rendering the chart. Helps with perceived performance. */
 	renderDelay?: number;
 	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
 	children: ReactNode;
-};
+}
 
 export function ChartWrapper<S extends TimeSeries>({
 	data,
@@ -46,6 +44,7 @@ export function ChartWrapper<S extends TimeSeries>({
 	colors = category10,
 	stacked = false,
 	cumulative = false,
+	bump = false,
 	renderDelay,
 	PointTooltip,
 	children,
@@ -54,14 +53,18 @@ export function ChartWrapper<S extends TimeSeries>({
 	const [activeSeries, setActiveSeries] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
-	const visibleData = useFilter(data, visibleIdx);
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
-	const chartData = useTransform(visibleData, xValues, { stacked, cumulative });
+	const transformedData = useTransform(data, xValues, {
+		stacked,
+		cumulative,
+		bump,
+	});
+	const chartData = useFilter(transformedData, visibleIdx);
 
 	// Sync activeSeries, hoveredPoint, and visibleIdx
 	const visibleIds = useMemo(
-		() => new Set(visibleData?.map(({ id }) => id)),
-		[visibleData],
+		() => new Set(chartData?.map(({ id }) => id)),
+		[chartData],
 	);
 	const prevActiveSeries = useRef(activeSeries);
 	useEffect(() => {
@@ -96,6 +99,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				colors,
 				stacked,
 				cumulative,
+				bump,
 				PointTooltip,
 				isolatedPoints: useIsolatedPoints(chartData),
 				activeSeries,
@@ -124,17 +128,18 @@ function useFilter<S extends TimeSeries>(
 
 export interface TransformOptions {
 	stacked?: boolean;
+	bump?: boolean;
 	cumulative?: boolean;
 }
 function useTransform<S extends TimeSeries>(
-	filteredData: Maybe<readonly S[]>,
+	data: Maybe<readonly S[]>,
 	xValues: YyyyMm[],
-	{ stacked, cumulative }: TransformOptions,
+	{ stacked, bump, cumulative }: Required<TransformOptions>,
 ): Maybe<readonly S[]> {
 	type Accumulator = { data: TimePoint[]; sum: number };
 
 	const transformedData = useMemo<Maybe<TimeSeries[]>>(() => {
-		return filteredData?.map(({ data: points, ...rest }) => {
+		return data?.map(({ data: points, ...rest }) => {
 			const pointMapping = fromEntries(points.map(({ x, y }) => [x, y]));
 
 			if (!cumulative) {
@@ -146,7 +151,7 @@ function useTransform<S extends TimeSeries>(
 			}
 
 			if (stacked) {
-				// cumulative + stacked is simpler because all null values become 0
+				// apply cumulative, all nulls become 0
 				const { data } = xValues.reduce<Accumulator>(
 					({ data, sum }, x) => {
 						const y = pointMapping[x] ?? 0;
@@ -159,9 +164,11 @@ function useTransform<S extends TimeSeries>(
 				return { ...rest, data };
 			}
 
-			// cumulative + not stacked: Only interpolate points between the first and last non-null values
+			// only interpolate points between the first and last non-null values
 			const firstNonNull = xValues.findIndex((x) => pointMapping[x]);
-			const lastNonNull = xValues.findLastIndex((x) => pointMapping[x]);
+			const lastNonNull = bump
+				? xValues.length
+				: xValues.findLastIndex((x) => pointMapping[x]);
 			const continuousPoints = xValues.map((x, index) => {
 				if (firstNonNull <= index && index <= lastNonNull) {
 					return { x, y: pointMapping[x] ?? 0 };
@@ -182,9 +189,29 @@ function useTransform<S extends TimeSeries>(
 			);
 			return { ...rest, data };
 		});
-	}, [filteredData, xValues, stacked, cumulative]);
+	}, [data, xValues, stacked, bump, cumulative]);
 
-	return transformedData as Maybe<readonly S[]>;
+	return useMemo<Maybe<TimeSeries[]>>(() => {
+		if (!transformedData || !bump) {
+			return transformedData;
+		}
+		const monthlyRanks = Array.from({ length: xValues.length }, (_, i) =>
+			fromEntries(
+				transformedData
+					.map(({ id, data }) => {
+						const value = data[i]?.y;
+						return { id, value: value ?? 0, isNull: !value };
+					})
+					.sort((a, b) => b.value - a.value)
+					.map(({ id, isNull }, index) => [id, isNull ? null : index + 1]),
+			),
+		);
+		return transformedData.map(({ id, data, ...series }) => ({
+			...series,
+			id,
+			data: data.map(({ x }, i) => ({ x, y: monthlyRanks[i]?.[id] ?? null })),
+		}));
+	}, [transformedData, bump, xValues.length]) as Maybe<readonly S[]>;
 }
 
 const useIsolatedPoints = (data: readonly TimeSeries[] = []) =>
