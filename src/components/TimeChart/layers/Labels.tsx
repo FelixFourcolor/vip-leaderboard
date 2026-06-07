@@ -9,11 +9,10 @@ const cx = classNames.bind(styles);
 
 export function Labels({
 	series,
-	innerHeight,
 	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const shouldShowLabel = useVisibility();
-	const getYPosition = useYPosition(series, innerHeight, yScale);
+	const getYPosition = useYPosition(series, yScale);
 
 	return (
 		<g>
@@ -92,8 +91,8 @@ function useVisibility() {
 		// reversed to show label at the end
 		(-i + (lastIndex?.[seriesId] ?? xValues.length - 1)) % labelInterval === 0;
 
-	return (seriesId: string, index: number, { x, y }: ChartPoint) =>
-		y &&
+	return (seriesId: string, index: number, { x, value }: ChartPoint) =>
+		value &&
 		isHighlighted(seriesId) &&
 		(area || !PointTooltip || !isPointHovered({ seriesId, x })) &&
 		(isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x }));
@@ -101,28 +100,19 @@ function useVisibility() {
 
 function useYPosition(
 	series: LineCustomSvgLayerProps<ChartSeries>["series"],
-	innerHeight: number,
-	yScale: (y: number | null) => number,
+	yScale: LineCustomSvgLayerProps<ChartSeries>["yScale"],
 ) {
-	const { area, ranked } = useChart();
+	const { area } = useChart();
 
 	return (seriesIndex: number, pointIndex: number) => {
-		if (ranked && area) {
-			const point = series[seriesIndex]!.data[pointIndex]!.data;
-			const y = point.y ?? 0;
-			const height = point.value ?? 0;
-			return yScale(y - height / 2);
-		}
-
-		const y1 = series[seriesIndex]!.data[pointIndex]!.position.y;
 		if (!area) {
-			return y1 - 12;
+			const { y } = series[seriesIndex]!.data[pointIndex]!.position;
+			return y - 12;
 		}
 
-		const y0 =
-			seriesIndex === 0
-				? innerHeight
-				: series[seriesIndex - 1]!.data[pointIndex]!.position.y;
-		return (y1 + y0) / 2;
+		const point = series[seriesIndex]!.data[pointIndex]!.data;
+		const y = point.y ?? 0;
+		const height = point.value ?? 0;
+		return yScale(y - height / 2);
 	};
 }

@@ -108,26 +108,18 @@ const DEFAULT_CONFIGS = {
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<ChartSeries>>>;
 
 function useDataOrdering(): Maybe<readonly ChartSeries[]> {
-	const { chartData, area, activeSeries } = useChart();
+	const { chartData, activeSeries, area, ranked } = useChart();
+	const stacked = area && !ranked;
 
+	// To draw the active series on top
+	// Except in stacked mode where the bands never overlap anyway
 	return useMemo(() => {
-		if (!chartData) {
-			return;
+		if (!chartData || !activeSeries || stacked) {
+			return chartData;
 		}
-		if (area) {
-			// to draw higher-ranked series above (idk why nivo does it reversed)
-			return [...chartData].reverse();
-		}
-		if (activeSeries) {
-			// to draw the active series on top
-			const [active, others] = partition(
-				chartData,
-				(s) => s.id === activeSeries,
-			);
-			return [...others, ...active];
-		}
-		return chartData;
-	}, [chartData, area, activeSeries]);
+		const [active, others] = partition(chartData, (s) => s.id === activeSeries);
+		return [...others, ...active];
+	}, [chartData, activeSeries, stacked]);
 }
 
 function useColors() {
@@ -142,22 +134,16 @@ function useColors() {
 		);
 	}, [seriesData, colors]);
 
-	// Cannot use array index because `useNivoData` may reorder series
-	return (series: { id: string }) => colorMapping[series.id]!;
-
-	// TODO: move to CSS
-	// if (isHighlighted(id)) {
-	// 	return color;
-	// } else if (isMuted(id)) {
-	// 	return `rgb(from ${color} r g b / 0.45)`;
-	// }
-	// return `rgb(from ${color} r g b / 0.85)`;
+	// Cannot use array index because of useDataOrdering
+	return (series: ChartSeries) => colorMapping[series.id]!;
 }
 
 const fontSize = 12;
 const gap = 12;
 const labelWidth = 7 * fontSize * 0.6 + gap;
-function useHorizontalScale({ margin }: ChartProps) {
+function useHorizontalScale({
+	margin: { left: marginLeft = 0, right: marginRight = 0 } = {},
+}: ChartProps) {
 	const { xValues } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
@@ -178,10 +164,7 @@ function useHorizontalScale({ margin }: ChartProps) {
 
 	return useMemo(() => {
 		const count = xValues.length;
-		const innerWidth = Math.max(
-			0,
-			width - (margin?.left ?? 0) - (margin?.right ?? 0),
-		);
+		const innerWidth = Math.max(0, width - marginLeft - marginRight);
 		const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
 		const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
 
@@ -195,42 +178,24 @@ function useHorizontalScale({ margin }: ChartProps) {
 			axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
 			gridXValues: tickValues,
 		};
-	}, [margin, xValues, width]);
+	}, [marginLeft, marginRight, xValues, width]);
 }
 
-function findMaxClamped(
-	chartData: readonly ChartSeries[],
-	stacked: boolean,
-	threshold: number,
-) {
-	function whenStacked() {
-		let max = 0;
+function useVerticalScale({ axisLeft }: ChartProps) {
+	const { chartData = [], area, ranked } = useChart();
 
-		const seriesLength = chartData[0]?.data.length ?? 0;
-		for (let i = 0; i < seriesLength; ++i) {
-			const count = chartData
-				.map(({ data }) => data[i]?.y ?? 0)
-				.reduce((acc, n) => acc + n, 0);
-			if (count >= threshold) {
-				return threshold;
-			}
-			if (count > max) {
-				max = count;
-			}
-		}
-
-		return max;
-	}
-
-	function whenNotStacked() {
+	const reverse = !area && ranked;
+	const min = area ? 0 : 1;
+	const max = useMemo(() => {
+		const THRESHOLD = 8;
 		let max = 0;
 		for (const { data } of chartData) {
 			for (const { y } of data) {
 				if (y == null) {
 					continue;
 				}
-				if (y >= threshold) {
-					return threshold;
+				if (y >= THRESHOLD) {
+					return THRESHOLD;
 				}
 				if (y > max) {
 					max = y;
@@ -238,29 +203,17 @@ function findMaxClamped(
 			}
 		}
 		return max;
+	}, [chartData]);
+
+	if (max >= 8) {
+		const yScale = { ...DEFAULT_CONFIGS.yScale, min, reverse };
+		return { yScale, axisLeft };
 	}
 
-	return stacked ? whenStacked() : whenNotStacked();
-}
-function useVerticalScale({ axisLeft }: ChartProps) {
-	const { chartData = [], area, ranked } = useChart();
-
-	return useMemo(() => {
-		const stacked = area && !ranked;
-		const reverse = !area && ranked;
-
-		const maxClamped = findMaxClamped(chartData, stacked, 8);
-		const max = maxClamped >= 8 ? ("auto" as const) : maxClamped;
-		const min = ranked && !area ? ("auto" as const) : area ? 0 : 1;
-		const tickValues =
-			maxClamped >= 8 || min === "auto"
-				? undefined
-				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
-
-		return {
-			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked, reverse },
-			axisLeft: { ...axisLeft, tickValues },
-			gridYValues: tickValues,
-		};
-	}, [chartData, area, ranked, axisLeft]);
+	const tickValues = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+	return {
+		yScale: { ...DEFAULT_CONFIGS.yScale, min, max, reverse },
+		axisLeft: { ...axisLeft, tickValues },
+		gridYValues: tickValues,
+	};
 }

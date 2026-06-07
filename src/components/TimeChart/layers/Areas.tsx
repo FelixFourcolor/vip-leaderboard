@@ -2,7 +2,6 @@ import { curveFromProp } from "@nivo/core";
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
-import { windowed } from "@/utils/array";
 import type { ChartSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
@@ -14,7 +13,7 @@ export function Areas({
 	curve,
 	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
-	const { area: areaMode, ranked } = useChart();
+	const { area: areaMode } = useChart();
 	if (!areaMode) {
 		return null;
 	}
@@ -27,35 +26,20 @@ export function Areas({
 
 	return (
 		<g>
-			{ranked
-				? series.map(({ id, data, color }) => (
-						<Area
-							key={id}
-							seriesId={id}
-							color={color}
-							path={bandGenerator(
-								data.map(({ data, position }) => ({
-									x: position.x,
-									y1: yScale(data.y ?? 0),
-									y0: yScale((data.y ?? 0) - (data.value ?? 0)),
-								})),
-							)}
-						/>
-					))
-				: windowed(series, 2).map(([prev, { id, data, color }]) => (
-						<Area
-							key={id}
-							seriesId={id}
-							color={color}
-							path={bandGenerator(
-								data.map(({ position }, i) => ({
-									x: position.x,
-									y1: position.y,
-									y0: prev ? prev.data[i]!.position.y : yScale(0),
-								})),
-							)}
-						/>
-					))}
+			{series.map(({ id, data, color }) => (
+				<Area
+					key={id}
+					seriesId={id}
+					color={color}
+					path={bandGenerator(
+						data.map(({ data, position }) => ({
+							x: position.x,
+							y1: yScale(data.y ?? 0),
+							y0: yScale((data.y ?? 0) - (data.value ?? 0)),
+						})),
+					)}
+				/>
+			))}
 		</g>
 	);
 }

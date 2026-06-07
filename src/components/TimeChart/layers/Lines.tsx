@@ -15,14 +15,14 @@ export function Lines({
 	const { ranked, area } = useChart();
 	return (
 		<g>
-			{series.map(({ id, data, color }) => (
+			{series.map(({ id, data, color }, seriesIndex) => (
 				<Fragment key={id}>
 					<Line
 						seriesId={id}
 						path={lineGenerator(data.map((d) => d.position))}
 						color={color}
 					/>
-					{ranked && area && (
+					{area && (ranked || seriesIndex === series.length - 1) && (
 						<Line
 							seriesId={id}
 							path={lineGenerator(

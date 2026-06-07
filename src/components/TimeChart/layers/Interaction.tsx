@@ -27,7 +27,7 @@ function useHover(
 ) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
-	const { setActiveSeries, setHoveredPoint, area, ranked } = useChart();
+	const { setActiveSeries, setHoveredPoint, area } = useChart();
 
 	const focus = (point: InteractivePoint) => {
 		setActiveSeries(point.seriesId);
@@ -54,28 +54,18 @@ function useHover(
 		);
 
 		// 2. Find which series the Y coordinate falls into
-		const hoveredSeries = series.find(
-			ranked
-				? ({ data }) => {
-						const point = data[pointIndex]!.data;
-						const y = point.y ?? 0;
-						const height = point.value ?? 0;
-						return yScale(y) <= mouse.y && mouse.y <= yScale(y - height);
-					}
-				: ({ data }, seriesIndex) => {
-						const thisY = data[pointIndex]!.position.y;
-						const prevY =
-							seriesIndex === 0
-								? yScale(0)
-								: series[seriesIndex - 1]!.data[pointIndex]!.position.y;
-						return thisY <= mouse.y && mouse.y <= prevY;
-					},
-		);
+		const hoveredSeries = series.find(({ data }) => {
+			const point = data[pointIndex]!.data;
+			const y = point.y ?? 0;
+			const height = point.value ?? 0;
+			return yScale(y) <= mouse.y && mouse.y <= yScale(y - height);
+		});
 
 		return hoveredSeries
 			? { seriesId: hoveredSeries.id, x: xPoints[pointIndex]!.data }
 			: null;
 	};
+
 	const getClosestPoint = (mouse: { x: number; y: number }) => {
 		const points = series.flatMap(({ data: seriesData, id: seriesId }) =>
 			seriesData

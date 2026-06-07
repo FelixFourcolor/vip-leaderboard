@@ -1,3 +1,4 @@
+import { zip } from "es-toolkit";
 import {
 	type JSX,
 	type ReactNode,
@@ -7,7 +8,7 @@ import {
 	useState,
 } from "react";
 import { useDelay } from "@/hooks/useDelay";
-import { windowed } from "@/utils/array";
+import { mapReduce, windowed } from "@/utils/array";
 import { fromEntries, keys } from "@/utils/object";
 import { monthsInRange, toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
@@ -198,6 +199,24 @@ function useTransform(
 		});
 	}, [data, xValues, area, ranked, cumulative]);
 
+	const stackedData = useMemo<Maybe<readonly ChartSeries[]>>(() => {
+		if (!interpolatedData || !area || ranked) {
+			return undefined;
+		}
+		return mapReduce(
+			interpolatedData.toReversed(),
+			({ data: prevData }, { id, data }) => ({
+				id,
+				data: zip(prevData, data).map(([{ y: prevY }, { x, value }]) => ({
+					x,
+					y: prevY + value,
+					value,
+				})),
+			}),
+			{ data: Array.from({ length: xValues.length }, () => ({ y: 0 })) },
+		).reverse();
+	}, [interpolatedData, area, ranked, xValues.length]);
+
 	const monthlyRankings = useMemo(() => {
 		if (!interpolatedData || !ranked) {
 			return undefined;
@@ -212,9 +231,9 @@ function useTransform(
 		);
 	}, [interpolatedData, ranked, xValues.length]);
 
-	return useMemo(() => {
+	const rankedData = useMemo(() => {
 		if (!interpolatedData || !monthlyRankings) {
-			return interpolatedData;
+			return undefined;
 		}
 
 		if (!area) {
@@ -250,6 +269,8 @@ function useTransform(
 		});
 		return Object.entries(newDataById).map(([id, data]) => ({ id, data }));
 	}, [interpolatedData, area, monthlyRankings]);
+
+	return ranked ? rankedData : area ? stackedData : interpolatedData;
 }
 
 const useIsolatedPoints = (data: readonly ChartSeries[] = []) =>
