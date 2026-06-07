@@ -16,7 +16,7 @@ export const Route = createFileRoute("/chart")({
 			if (k === "until" || k === "since") {
 				return !Number.isNaN(new Date(v as any).getTime()) ? v : undefined;
 			}
-			if (["cumulative", "stacked", "bump"].includes(k)) {
+			if (["cumulative", "area", "ranked"].includes(k)) {
 				return typeof v === "boolean" ? v : undefined;
 			}
 			if (k === "types") {

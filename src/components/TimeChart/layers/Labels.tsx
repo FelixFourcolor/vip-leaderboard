@@ -1,6 +1,6 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import { useChart } from "../context";
 import styles from "../TimeChart.module.css";
@@ -10,32 +10,52 @@ const cx = classNames.bind(styles);
 export function Labels({
 	series,
 	innerHeight,
+	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const shouldShowLabel = useVisibility();
-	const getYPosition = useYPosition();
-	const { bump } = useChart();
+	const getYPosition = useYPosition(series, innerHeight, yScale);
 
 	return (
 		<g>
 			{series.map(({ id, data }, seriesIndex) => {
 				return data.map(({ position, data }, pointIndex) => {
-					if (!shouldShowLabel(id, pointIndex, data)) {
-						return null;
+					if (shouldShowLabel(id, pointIndex, data)) {
+						return (
+							<Label
+								key={`${id}-${data.x}`}
+								{...data}
+								x={position.x}
+								y={getYPosition(seriesIndex, pointIndex)}
+							/>
+						);
 					}
-					return (
-						<text
-							key={`${id}-${data.x}`}
-							x={position.x}
-							y={getYPosition(series, innerHeight, seriesIndex, pointIndex)}
-							className={cx("label")}
-						>
-							{bump && "#"}
-							{String(data.y)}
-						</text>
-					);
 				});
 			})}
 		</g>
+	);
+}
+
+type LabelProps = {
+	x: number;
+	y: number;
+	value: number;
+	rank?: number;
+};
+function Label({ value, rank, ...xy }: LabelProps) {
+	const [showRank, setShowRank] = useState(!!rank);
+
+	useEffect(() => {
+		if (!rank) {
+			return;
+		}
+		const timer = setInterval(() => setShowRank((current) => !current), 1000);
+		return () => clearInterval(timer);
+	}, [rank]);
+
+	return (
+		<text {...xy} className={cx("label")}>
+			{showRank ? `#${rank}` : value}
+		</text>
 	);
 }
 
@@ -43,7 +63,7 @@ function useVisibility() {
 	const {
 		xValues,
 		cumulative,
-		stacked,
+		area,
 		chartData,
 		isPointIsolated,
 		isHighlighted,
@@ -52,7 +72,7 @@ function useVisibility() {
 	} = useChart();
 
 	const lastIndex = useMemo(() => {
-		if (!cumulative || stacked || !chartData) {
+		if (!cumulative || area || !chartData) {
 			return null;
 		}
 		return Object.fromEntries(
@@ -64,7 +84,7 @@ function useVisibility() {
 				return [id, lastNonNullIndex];
 			}),
 		);
-	}, [chartData, cumulative, stacked]);
+	}, [chartData, cumulative, area]);
 
 	const labelsCount = cumulative ? 10 : 20;
 	const labelInterval = Math.max(1, Math.ceil(xValues.length / labelsCount));
@@ -75,22 +95,27 @@ function useVisibility() {
 	return (seriesId: string, index: number, { x, y }: ChartPoint) =>
 		y &&
 		isHighlighted(seriesId) &&
-		(stacked || !PointTooltip || !isPointHovered({ seriesId, x })) &&
+		(area || !PointTooltip || !isPointHovered({ seriesId, x })) &&
 		(isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x }));
 }
 
-function useYPosition() {
-	const { stacked } = useChart();
+function useYPosition(
+	series: LineCustomSvgLayerProps<ChartSeries>["series"],
+	innerHeight: number,
+	yScale: (y: number | null) => number,
+) {
+	const { area, ranked } = useChart();
 
-	return (
-		series: LineCustomSvgLayerProps<ChartSeries>["series"],
-		innerHeight: number,
-		seriesIndex: number,
-		pointIndex: number,
-	) => {
+	return (seriesIndex: number, pointIndex: number) => {
+		if (ranked && area) {
+			const point = series[seriesIndex]!.data[pointIndex]!.data;
+			const y = point.y ?? 0;
+			const height = point.value ?? 0;
+			return yScale(y - height / 2);
+		}
+
 		const y1 = series[seriesIndex]!.data[pointIndex]!.position.y;
-
-		if (!stacked) {
+		if (!area) {
 			return y1 - 12;
 		}
 
@@ -98,7 +123,6 @@ function useYPosition() {
 			seriesIndex === 0
 				? innerHeight
 				: series[seriesIndex - 1]!.data[pointIndex]!.position.y;
-
 		return (y1 + y0) / 2;
 	};
 }

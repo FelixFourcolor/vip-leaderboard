@@ -70,35 +70,26 @@ export type PointTooltipProps<S extends TimeSeries> = TooltipContentProps & {
 	seriesColor: string;
 };
 
-function HoveredPoint({
-	series,
-	color,
-	data: { x, y, originalY },
-}: PointProps) {
-	const { stacked, bump, PointTooltip } = useChart();
+function HoveredPoint({ series, color, data: { x, value, rank } }: PointProps) {
+	const { area, PointTooltip } = useChart();
 
 	if (!PointTooltip) {
-		return stacked ? null : (
-			<HighlightedPoint color={color} stacked={stacked} />
-		);
+		return area ? null : <HighlightedPoint color={color} area={area} />;
 	}
 
 	return (
 		<Tooltip
 			open
 			placement="top"
-			offset={stacked ? -6 : 4}
+			offset={area ? -6 : 4}
 			trigger={({ ref }) => (
-				<HighlightedPoint ref={ref} color={color} stacked={stacked} />
+				<HighlightedPoint ref={ref} color={color} area={area} />
 			)}
 			content={({ ref, style }) => (
 				<PointTooltip
 					ref={ref}
 					style={style}
-					data={{
-						month: toYyyyMm(x),
-						...(bump ? { rank: y!, value: originalY! } : { value: y ?? 0 }),
-					}}
+					data={{ month: toYyyyMm(x), value, rank }}
 					series={series}
 					seriesColor={color}
 				/>
@@ -109,12 +100,12 @@ function HoveredPoint({
 
 type HighlightedPointProps = {
 	color: string;
-	stacked: boolean;
+	area: boolean;
 	ref?: Ref<SVGGElement>;
 };
-const HighlightedPoint = ({ color, ref, stacked }: HighlightedPointProps) => (
+const HighlightedPoint = ({ color, ref, area }: HighlightedPointProps) => (
 	<g ref={ref} style={{ ["--series-color" as string]: color }}>
-		<circle className={cx("hovered", "outer", { stacked })} />
-		<circle className={cx("hovered", "inner", { stacked })} />
+		<circle className={cx("hovered", "outer", { "area-mode": area })} />
+		<circle className={cx("hovered", "inner", { "area-mode": area })} />
 	</g>
 );

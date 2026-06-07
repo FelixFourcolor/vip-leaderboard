@@ -17,7 +17,7 @@ const cx = classNames.bind(styles);
 
 export function ChartPage() {
 	const [options] = useChartControls();
-	const { since, until, types, bump } = options;
+	const { since, until, types, ranked, area } = options;
 
 	const [data, setData] = useState<UserMonthlyCount[]>();
 	useEffect(() => {
@@ -57,6 +57,14 @@ export function ChartPage() {
 		},
 	});
 
+	const legend = (() => {
+		const type = types.map((t) => activityLabels[t]).join(" + ");
+		if (area || !ranked) {
+			return type || "Activities";
+		}
+		return type ? `Rank by ${type.toLowerCase()}` : "Rank";
+	})();
+
 	return (
 		<>
 			<Header position="absolute" />
@@ -72,13 +80,7 @@ export function ChartPage() {
 							<legend>chart</legend>
 							<TimeChart.Chart
 								margin={{ top: 22, right: 34, bottom: 30, left: 70 }}
-								axisLeft={{
-									legendOffset: -54,
-									legend: bump
-										? "Rank"
-										: types.map((t) => activityLabels[t]).join(" + ") ||
-											"Activities",
-								}}
+								axisLeft={{ legendOffset: -54, legend }}
 							/>
 						</fieldset>
 						<SidePanel>

@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useDelay } from "@/hooks/useDelay";
 import { windowed } from "@/utils/array";
-import { fromEntries } from "@/utils/object";
+import { fromEntries, keys } from "@/utils/object";
 import { monthsInRange, toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "./Chart";
@@ -43,9 +43,9 @@ export function ChartWrapper<S extends TimeSeries>({
 	since,
 	until,
 	colors = category10,
-	stacked = false,
+	area = false,
 	cumulative = false,
-	bump = false,
+	ranked = false,
 	renderDelay,
 	PointTooltip,
 	children,
@@ -56,9 +56,9 @@ export function ChartWrapper<S extends TimeSeries>({
 
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const transformedData = useTransform(data, xValues, {
-		stacked,
+		area,
 		cumulative,
-		bump,
+		ranked,
 	});
 	const isolatedPoints = useIsolatedPoints(transformedData);
 	const chartData = useFilter(transformedData, visibleIdx);
@@ -99,9 +99,9 @@ export function ChartWrapper<S extends TimeSeries>({
 				chartData: renderReady ? chartData : undefined,
 				xValues,
 				colors,
-				stacked,
+				area,
 				cumulative,
-				bump,
+				ranked,
 				PointTooltip,
 				isolatedPoints,
 				activeSeries,
@@ -129,38 +129,39 @@ function useFilter(
 }
 
 export interface TransformOptions {
-	stacked?: boolean;
-	bump?: boolean;
+	area?: boolean;
+	ranked?: boolean;
 	cumulative?: boolean;
 }
 function useTransform(
 	data: Maybe<readonly TimeSeries[]>,
 	xValues: YyyyMm[],
-	{ stacked, bump, cumulative }: Required<TransformOptions>,
+	{ area, ranked, cumulative }: Required<TransformOptions>,
 ): Maybe<readonly ChartSeries[]> {
 	type Accumulator = { data: ChartPoint[]; sum: number };
 
-	const transformedData = useMemo(() => {
+	const interpolatedData = useMemo<Maybe<readonly ChartSeries[]>>(() => {
 		return data?.map(({ id, data: points }) => {
 			const yValues = fromEntries(
 				points.map(({ month, value }) => [month, value]),
 			);
 
 			if (!cumulative) {
-				const data = xValues.map((month) => ({
-					x: new Date(month),
-					y: yValues[month] ?? (stacked ? 0 : null),
-				}));
+				const data = xValues.map((month) => {
+					const x = new Date(month);
+					const y = yValues[month] ?? (area ? 0 : null);
+					return { x, y, value: y ?? 0 };
+				});
 				return { id, data };
 			}
 
-			if (stacked) {
+			if (area) {
 				// apply cumulative, all nulls become 0
 				const { data } = xValues.reduce<Accumulator>(
 					({ data, sum }, month) => {
 						const y = yValues[month] ?? 0;
 						sum += y;
-						data.push({ x: new Date(month), y: sum });
+						data.push({ x: new Date(month), y: sum, value: sum });
 						return { data, sum };
 					},
 					{ data: [], sum: 0 },
@@ -170,23 +171,24 @@ function useTransform(
 
 			// only interpolate points between the first and last non-null values
 			const firstNonNull = xValues.findIndex((x) => yValues[x]);
-			const lastNonNull = bump
+			const lastNonNull = ranked
 				? xValues.length
 				: xValues.findLastIndex((x) => yValues[x]);
 			const continuousPoints = xValues.map((month, index) => {
 				const x = new Date(month);
 				if (firstNonNull <= index && index <= lastNonNull) {
-					return { x, y: yValues[month] ?? 0 };
+					const y = yValues[month] ?? 0;
+					return { x, y, value: y };
 				}
-				return { x, y: null };
+				return { x, y: null, value: 0 };
 			});
 			const { data } = continuousPoints.reduce<Accumulator>(
 				({ data, sum }, { x, y }) => {
 					if (y !== null) {
 						sum += y;
-						data.push({ x, y: sum });
+						data.push({ x, y: sum, value: sum });
 					} else {
-						data.push({ x, y: null });
+						data.push({ x, y: null, value: 0 });
 					}
 					return { data, sum };
 				},
@@ -194,32 +196,60 @@ function useTransform(
 			);
 			return { id, data };
 		});
-	}, [data, xValues, stacked, bump, cumulative]);
+	}, [data, xValues, area, ranked, cumulative]);
 
-	return useMemo(() => {
-		if (!transformedData || !bump) {
-			return transformedData;
+	const monthlyRankings = useMemo(() => {
+		if (!interpolatedData || !ranked) {
+			return undefined;
 		}
-		const monthlyRanks = Array.from({ length: xValues.length }, (_, i) =>
+		return Array.from({ length: xValues.length }, (_, i) =>
 			fromEntries(
-				transformedData
-					.map(({ id, data }) => {
-						const y = data[i]?.y;
-						return { id, y: y ?? 0, isNull: !y };
-					})
-					.sort((a, b) => b.y - a.y)
-					.map(({ id, isNull }, index) => [id, isNull ? null : index + 1]),
+				interpolatedData
+					.map(({ id, data }, index) => ({ id, index, value: data[i]!.value }))
+					.sort((a, b) => b.value - a.value || a.index - b.index)
+					.map(({ id, value }, index) => [id, !value ? undefined : index + 1]),
 			),
 		);
-		return transformedData.map(({ id, data }) => ({
-			id,
-			data: data.map(({ x, y }, i) => ({
-				x,
-				y: monthlyRanks[i]?.[id] ?? null,
-				originalY: y ?? 0,
-			})),
-		}));
-	}, [transformedData, bump, xValues.length]);
+	}, [interpolatedData, ranked, xValues.length]);
+
+	return useMemo(() => {
+		if (!interpolatedData || !monthlyRankings) {
+			return interpolatedData;
+		}
+
+		if (!area) {
+			return interpolatedData.map(({ id, data }) => ({
+				id,
+				data: data.map(({ x, y }, i) => {
+					const rank = monthlyRankings[i]?.[id];
+					return { x, y: rank ?? null, value: y ?? 0, rank };
+				}),
+			}));
+		}
+
+		const dataById = fromEntries(
+			interpolatedData.map(({ id, data }) => [id, data]),
+		);
+		const newDataById: typeof dataById = fromEntries(
+			interpolatedData.map(({ id }) => [id, []]),
+		);
+		monthlyRankings.forEach((month, monthIdx) => {
+			const seriesSortedAsc = keys(month).reverse();
+			let prevY = 0;
+			seriesSortedAsc.forEach((id, seriesIdx) => {
+				const { x, y } = dataById[id]![monthIdx]!;
+				const value = y ?? 0;
+				prevY += value;
+				newDataById[id]!.push({
+					x,
+					y: prevY,
+					value,
+					rank: seriesSortedAsc.length - seriesIdx,
+				});
+			});
+		});
+		return Object.entries(newDataById).map(([id, data]) => ({ id, data }));
+	}, [interpolatedData, area, monthlyRankings]);
 }
 
 const useIsolatedPoints = (data: readonly ChartSeries[] = []) =>

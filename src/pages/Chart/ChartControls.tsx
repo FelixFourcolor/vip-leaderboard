@@ -16,7 +16,7 @@ const cx = classNames.bind(styles);
 
 export function ChartControls() {
 	const [options, setOptions] = useChartControls();
-	const { until, since, cumulative, stacked, bump, types } = options;
+	const { until, since, cumulative, area, ranked, types } = options;
 
 	const onDateChange = useCallback(
 		([since, until]: Pair<YyyyMm>) => setOptions({ since, until }),
@@ -71,30 +71,18 @@ export function ChartControls() {
 								Cumulative
 							</PopupMenu.Item>
 							<PopupMenu.Item
-								selected={stacked}
-								setSelected={(stacked) => {
-									if (stacked) {
-										setOptions({ stacked, bump: false });
-									} else {
-										setOptions({ stacked });
-									}
-								}}
+								selected={ranked}
+								setSelected={(ranked) => setOptions({ ranked })}
+								className={cx("menu-item")}
+							>
+								Ranked
+							</PopupMenu.Item>
+							<PopupMenu.Item
+								selected={area}
+								setSelected={(area) => setOptions({ area })}
 								className={cx("menu-item")}
 							>
 								Area
-							</PopupMenu.Item>
-							<PopupMenu.Item
-								selected={bump}
-								setSelected={(bump) => {
-									if (bump) {
-										setOptions({ bump, stacked: false });
-									} else {
-										setOptions({ bump });
-									}
-								}}
-								className={cx("menu-item")}
-							>
-								Rank
 							</PopupMenu.Item>
 						</PopupMenu.Group>
 						<hr />
@@ -117,8 +105,8 @@ const defaultOptions = {
 	since: TWO_YEARS_AGO,
 	until: LAST_MONTH,
 	cumulative: false,
-	stacked: false,
-	bump: false,
+	area: false,
+	ranked: false,
 	types: [],
 } satisfies Required<ChartOptions>;
 

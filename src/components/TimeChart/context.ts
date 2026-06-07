@@ -14,9 +14,9 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	seriesData: Maybe<readonly S[]>;
 	chartData: Maybe<readonly ChartSeries[]>;
 	xValues: readonly YyyyMm[];
-	stacked: boolean;
+	area: boolean;
 	cumulative: boolean;
-	bump: boolean;
+	ranked: boolean;
 	colors: readonly string[];
 	isolatedPoints: Record<string, Set<YyyyMm>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
@@ -37,7 +37,7 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 		isHighlighted: (seriesId: string) => activeSeries === seriesId,
 		isMuted: (seriesId: string) => activeSeries && activeSeries !== seriesId,
 		isPointIsolated: ({ seriesId, x }: InteractivePoint) =>
-			isolatedPoints[seriesId]?.has(toYyyyMm(x)),
+			isolatedPoints[seriesId]?.has(toYyyyMm(x)) ?? false,
 		isPointHovered: ({ seriesId, x }: InteractivePoint) =>
 			hoveredPoint?.seriesId === seriesId &&
 			hoveredPoint.x.getTime() === x.getTime(),

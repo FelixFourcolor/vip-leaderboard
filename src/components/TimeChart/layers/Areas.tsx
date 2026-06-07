@@ -14,8 +14,8 @@ export function Areas({
 	curve,
 	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
-	const { stacked } = useChart();
-	if (!stacked) {
+	const { area: areaMode, ranked } = useChart();
+	if (!areaMode) {
 		return null;
 	}
 
@@ -27,20 +27,35 @@ export function Areas({
 
 	return (
 		<g>
-			{windowed(series, 2).map(([prev, { id, data, color }]) => (
-				<Area
-					key={id}
-					seriesId={id}
-					color={color}
-					path={bandGenerator(
-						data.map((d, i) => ({
-							x: d.position.x,
-							y1: d.position.y,
-							y0: prev ? prev.data[i]!.position.y : yScale(0),
-						})),
-					)}
-				/>
-			))}
+			{ranked
+				? series.map(({ id, data, color }) => (
+						<Area
+							key={id}
+							seriesId={id}
+							color={color}
+							path={bandGenerator(
+								data.map(({ data, position }) => ({
+									x: position.x,
+									y1: yScale(data.y ?? 0),
+									y0: yScale((data.y ?? 0) - (data.value ?? 0)),
+								})),
+							)}
+						/>
+					))
+				: windowed(series, 2).map(([prev, { id, data, color }]) => (
+						<Area
+							key={id}
+							seriesId={id}
+							color={color}
+							path={bandGenerator(
+								data.map(({ position }, i) => ({
+									x: position.x,
+									y1: position.y,
+									y0: prev ? prev.data[i]!.position.y : yScale(0),
+								})),
+							)}
+						/>
+					))}
 		</g>
 	);
 }

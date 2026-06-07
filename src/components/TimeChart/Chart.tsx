@@ -25,7 +25,8 @@ export type ChartSeries = { id: string; data: ChartPoint[] };
 export type ChartPoint = {
 	x: Date;
 	y: number | null;
-	originalY?: number;
+	value: number;
+	rank?: number;
 };
 
 type NivoProps = ComponentProps<typeof ResponsiveLine<ChartSeries>>;
@@ -107,13 +108,13 @@ const DEFAULT_CONFIGS = {
 } satisfies Partial<ComponentProps<typeof ResponsiveLine<ChartSeries>>>;
 
 function useDataOrdering(): Maybe<readonly ChartSeries[]> {
-	const { chartData, stacked, activeSeries } = useChart();
+	const { chartData, area, activeSeries } = useChart();
 
 	return useMemo(() => {
 		if (!chartData) {
 			return;
 		}
-		if (stacked) {
+		if (area) {
 			// to draw higher-ranked series above (idk why nivo does it reversed)
 			return [...chartData].reverse();
 		}
@@ -126,7 +127,7 @@ function useDataOrdering(): Maybe<readonly ChartSeries[]> {
 			return [...others, ...active];
 		}
 		return chartData;
-	}, [chartData, stacked, activeSeries]);
+	}, [chartData, area, activeSeries]);
 }
 
 function useColors() {
@@ -242,23 +243,24 @@ function findMaxClamped(
 	return stacked ? whenStacked() : whenNotStacked();
 }
 function useVerticalScale({ axisLeft }: ChartProps) {
-	const { chartData = [], stacked, bump } = useChart();
+	const { chartData = [], area, ranked } = useChart();
 
 	return useMemo(() => {
+		const stacked = area && !ranked;
+		const reverse = !area && ranked;
+
 		const maxClamped = findMaxClamped(chartData, stacked, 8);
-
 		const max = maxClamped >= 8 ? ("auto" as const) : maxClamped;
-		const min = bump ? ("auto" as const) : stacked ? 0 : 1;
-
+		const min = ranked && !area ? ("auto" as const) : area ? 0 : 1;
 		const tickValues =
 			maxClamped >= 8 || min === "auto"
 				? undefined
 				: Array.from({ length: maxClamped - min + 1 }, (_, i) => i + min);
 
 		return {
-			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked, reverse: bump },
+			yScale: { ...DEFAULT_CONFIGS.yScale, min, max, stacked, reverse },
 			axisLeft: { ...axisLeft, tickValues },
 			gridYValues: tickValues,
 		};
-	}, [chartData, stacked, bump, axisLeft]);
+	}, [chartData, area, ranked, axisLeft]);
 }

@@ -18,11 +18,11 @@
 			.highlighted {
 				stroke: var(--series-color);
 			}
-			&.stacked {
+			&.area-mode {
+				stroke-width: 0.5px;
 				stroke: var(--text-secondary);
-				stroke-width: 1px;
 				&.muted {
-					stroke-width: 0.5px;
+					stroke: var(--text-tertiary);
 				}
 			}
 		}
@@ -30,15 +30,15 @@
 		&.outline {
 			fill: none;
 			stroke: var(--series-color);
-			filter: blur(3px);
+			filter: blur(2px);
 
-			stroke-opacity: 0.45;
+			stroke-opacity: 0.4;
 			[data-is-zack="true"] & {
 				stroke-opacity: 0.3;
 			}
 
 			stroke-width: 6px;
-			&:not(.visible) {
+			&:not(.highlighted) {
 				stroke-width: 0;
 			}
 		}
@@ -59,13 +59,13 @@
 				&:not(.highlighted) {
 					fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10) / 0.85);
 				}
-				fill-opacity: 0.35;
+				fill-opacity: 0.4;
 				&.muted {
 					fill: hsl(from var(--series-color) h calc(s + 5) calc(l + 10) / 0.45);
-					fill-opacity: 0.15;
+					fill-opacity: 0.2;
 				}
 				&.highlighted {
-					fill-opacity: 0.55;
+					fill-opacity: 0.65;
 				}
 			}
 		}
@@ -117,7 +117,7 @@
 				r: 4px;
 				fill: var(--bg-primary);
 			}
-			&.stacked {
+			&.area-mode {
 				/* cannot use `display: none`, tooltip needs to know its position */
 				visibility: hidden;
 			}
