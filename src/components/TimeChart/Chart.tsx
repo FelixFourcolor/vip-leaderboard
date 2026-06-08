@@ -69,10 +69,8 @@ export function Chart({ className, ...configs }: ChartProps) {
 
 const DEFAULT_CONFIGS = {
 	curve: "monotoneX",
-	useMesh: false,
-	enableCrosshair: false,
 	xFormat: "time:%Y-%m",
-	xScale: { type: "time", useUTC: false },
+	xScale: { type: "time" },
 	yScale: { type: "linear" },
 	axisBottom: { format: "%Y-%m" },
 	margin: { top: 28, right: 28, bottom: 28, left: 28 },
