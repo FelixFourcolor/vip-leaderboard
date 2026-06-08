@@ -40,6 +40,7 @@ type ChartProps = {
 };
 
 export function Chart({ className, ...configs }: ChartProps) {
+	const { renderReady } = useChart();
 	const data = useDataOrdering();
 	const colors = useColors();
 	const { chartRef, gridXValues, axisBottom } = useHorizontalScale(configs);
@@ -47,7 +48,7 @@ export function Chart({ className, ...configs }: ChartProps) {
 
 	return (
 		<div ref={chartRef} className={cx("chart", className)}>
-			{data ? (
+			{renderReady && data ? (
 				<ResponsiveLine
 					{...DEFAULT_CONFIGS}
 					margin={{ ...DEFAULT_CONFIGS.margin, ...configs.margin }}

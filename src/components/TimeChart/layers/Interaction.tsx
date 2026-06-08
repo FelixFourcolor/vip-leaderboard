@@ -32,10 +32,11 @@ function useHover({ width, height, series, yScale }: Props) {
 		setHoveredPoint(undefined);
 	};
 
-	const pointXs = series[0]!.data.map(({ position, data }) => ({
-		data: data.x,
-		position: position.x,
-	}));
+	const pointXs =
+		series[0]?.data.map(({ position, data }) => ({
+			data: data.x,
+			position: position.x,
+		})) ?? [];
 	const getHoveredArea = (mouse: { x: number; y: number }) => {
 		const { index: pointIndex } = pointXs.reduce(
 			(best, { position }, index) => {

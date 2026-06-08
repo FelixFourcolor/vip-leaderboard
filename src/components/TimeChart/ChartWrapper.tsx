@@ -15,7 +15,6 @@ import type { Maybe } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "./Chart";
 import { category10 } from "./colors";
 import { ChartContext } from "./context";
-import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
@@ -51,7 +50,6 @@ export function ChartWrapper<S extends TimeSeries>({
 	PointTooltip,
 	children,
 }: Props<S>) {
-	const [visibleIdx, setVisibleIdx] = useState<VisibleIdx>();
 	const [activeSeries, setActiveSeries] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
 
@@ -62,11 +60,17 @@ export function ChartWrapper<S extends TimeSeries>({
 		ranked,
 	});
 	const isolatedPoints = useIsolatedPoints(transformedData);
-	const chartData = useFilter(transformedData, visibleIdx);
+
+	const [visibleIdx = [], setVisibleIdx] =
+		useState<[from: number, to: number]>();
+	const chartData = useMemo(
+		() => transformedData?.slice(...visibleIdx),
+		[transformedData, visibleIdx],
+	);
 
 	// Sync activeSeries, hoveredPoint, and visibleIdx
 	const visibleIds = useMemo(
-		() => new Set(chartData?.map(({ id }) => id)),
+		() => new Set(chartData?.map((s) => s.id)),
 		[chartData],
 	);
 	const prevActiveSeries = useRef(activeSeries);
@@ -86,18 +90,19 @@ export function ChartWrapper<S extends TimeSeries>({
 		else if (
 			prevActiveSeries.current &&
 			prevActiveSeries.current === hoveredPoint?.seriesId &&
-			visibleIds.has(hoveredPoint.seriesId)
+			visibleIds?.has(hoveredPoint.seriesId)
 		) {
 			setActiveSeries(hoveredPoint.seriesId);
 		}
 	}, [visibleIds, activeSeries, hoveredPoint]);
 
-	const renderReady = useDelay(renderDelay);
 	return (
 		<ChartContext
 			value={{
-				seriesData: renderReady ? data : undefined,
-				chartData: renderReady ? chartData : undefined,
+				seriesData: data,
+				chartData,
+				setVisibleIdx,
+				renderReady: useDelay(renderDelay),
 				xValues,
 				colors,
 				area,
@@ -109,24 +114,11 @@ export function ChartWrapper<S extends TimeSeries>({
 				setActiveSeries,
 				hoveredPoint,
 				setHoveredPoint,
-				visibleIdx,
-				setVisibleIdx,
 			}}
 		>
 			{children}
 		</ChartContext>
 	);
-}
-
-function useFilter(
-	data: Maybe<readonly ChartSeries[]>,
-	visibleIdx: Maybe<VisibleIdx>,
-): Maybe<readonly ChartSeries[]> {
-	return useMemo(() => {
-		return visibleIdx
-			? data?.filter((_, i) => visibleIdx.from <= i && i <= visibleIdx.to)
-			: data;
-	}, [data, visibleIdx]);
 }
 
 export interface TransformOptions {

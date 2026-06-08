@@ -4,16 +4,16 @@ import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
 import type { ChartSeries } from "./Chart";
 import type { TimeSeries } from "./ChartWrapper";
-import type { VisibleIdx } from "./Legend";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
 interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	extends State<"activeSeries", Maybe<string>>,
-		State<"hoveredPoint", Maybe<InteractivePoint>>,
-		State<"visibleIdx", Maybe<VisibleIdx>> {
+		State<"hoveredPoint", Maybe<InteractivePoint>> {
 	seriesData: Maybe<readonly S[]>;
 	chartData: Maybe<readonly ChartSeries[]>;
+	setVisibleIdx: (range: [from: number, to: number]) => void;
+	renderReady: boolean;
 	xValues: readonly YyyyMm[];
 	area: boolean;
 	cumulative: boolean;

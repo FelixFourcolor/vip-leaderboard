@@ -19,8 +19,6 @@ import styles from "./TimeChart.module.css";
 
 const cx = classNames.bind(styles);
 
-export type VisibleIdx = { from: number; to: number };
-
 export type LegendEntryProps<S extends TimeSeries> = {
 	series: Omit<S, "data">;
 	seriesColor: string;
@@ -42,33 +40,15 @@ export function Legend<S extends TimeSeries>({
 }: Props<S>) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
-	const {
-		colors,
-		visibleIdx = colorRange(colors),
-		seriesData,
-		setVisibleIdx,
-		setActiveSeries,
-	} = useChart<S>();
+	const { colors, seriesData, setActiveSeries, setVisibleIdx, renderReady } =
+		useChart<S>();
 
-	const setVisibleFrom = useCallback(
-		(index: number) =>
-			setVisibleIdx((current = colorRange(colors)) => {
-				const delta = index - current.from;
-				return {
-					from: index,
-					to: current.to + delta,
-				};
-			}),
-		[colors, setVisibleIdx],
-	);
-	const setVisibleCount = useCallback(
-		(count: number) =>
-			setVisibleIdx((current = colorRange(colors)) => ({
-				...current,
-				to: current.from + count - 1,
-			})),
-		[colors, setVisibleIdx],
-	);
+	const [visibleFrom, setVisibleFrom] = useState(0);
+	const [visibleCount, setVisibleCount] = useState(colors.length - 1);
+	const visibleTo = visibleFrom + visibleCount - 1;
+	useEffect(() => {
+		setVisibleIdx([visibleFrom, visibleTo]);
+	}, [setVisibleIdx, visibleFrom, visibleTo]);
 
 	const [entryHeight, setEntryHeight] = useState<Maybe<number>>();
 	const entryRef = (entry: HTMLLIElement | null) => {
@@ -78,8 +58,7 @@ export function Legend<S extends TimeSeries>({
 		}
 	};
 	const maxHeight = entryHeight
-		? entryHeight * visibleCount(visibleIdx) +
-			gap * (visibleCount(visibleIdx) - 1)
+		? entryHeight * visibleCount + gap * (visibleCount - 1)
 		: undefined;
 
 	const legendRef = useRef<HTMLOListElement>(null);
@@ -105,7 +84,7 @@ export function Legend<S extends TimeSeries>({
 
 		observer.observe(container);
 		return () => observer.disconnect();
-	}, [colors, gap, entryHeight, setVisibleCount]);
+	}, [colors, gap, entryHeight]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
@@ -126,7 +105,7 @@ export function Legend<S extends TimeSeries>({
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [seriesData, setVisibleFrom, entryHeight, gap]);
+	}, [seriesData, entryHeight, gap]);
 
 	const onScroll = useCallback<UIEventHandler>(
 		({ currentTarget: { scrollTop } }) => {
@@ -137,7 +116,7 @@ export function Legend<S extends TimeSeries>({
 			prevFromIdx.current = index;
 			setVisibleFrom(index);
 		},
-		[setVisibleFrom, entryHeight, gap],
+		[entryHeight, gap],
 	);
 
 	const isEntryFocusedRef = useRef(false);
@@ -159,7 +138,7 @@ export function Legend<S extends TimeSeries>({
 				}
 			}}
 		>
-			{seriesData ? (
+			{renderReady && seriesData ? (
 				seriesData.map((series, i) => (
 					<Entry
 						key={series.id}
@@ -179,14 +158,14 @@ export function Legend<S extends TimeSeries>({
 								return;
 							}
 
-							if (i > visibleIdx.to) {
+							if (i > visibleTo) {
 								legend.scrollTo(calculateScroll(i, { entryHeight, gap }));
-							} else if (i < visibleIdx.from) {
+							} else if (i < visibleFrom) {
 								legend.scrollTo(
-									calculateScroll(
-										Math.max(0, i - visibleCount(visibleIdx) + 1),
-										{ entryHeight, gap },
-									),
+									calculateScroll(Math.max(0, i - visibleCount + 1), {
+										entryHeight,
+										gap,
+									}),
 								);
 							}
 							isEntryFocusedRef.current = true;
@@ -216,14 +195,6 @@ export function Legend<S extends TimeSeries>({
 		</ol>
 	);
 }
-
-const colorRange = (colors: readonly string[]) => ({
-	from: 0,
-	to: colors.length - 1,
-});
-
-const visibleCount = (visibleIdx: { from: number; to: number }) =>
-	visibleIdx.to - visibleIdx.from + 1;
 
 const calculateIdx = (
 	scrollTop: number,
