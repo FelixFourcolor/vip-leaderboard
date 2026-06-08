@@ -7,25 +7,18 @@ import type { ChartSeries } from "../Chart";
 import { useChart } from "../context";
 
 export type InteractivePoint = { x: Date; seriesId: string };
+type Props = LineCustomSvgLayerProps<ChartSeries>;
 
-export const Interaction = ({
-	innerWidth,
-	innerHeight,
-	series,
-	yScale,
-}: LineCustomSvgLayerProps<ChartSeries>) => (
+export const Interaction = (props: Props) => (
 	<rect
-		width={innerWidth}
-		height={innerHeight}
+		width={props.width}
+		height={props.height}
 		opacity={0}
-		{...useHover(series, yScale)}
+		{...useHover(props)}
 	/>
 );
 
-function useHover(
-	series: LineCustomSvgLayerProps<ChartSeries>["series"],
-	yScale: LineCustomSvgLayerProps<ChartSeries>["yScale"],
-) {
+function useHover({ width, height, series, yScale }: Props) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 	const { setActiveSeries, setHoveredPoint, area } = useChart();
@@ -67,9 +60,10 @@ function useHover(
 			.filter(({ data }) => data.y)
 			.map(({ data, position }) => ({ data, position, seriesId })),
 	);
+	const proximityThreshold = (height + width) / 20;
 	const getClosestPoint = (mouse: { x: number; y: number }) => {
 		type Accumulator = { dist: number; point?: InteractivePoint };
-		const { point } = allPoints.reduce<Accumulator>(
+		const { dist, point } = allPoints.reduce<Accumulator>(
 			(best, { position, data, seriesId }) => {
 				const dist = Math.hypot(position.x - mouse.x, position.y - mouse.y);
 				return dist < best.dist
@@ -78,7 +72,9 @@ function useHover(
 			},
 			{ dist: Infinity },
 		);
-		return point;
+		if (dist < proximityThreshold) {
+			return point;
+		}
 	};
 
 	const onMouseMove = ({ currentTarget, clientX, clientY }: MouseEvent) => {
