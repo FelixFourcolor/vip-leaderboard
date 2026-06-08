@@ -1,3 +1,4 @@
+import { isEqual } from "es-toolkit";
 import { createContext, type ReactElement, use } from "react";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
@@ -36,10 +37,8 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 		activeSeries,
 		isHighlighted: (seriesId: string) => activeSeries === seriesId,
 		isMuted: (seriesId: string) => activeSeries && activeSeries !== seriesId,
+		isPointHovered: (point: InteractivePoint) => isEqual(point, hoveredPoint),
 		isPointIsolated: ({ seriesId, x }: InteractivePoint) =>
 			isolatedPoints[seriesId]?.has(toYyyyMm(x)) ?? false,
-		isPointHovered: ({ seriesId, x }: InteractivePoint) =>
-			hoveredPoint?.seriesId === seriesId &&
-			hoveredPoint.x.getTime() === x.getTime(),
 	};
 }
