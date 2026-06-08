@@ -19,13 +19,15 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 
 	return (
 		<g>
-			{series.map(({ id, data, color }) => {
-				return data.map(({ data, position: { x, y } }) => (
-					<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
-						<Point series={seriesMap[id]!} color={color} data={data} />
-					</g>
-				));
-			})}
+			{series.map(({ id, data, color }) =>
+				data
+					.filter(({ data }) => data.y !== null)
+					.map(({ data, position: { x, y } }) => (
+						<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
+							<Point series={seriesMap[id]!} color={color} data={data} />
+						</g>
+					)),
+			)}
 		</g>
 	);
 }
