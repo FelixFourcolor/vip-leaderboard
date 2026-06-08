@@ -19,7 +19,7 @@
 				stroke: var(--series-color);
 			}
 			&.area-mode {
-				stroke-width: 0.5px;
+				stroke-width: 0.4px;
 				stroke: var(--text-secondary);
 				&.muted {
 					stroke: var(--text-tertiary);

@@ -82,7 +82,7 @@ const DEFAULT_CONFIGS = {
 			ticks: {
 				line: {
 					stroke: "var(--text-tertiary)",
-					strokeWidth: 0.5,
+					strokeWidth: 0.3,
 				},
 				text: {
 					fill: "var(--text-secondary)",
@@ -100,7 +100,7 @@ const DEFAULT_CONFIGS = {
 		grid: {
 			line: {
 				stroke: "var(--text-tertiary)",
-				strokeWidth: 0.5,
+				strokeWidth: 0.3,
 			},
 		},
 	},
