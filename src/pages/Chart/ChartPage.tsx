@@ -24,19 +24,6 @@ export function ChartPage() {
 		getUserMonthlyCount({ since, until, types }).then(setData);
 	}, [since, until, types]);
 
-	useEffect(() => {
-		// to disable scrolling but only for this page
-		const root = document.getElementById("root")!;
-
-		const { overflow, maxHeight } = document.body.style;
-		document.body.style.overflow = "hidden";
-		root.style.maxHeight = "100dvh";
-		return () => {
-			document.body.style.overflow = overflow;
-			root.style.maxHeight = maxHeight;
-		};
-	}, []);
-
 	const navigate = useNavigate();
 	const ignoreScreenSizeWarning = useRef(false);
 	useWindowSize({

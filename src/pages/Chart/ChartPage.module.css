@@ -1,3 +1,10 @@
+body:has(.chart-page) {
+	overflow: hidden;
+	:global(#root) {
+		max-height: 100dvh;
+	}
+}
+
 .chart-page {
 	margin: 16px;
 	margin-top: 11px; /* compensate for fieldset legend */
