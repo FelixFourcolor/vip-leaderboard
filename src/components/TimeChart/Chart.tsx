@@ -71,7 +71,7 @@ const DEFAULT_CONFIGS = {
 	curve: "monotoneX",
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time" },
-	yScale: { type: "linear" },
+	yScale: { type: "linear", nice: false },
 	axisBottom: { format: "%Y-%m" },
 	margin: { top: 28, right: 28, bottom: 28, left: 28 },
 	layers: ["grid", "axes", Areas, Lines, Points, Labels, Interaction],
@@ -181,10 +181,10 @@ function useHorizontalScale({
 }
 
 function useVerticalScale({ axisLeft }: ChartProps) {
-	const { chartData = [], area, ranked } = useChart();
+	const { chartData = [], area, ranked, cumulative } = useChart();
 
 	const reverse = !area && ranked;
-	const min = area ? 0 : 1;
+	const min = area || cumulative ? 0 : 1;
 	const max = useMemo(() => {
 		const THRESHOLD = 8;
 		let max = 0;
