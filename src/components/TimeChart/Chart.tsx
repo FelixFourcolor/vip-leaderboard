@@ -137,9 +137,7 @@ function useColors() {
 	return (series: ChartSeries) => colorMapping[series.id]!;
 }
 
-const fontSize = 12;
-const gap = 12;
-const labelWidth = 7 * fontSize * 0.6 + gap;
+const labelWidth = 64; // estimate from current styles
 function useHorizontalScale({
 	margin: { left: marginLeft = 0, right: marginRight = 0 } = {},
 }: ChartProps) {
@@ -153,31 +151,33 @@ function useHorizontalScale({
 		if (!chart) {
 			return;
 		}
+
 		setWidth(chart.clientWidth);
 		const observer = new ResizeObserver(
-			([entry]) => entry && setWidth(entry.contentRect.width),
+			([chart]) => chart && setWidth(chart.contentRect.width),
 		);
+
 		observer.observe(chart);
 		return () => observer.disconnect();
 	}, []);
 
-	return useMemo(() => {
-		const count = xValues.length;
-		const innerWidth = Math.max(0, width - marginLeft - marginRight);
-		const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
-		const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
+	const count = xValues.length;
+	const innerWidth = Math.max(0, width - marginLeft - marginRight);
+	const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
+	const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
 
-		const tickValues = xValues
+	const tickValues = useMemo(() => {
+		return xValues
 			.filter((_, index) => (count - 1 - index) % interval === 0)
 			.map(toDate);
+	}, [xValues, count, interval]);
 
-		return {
-			chartRef,
-			xLabels: xValues,
-			axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
-			gridXValues: tickValues,
-		};
-	}, [marginLeft, marginRight, xValues, width]);
+	return {
+		chartRef,
+		xLabels: xValues,
+		axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
+		gridXValues: tickValues,
+	};
 }
 
 function useVerticalScale({ axisLeft }: ChartProps) {
