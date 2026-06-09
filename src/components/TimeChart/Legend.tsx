@@ -12,7 +12,7 @@ import {
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
-import type { Maybe } from "@/utils/types";
+import type { AtLeastOneOf, Maybe } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./context";
 import styles from "./TimeChart.module.css";
@@ -30,12 +30,12 @@ export type LegendEntryProps<S extends TimeSeries> = {
 
 type Props<S extends TimeSeries> = {
 	Entry: FC<LegendEntryProps<S>>;
-	gap?: number;
+	entriesGap?: AtLeastOneOf<{ min: number; max: number }>;
 	className?: string;
 };
 export function Legend<S extends TimeSeries>({
 	Entry,
-	gap = 24,
+	entriesGap: { min: minGap = 0, max: maxGap } = { min: 0 },
 	className,
 }: Props<S>) {
 	const { isGrabbing } = useGrab();
@@ -43,8 +43,9 @@ export function Legend<S extends TimeSeries>({
 	const { colors, seriesData, setActiveSeries, setVisibleIdx, renderReady } =
 		useChart<S>();
 
+	const maxVisibleCount = colors.length;
 	const [visibleFrom, setVisibleFrom] = useState(0);
-	const [visibleCount, setVisibleCount] = useState(colors.length);
+	const [visibleCount, setVisibleCount] = useState(maxVisibleCount);
 	const visibleTo = visibleFrom + visibleCount;
 	useEffect(() => {
 		setVisibleIdx([visibleFrom, visibleTo]);
@@ -53,38 +54,49 @@ export function Legend<S extends TimeSeries>({
 	const [entryHeight, setEntryHeight] = useState<Maybe<number>>();
 	const entryRef = (entry: HTMLLIElement | null) => {
 		if (entry && !entryHeight) {
-			const { height } = entry.getBoundingClientRect();
-			setEntryHeight(height);
+			const entryHeight = entry.getBoundingClientRect().height;
+			setEntryHeight(entryHeight);
 		}
 	};
-	const maxHeight = entryHeight
-		? entryHeight * visibleCount + gap * (visibleCount - 1)
-		: undefined;
+	const maxHeight =
+		entryHeight && maxGap
+			? entryHeight * maxVisibleCount + maxGap * (maxVisibleCount - 1)
+			: undefined;
 
+	const [gap, setGap] = useState(minGap);
 	const legendRef = useRef<HTMLOListElement>(null);
 	useEffect(() => {
-		const container = legendRef.current?.parentElement;
-		if (!container || !entryHeight) {
+		const legend = legendRef.current;
+		if (!legend || !entryHeight) {
 			return;
 		}
 
 		const observer = new ResizeObserver((entries) => {
-			const entry = entries[0];
-			if (!entry) {
+			const containerHeight = entries[0]?.contentRect.height;
+			if (!containerHeight) {
 				return;
 			}
-			const containerHeight = entry.contentRect.height;
-			setVisibleCount(
-				Math.min(
-					Math.floor(containerHeight / (entryHeight + gap)),
-					colors.length,
-				),
+
+			const visibleCount = Math.min(
+				Math.floor((containerHeight + minGap) / (entryHeight + minGap)),
+				maxVisibleCount,
+			);
+			const gap = Math.max(
+				(containerHeight - entryHeight * visibleCount) / (visibleCount - 1),
+				minGap,
+			);
+
+			setVisibleCount(visibleCount);
+			setGap(
+				visibleCount === maxVisibleCount && maxGap
+					? Math.min(gap, maxGap)
+					: gap,
 			);
 		});
 
-		observer.observe(container);
+		observer.observe(legend);
 		return () => observer.disconnect();
-	}, [colors, gap, entryHeight]);
+	}, [maxVisibleCount, minGap, maxGap, entryHeight]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
@@ -120,10 +132,9 @@ export function Legend<S extends TimeSeries>({
 	);
 
 	const isEntryFocusedRef = useRef(false);
-
 	return (
 		<ol
-			style={{ maxHeight, gap }}
+			style={{ gap, maxHeight }}
 			ref={legendRef}
 			onScroll={onScroll}
 			className={cx("legend", className)}

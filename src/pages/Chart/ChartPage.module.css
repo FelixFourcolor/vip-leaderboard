@@ -53,7 +53,9 @@
 
 		.legend {
 			outline: none;
-			padding: 6px var(--legend-padding);
+			--box-shadow-size: 10px;
+			padding: var(--box-shadow-size) var(--legend-padding);
+			margin: calc(var(--legend-padding) - var(--box-shadow-size)) 0;
 			display: flex;
 			flex-direction: column;
 		}
@@ -141,7 +143,7 @@
 		box-sizing: border-box;
 
 		&.highlighted {
-			box-shadow: 0 0 10px var(--series-color);
+			box-shadow: 0 0 var(--box-shadow-size) var(--series-color);
 		}
 	}
 }
