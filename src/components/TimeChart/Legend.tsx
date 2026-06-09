@@ -44,8 +44,8 @@ export function Legend<S extends TimeSeries>({
 		useChart<S>();
 
 	const [visibleFrom, setVisibleFrom] = useState(0);
-	const [visibleCount, setVisibleCount] = useState(colors.length - 1);
-	const visibleTo = visibleFrom + visibleCount - 1;
+	const [visibleCount, setVisibleCount] = useState(colors.length);
+	const visibleTo = visibleFrom + visibleCount;
 	useEffect(() => {
 		setVisibleIdx([visibleFrom, visibleTo]);
 	}, [setVisibleIdx, visibleFrom, visibleTo]);
@@ -158,7 +158,7 @@ export function Legend<S extends TimeSeries>({
 								return;
 							}
 
-							if (i > visibleTo) {
+							if (i >= visibleTo) {
 								legend.scrollTo(calculateScroll(i, { entryHeight, gap }));
 							} else if (i < visibleFrom) {
 								legend.scrollTo(
