@@ -34,8 +34,9 @@ type ChartProps = {
 	margin?: NivoProps["margin"];
 	axisLeft?: Pick<
 		NonNullable<NivoProps["axisLeft"]>,
-		"legendOffset" | "legend"
+		"legendOffset" | "legend" | "tickPadding"
 	>;
+	axisBottom?: Pick<NonNullable<NivoProps["axisBottom"]>, "tickPadding">;
 	className?: string;
 };
 
@@ -140,6 +141,7 @@ function useColors() {
 const labelWidth = 64; // estimate from current styles
 function useHorizontalScale({
 	margin: { left: marginLeft = 0, right: marginRight = 0 } = {},
+	axisBottom,
 }: ChartProps) {
 	const { xValues } = useChart();
 
@@ -175,7 +177,7 @@ function useHorizontalScale({
 	return {
 		chartRef,
 		xLabels: xValues,
-		axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
+		axisBottom: { ...DEFAULT_CONFIGS.axisBottom, ...axisBottom, tickValues },
 		gridXValues: tickValues,
 	};
 }
@@ -184,7 +186,27 @@ function useVerticalScale({ axisLeft }: ChartProps) {
 	const { chartData = [], area, ranked, cumulative } = useChart();
 
 	const reverse = !area && ranked;
-	const min = area || cumulative ? 0 : 1;
+	const min = useMemo(() => {
+		if (cumulative) {
+			return 1;
+		}
+		const THRESHOLD = 0;
+		let min = Infinity;
+		for (const { data } of chartData) {
+			for (const { y } of data) {
+				if (y == null) {
+					continue;
+				}
+				if (y <= THRESHOLD) {
+					return THRESHOLD;
+				}
+				if (y < min) {
+					min = y;
+				}
+			}
+		}
+		return min;
+	}, [chartData, cumulative]);
 	const max = useMemo(() => {
 		const THRESHOLD = 8;
 		let max = 0;
