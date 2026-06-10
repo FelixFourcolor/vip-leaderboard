@@ -138,15 +138,13 @@ function useColors() {
 	return (series: ChartSeries) => colorMapping[series.id]!;
 }
 
-const labelWidth = 64; // estimate from current styles
-function useHorizontalScale({
-	margin: { left: marginLeft = 0, right: marginRight = 0 } = {},
-	axisBottom,
-}: ChartProps) {
+const labelWidth = 64; // estimate based on current styles
+function useHorizontalScale({ axisBottom }: ChartProps) {
 	const { xValues } = useChart();
 
 	const chartRef = useRef<HTMLDivElement | null>(null);
-	const [width, setWidth] = useState(0);
+	const [chartWidth, setChartWidth] = useState(0);
+	const labelsCount = Math.max(2, Math.floor(chartWidth / labelWidth));
 
 	useEffect(() => {
 		const chart = chartRef.current;
@@ -154,25 +152,25 @@ function useHorizontalScale({
 			return;
 		}
 
-		setWidth(chart.clientWidth);
+		setChartWidth(chart.clientWidth);
 		const observer = new ResizeObserver(
-			([chart]) => chart && setWidth(chart.contentRect.width),
+			([chart]) => chart && setChartWidth(chart.contentRect.width),
 		);
 
 		observer.observe(chart);
 		return () => observer.disconnect();
 	}, []);
 
-	const count = xValues.length;
-	const innerWidth = Math.max(0, width - marginLeft - marginRight);
-	const maxLabels = Math.max(2, Math.floor(innerWidth / labelWidth));
-	const interval = Math.max(1, Math.ceil((count - 1) / (maxLabels - 1)));
-
 	const tickValues = useMemo(() => {
+		if (xValues.length < 2) {
+			return xValues.map(toDate);
+		}
+
+		const interval = Math.ceil((xValues.length - 1) / (labelsCount - 1));
 		return xValues
-			.filter((_, index) => (count - 1 - index) % interval === 0)
+			.filter((_, index) => (xValues.length - 1 - index) % interval === 0)
 			.map(toDate);
-	}, [xValues, count, interval]);
+	}, [xValues, xValues.length, labelsCount]);
 
 	return {
 		chartRef,
