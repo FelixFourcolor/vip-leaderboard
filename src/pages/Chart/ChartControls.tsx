@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
@@ -23,6 +23,13 @@ export function ChartControls() {
 		[setOptions],
 	);
 
+	const isSingleMonth = since === until;
+	useEffect(() => {
+		if (isSingleMonth) {
+			setOptions({ area: false });
+		}
+	}, [isSingleMonth, setOptions]);
+
 	return (
 		<fieldset>
 			<legend>controls</legend>
@@ -33,6 +40,7 @@ export function ChartControls() {
 					selected={[since, until]}
 					onChange={onDateChange}
 					autoHideLabel
+					minDistance={area ? 1 : 0}
 				/>
 
 				<PopupMenu>
@@ -81,6 +89,7 @@ export function ChartControls() {
 								selected={area}
 								setSelected={(area) => setOptions({ area })}
 								className={cx("menu-item")}
+								disabled={isSingleMonth}
 							>
 								Area
 							</PopupMenu.Item>
