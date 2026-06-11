@@ -17,6 +17,7 @@ import { ChartContext } from "./chartContext";
 import { category10 } from "./colors";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
+import { ZoomProvider } from "./ZoomProvider";
 
 export type TimePoint = {
 	month: YyyyMm;
@@ -103,7 +104,6 @@ export function ChartWrapper<S extends TimeSeries>({
 				chartData,
 				setVisibleIdx,
 				renderReady: useDelay(renderDelay),
-				xValues,
 				colors,
 				area,
 				cumulative,
@@ -116,7 +116,9 @@ export function ChartWrapper<S extends TimeSeries>({
 				setHoveredPoint,
 			}}
 		>
-			{children}
+			<ZoomProvider since={since} until={until}>
+				{children}
+			</ZoomProvider>
 		</ChartContext>
 	);
 }

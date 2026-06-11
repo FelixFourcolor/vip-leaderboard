@@ -1,13 +1,7 @@
 import { ResponsiveLine } from "@nivo/line";
 import classNames from "classnames/bind";
 import { partition, range } from "es-toolkit";
-import {
-	type ComponentProps,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ComponentProps, useMemo } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toDate } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
@@ -18,6 +12,7 @@ import { Labels } from "./layers/Labels";
 import { Lines } from "./layers/Lines";
 import { Points } from "./layers/Points";
 import styles from "./TimeChart.module.css";
+import { useChartZoom } from "./zoomContext";
 
 const cx = classNames.bind(styles);
 
@@ -41,19 +36,21 @@ type ChartProps = {
 
 export function Chart({ className, ...configs }: ChartProps) {
 	const { renderReady } = useChart();
+	const { clipPathId } = useChartZoom();
 	const data = useDataOrdering();
 	const colors = useColors();
-	const { chartRef, svgRef, width, height, margin } = useSize(configs);
-	const { gridXValues, axisBottom } = useHorizontalScale(configs, width);
-	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs, height);
+	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
+	const { gridXValues, axisBottom } = useHorizontalScale();
 
 	return (
-		<div ref={chartRef} className={cx("chart", className)}>
+		<div
+			className={cx("chart", className)}
+			style={{ ["--clip-path-url" as string]: `url(#${clipPathId})` }}
+		>
 			{renderReady && data ? (
 				<ResponsiveLine
 					{...DEFAULT_CONFIGS}
-					ref={svgRef}
-					margin={margin}
+					margin={{ ...DEFAULT_CONFIGS.margin, ...configs.margin }}
 					data={data}
 					colors={colors}
 					gridXValues={gridXValues}
@@ -140,123 +137,79 @@ function useColors() {
 	return (series: ChartSeries) => colorMapping[series.id]!;
 }
 
-function useSize(configs: ChartProps) {
-	const [width, setWidth] = useState(0);
-	const [height, setHeight] = useState(0);
-	const chartRef = useRef<HTMLDivElement | null>(null);
-
-	useEffect(() => {
-		const chart = chartRef.current;
-		if (!chart) {
-			return;
-		}
-		const observer = new ResizeObserver(([entry]) => {
-			if (entry) {
-				const { width, height } = entry.contentRect;
-				setWidth(width);
-				setHeight(height);
-			}
-		});
-		observer.observe(chart);
-		return () => observer.disconnect();
-	}, []);
-
-	const [svg, svgRef] = useState<SVGSVGElement | null>();
-	const [rect, setRect] = useState<SVGRectElement | null>(null);
-
-	const margin = { ...DEFAULT_CONFIGS.margin, ...configs.margin };
-	const padding = 8; // for line box-shadows and points
-
-	const innerWidth = width - margin.left - margin.right + 2 * padding;
-	const innerHeight = height - margin.top - margin.bottom + 2 * padding;
-
-	useEffect(() => {
-		rect?.setAttribute("width", String(innerWidth));
-		rect?.setAttribute("height", String(innerHeight));
-	}, [rect, innerHeight, innerWidth]);
-
-	useEffect(() => {
-		if (!svg) {
-			return;
-		}
-		setRect((alreadySet) => {
-			if (alreadySet) {
-				return alreadySet;
-			}
-
-			let defs = svg.querySelector("defs");
-			if (!defs) {
-				defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-				svg.prepend(defs);
-			}
-
-			let clipPath = defs.querySelector("clipPath");
-			if (!clipPath) {
-				clipPath = document.createElementNS(
-					"http://www.w3.org/2000/svg",
-					"clipPath",
-				);
-				clipPath.id = "chart-clip-path";
-				defs.appendChild(clipPath);
-			}
-
-			let rect = clipPath.querySelector("rect");
-			if (!rect) {
-				rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-				rect.setAttribute("x", String(-padding));
-				rect.setAttribute("y", String(-padding));
-				clipPath.appendChild(rect);
-			}
-			return rect;
-		});
-	}, [svg]);
-
-	return { chartRef, svgRef, width, height, margin };
-}
-
 const LABEL_WIDTH = 64; // estimate based on current styles
-function useHorizontalScale(configs: ChartProps, chartWidth: number) {
-	const margin = { ...DEFAULT_CONFIGS.margin, ...configs.margin };
-	const availableWidth = chartWidth - margin.left - margin.right;
-	const labelsCount = Math.max(Math.floor(availableWidth / LABEL_WIDTH), 2);
+function useHorizontalScale() {
+	const { chartWidth, xValues, xZoom } = useChartZoom();
 
-	const { xValues } = useChart();
-	const interval = Math.ceil((xValues.length - 1) / (labelsCount - 1));
-	const tickValues = useMemo(() => {
-		return range(xValues.length - 1, -1, -Math.max(interval, 1))
-			.map((i) => xValues[i]!)
+	const labelsCount = chartWidth
+		? Math.max(Math.floor(chartWidth / LABEL_WIDTH), 2)
+		: undefined;
+
+	const visibleXValues = useMemo(() => {
+		const { sinceOffset, untilOffset } = xZoom;
+		return xValues.slice(sinceOffset, untilOffset || undefined);
+	}, [xValues, xZoom]);
+
+	const gridXValues = useMemo(() => {
+		if (!labelsCount) {
+			return undefined;
+		}
+		const xLength = visibleXValues.length;
+		const interval = Math.ceil((xLength - 1) / (labelsCount - 1));
+		return range(xLength - 1, -1, -Math.max(interval, 1))
+			.map((i) => visibleXValues[i]!)
 			.map(toDate);
-	}, [xValues, xValues.length, interval]);
+	}, [visibleXValues, labelsCount]);
 
-	return {
-		axisBottom: { ...DEFAULT_CONFIGS.axisBottom, tickValues },
-		gridXValues: tickValues,
-	};
+	const axisBottom = useMemo(() => {
+		const minX = visibleXValues[0]!;
+		const maxX = visibleXValues.at(-1)!;
+		return {
+			...DEFAULT_CONFIGS.axisBottom,
+			min: toDate(minX),
+			max: toDate(maxX),
+			tickValues: gridXValues,
+		};
+	}, [visibleXValues, gridXValues]);
+
+	return { axisBottom, gridXValues };
 }
 
 const LABEL_HEIGHT = 32; // estimate based on current styles
 const NICE_INTERVALS = [
 	1, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000,
 ] as const;
-function useVerticalScale(configs: ChartProps, chartHeight: number) {
-	const margin = { ...DEFAULT_CONFIGS.margin, ...configs.margin };
-	const availableHeight = chartHeight - margin.top - margin.bottom;
-	const labelsCount = Math.min(
-		Math.max(Math.floor(availableHeight / LABEL_HEIGHT), 2),
-		12,
-	);
+function useVerticalScale(configs: ChartProps) {
+	const { area, ranked } = useChart();
+	const { chartHeight, yRange, yZoom } = useChartZoom();
 
-	const { min, max } = useMinMax();
-	const interval = Math.ceil((max - min) / (labelsCount - 1));
+	const labelsCount = chartHeight
+		? Math.min(Math.max(Math.floor(chartHeight / LABEL_HEIGHT), 2), 12)
+		: undefined;
+
+	const min = yRange.min + yZoom.minOffset;
+	const max = yRange.max - yZoom.maxOffset;
+
+	const interval = labelsCount
+		? Math.ceil((max - min) / (labelsCount - 1))
+		: undefined;
+
 	const niceInterval = useMemo(() => {
-		for (const i of NICE_INTERVALS) {
-			if (interval <= i) {
-				return i;
+		if (interval) {
+			for (const i of NICE_INTERVALS) {
+				if (interval <= i) {
+					return i;
+				}
 			}
 		}
 		return interval;
 	}, [interval]);
-	const tickValues = useMemo(() => {
+
+	const gridYValues = useMemo(() => {
+		if (!interval || !niceInterval) {
+			return undefined;
+		}
+
 		const values = range(
 			niceInterval * Math.ceil(min / niceInterval),
 			niceInterval * Math.floor(max / niceInterval) + 1,
@@ -269,88 +222,22 @@ function useVerticalScale(configs: ChartProps, chartHeight: number) {
 		];
 	}, [min, max, interval, niceInterval]);
 
-	const { area, ranked } = useChart();
 	const reverse = !area && ranked;
+	const yScale = useMemo(
+		() => ({ ...DEFAULT_CONFIGS.yScale, min, max, reverse }),
+		[min, max, reverse],
+	);
 
-	return {
-		yScale: { ...DEFAULT_CONFIGS.yScale, min, max, reverse },
-		axisLeft: { ...DEFAULT_CONFIGS.axisLeft, ...configs.axisLeft, tickValues },
-		gridYValues: tickValues,
-	};
-}
+	const { legend, legendOffset } = configs.axisLeft ?? {};
+	const axisLeft = useMemo(
+		() => ({
+			...DEFAULT_CONFIGS.axisLeft,
+			legend,
+			legendOffset,
+			tickValues: gridYValues,
+		}),
+		[legend, legendOffset, gridYValues],
+	);
 
-function useMinMax() {
-	const { chartData, cumulative, ranked, area } = useChart();
-
-	return useMemo(() => {
-		if (!chartData?.length) {
-			return { min: Infinity, max: 0 };
-		}
-
-		if (cumulative && (!ranked || area)) {
-			const min = (() => {
-				const { data } = chartData[chartData.length - 1]!;
-				for (let i = 0; i < data.length; ++i) {
-					const { y, value } = data[i]!;
-					if (y != null) {
-						return area ? y - value : y;
-					}
-				}
-				return Infinity;
-			})();
-			const max = (() => {
-				const { data } = chartData[0]!;
-				for (let i = data.length; i--; ) {
-					const { y } = data[i]!;
-					if (y != null) {
-						return y;
-					}
-				}
-				return 0;
-			})();
-			return { min, max };
-		}
-
-		if (area && !ranked) {
-			const min = chartData[chartData.length - 1]!.data.reduce(
-				(best, { y: yMax, value }) => {
-					if (yMax != null) {
-						const y = yMax - value;
-						if (y < best) {
-							return y;
-						}
-					}
-					return best;
-				},
-				Infinity,
-			);
-			const max = chartData[0]!.data.reduce((best, { y }) => {
-				if (y != null) {
-					if (y > best) {
-						return y;
-					}
-				}
-				return best;
-			}, 0);
-			return { min, max };
-		}
-
-		return chartData
-			.flatMap((s) => s.data)
-			.reduce(
-				(best, { y: yMax, value }) => {
-					if (yMax != null) {
-						const yMin = area ? yMax - value : yMax;
-						if (yMin < best.min) {
-							best.min = yMin;
-						}
-						if (yMax > best.max) {
-							best.max = yMax;
-						}
-					}
-					return best;
-				},
-				{ min: Infinity, max: 0 },
-			);
-	}, [chartData, area, ranked, cumulative]);
+	return { yScale, axisLeft, gridYValues };
 }

@@ -1,24 +1,59 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { isEqual } from "es-toolkit";
-import type { MouseEvent } from "react";
+import { type MouseEvent, useEffect } from "react";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
 import type { ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
+import { useChartZoom } from "../zoomContext";
 
 export type InteractivePoint = { x: Date; seriesId: string };
 type Props = LineCustomSvgLayerProps<ChartSeries>;
 
 export const Interaction = (props: Props) => (
-	<rect
-		width={props.width}
-		height={props.height}
-		opacity={0}
-		{...useHover(props)}
-	/>
+	<g data-interaction-layer>
+		<rect
+			width={props.innerWidth}
+			height={props.innerHeight}
+			opacity={0}
+			{...useHover(props)}
+		/>
+		<ClipPath {...props} />
+	</g>
 );
 
-function useHover({ width, height, series, yScale }: Props) {
+function ClipPath({ innerWidth, innerHeight }: Props) {
+	const { setChartHeight, setChartWidth, xZoom, yZoom, clipPathId } =
+		useChartZoom();
+
+	useEffect(() => setChartHeight(innerHeight), [setChartHeight, innerHeight]);
+	useEffect(() => setChartWidth(innerWidth), [setChartWidth, innerWidth]);
+
+	const isZoomed =
+		xZoom.sinceOffset ||
+		xZoom.untilOffset ||
+		yZoom.minOffset ||
+		yZoom.maxOffset;
+	if (!isZoomed) {
+		return;
+	}
+
+	const padding = 8; // space for lines box-shadow and points
+	return (
+		<defs>
+			<clipPath id={clipPathId}>
+				<rect
+					x={-padding}
+					y={-padding}
+					width={innerWidth + 2 * padding}
+					height={innerHeight + 2 * padding}
+				/>
+			</clipPath>
+		</defs>
+	);
+}
+
+function useHover({ innerWidth, innerHeight, series, yScale }: Props) {
 	const { isGrabbing } = useGrab();
 	const { isResizing } = useResize();
 	const { setActiveSeries, setHoveredPoint, area } = useChart();
@@ -61,7 +96,7 @@ function useHover({ width, height, series, yScale }: Props) {
 			.filter(({ data }) => data.y)
 			.map(({ data, position }) => ({ data, position, seriesId })),
 	);
-	const proximityThreshold = (height + width) / 20;
+	const proximityThreshold = (innerHeight + innerWidth) / 20;
 	const getClosestPoint = (mouse: { x: number; y: number }) => {
 		type Accumulator = { dist: number; point?: InteractivePoint };
 		const { dist, point } = allPoints.reduce<Accumulator>(

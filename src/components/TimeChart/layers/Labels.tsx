@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
+import { useChartZoom } from "../zoomContext";
 
 const cx = classNames.bind(styles);
 
@@ -15,7 +16,7 @@ export function Labels({
 	const getYPosition = useYPosition(series, yScale);
 
 	return (
-		<g>
+		<g data-labels-layer>
 			{series.map(({ id, data }, seriesIndex) => {
 				return data.map(({ position, data }, pointIndex) => {
 					if (shouldShowLabel(id, pointIndex, data)) {
@@ -60,7 +61,6 @@ function Label({ value, rank, ...xy }: LabelProps) {
 
 function useVisibility() {
 	const {
-		xValues,
 		cumulative,
 		area,
 		chartData,
@@ -69,8 +69,12 @@ function useVisibility() {
 		isPointHovered,
 		PointTooltip,
 	} = useChart();
+	const {
+		xValues,
+		xZoom: { sinceOffset, untilOffset },
+	} = useChartZoom();
 
-	const lastIndex = useMemo(() => {
+	const lastIndexMap = useMemo(() => {
 		if (!cumulative || area || !chartData) {
 			return null;
 		}
@@ -86,10 +90,11 @@ function useVisibility() {
 	}, [chartData, cumulative, area]);
 
 	const labelsCount = cumulative ? 10 : 20;
-	const labelInterval = Math.max(1, Math.ceil(xValues.length / labelsCount));
+	const xLength = xValues.slice(sinceOffset, untilOffset || undefined).length;
+	const labelInterval = Math.max(1, Math.ceil(xLength / labelsCount));
 	const isLabelIndex = (i: number, seriesId: string) =>
 		// reversed to show label at the end
-		(-i + (lastIndex?.[seriesId] ?? xValues.length - 1)) % labelInterval === 0;
+		(-i + (lastIndexMap?.[seriesId] ?? xLength - 1)) % labelInterval === 0;
 
 	return (seriesId: string, index: number, { x, value }: ChartPoint) =>
 		value &&

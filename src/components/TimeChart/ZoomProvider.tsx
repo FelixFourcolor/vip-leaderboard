@@ -1,0 +1,116 @@
+import { type ReactNode, useId, useMemo, useState } from "react";
+import { monthsInRange, type YyyyMm } from "@/utils/time";
+import { useChart } from "./chartContext";
+import { ZoomContext } from "./zoomContext";
+
+type Props = {
+	since: YyyyMm;
+	until: YyyyMm;
+	children?: ReactNode;
+};
+export function ZoomProvider({ since, until, children }: Props) {
+	const [chartHeight, setChartHeight] = useState<number>();
+	const [chartWidth, setChartWidth] = useState<number>();
+
+	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
+	const yRange = useYRange();
+
+	const [xZoom, setXZoom] = useState({ sinceOffset: 0, untilOffset: 0 });
+	const [yZoom, setYZoom] = useState({ minOffset: 0, maxOffset: 0 });
+
+	const clipPathId = useId();
+
+	return (
+		<ZoomContext
+			value={{
+				chartHeight,
+				setChartHeight,
+				chartWidth,
+				setChartWidth,
+				xZoom,
+				setXZoom,
+				yZoom,
+				setYZoom,
+				xValues,
+				yRange,
+				clipPathId,
+			}}
+		>
+			{children}
+		</ZoomContext>
+	);
+}
+
+function useYRange() {
+	const { chartData, cumulative, ranked, area } = useChart();
+
+	return useMemo(() => {
+		if (!chartData?.length) {
+			return { min: Infinity, max: 0 };
+		}
+
+		// shortcut when data is already sorted on the x-axis
+		if (cumulative && (!ranked || area)) {
+			const min = (() => {
+				if (area) {
+					const { data } = chartData[chartData.length - 1]!;
+					if (!data[0]) {
+						return Infinity;
+					}
+					const { y, value } = data[0];
+					return (y ?? value) - value;
+				}
+				return Math.min(
+					...chartData.map(({ data }) => {
+						for (const { y } of data) {
+							if (y != null) {
+								return y;
+							}
+						}
+						return Infinity;
+					}),
+				);
+			})();
+			const max = (() => {
+				const { data } = chartData[0]!;
+				for (let i = data.length; i--; ) {
+					const { y } = data[i]!;
+					if (y != null) {
+						return y;
+					}
+				}
+				return 0;
+			})();
+			return { min, max };
+		}
+
+		// when data is already sorted on the y-axis
+		if (area && !ranked) {
+			const min = Math.min(
+				...chartData[chartData.length - 1]!.data.map(({ y, value }) =>
+					y == null ? Infinity : y - value,
+				),
+			);
+			const max = Math.max(...chartData[0]!.data.map(({ y }) => y ?? 0), 0);
+			return { min, max };
+		}
+
+		return chartData
+			.flatMap((s) => s.data)
+			.reduce(
+				({ min, max }, { y, value }) => {
+					if (y != null) {
+						const yBottom = area ? y - value : y;
+						if (yBottom < min) {
+							min = yBottom;
+						}
+						if (y > max) {
+							max = y;
+						}
+					}
+					return { min, max };
+				},
+				{ min: Infinity, max: 0 },
+			);
+	}, [chartData, area, ranked, cumulative]);
+}
