@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { Maybe, State } from "@/utils/types";
 
-type GlobalContextValue = State<"activeMenuId", Maybe<string>>;
+type GlobalContextValue = State<{ activeMenuId: Maybe<string> }>;
 
 export const GlobalMenuContext = createContext<GlobalContextValue | null>(null);
 

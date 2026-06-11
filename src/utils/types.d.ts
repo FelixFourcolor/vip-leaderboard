@@ -3,14 +3,15 @@ import type { Dispatch } from "react";
 export type Maybe<T> = T | undefined;
 
 export type State<
-	Name extends string,
-	Value,
-	option extends { action: boolean } = { action: true },
+	S extends Record<string, unknown>,
+	opt extends { action: boolean } = { action: true },
 > = {
-	[K in `set${Capitalize<Name>}`]: Dispatch<
-		Value | (option["action"] extends true ? (prev: Value) => Value : never)
+	[K in keyof S]: S[K];
+} & {
+	[K in keyof S as `set${Capitalize<K>}`]: Dispatch<
+		S[K] | (opt["action"] extends true ? (prev: S[K]) => S[K] : never)
 	>;
-} & { [K in Name]: Value };
+};
 
 export type Pair<T> = [T, T];
 

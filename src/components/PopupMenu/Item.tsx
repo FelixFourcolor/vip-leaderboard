@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 type ItemProps = EitherOr<
 	{ onClick: () => void; stayOpenOnClick?: boolean },
-	State<"selected", boolean, { action: false }>
+	State<{ selected: boolean }, { action: false }>
 > & {
 	disabled?: boolean;
 	callbackDelay?: number | false;

@@ -8,8 +8,10 @@ import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 
 interface ChartContextValue<S extends TimeSeries = TimeSeries>
-	extends State<"activeSeries", Maybe<string>>,
-		State<"hoveredPoint", Maybe<InteractivePoint>> {
+	extends State<{
+		activeSeries: Maybe<string>;
+		hoveredPoint: Maybe<InteractivePoint>;
+	}> {
 	seriesData: Maybe<readonly S[]>;
 	chartData: Maybe<readonly ChartSeries[]>;
 	setVisibleIdx: (range: [from: number, to: number]) => void;
