@@ -2,7 +2,8 @@
 	display: grid;
 
 	[data-areas-layer],
-	[data-lines-layer] {
+	[data-lines-layer],
+	[data-points-layer] {
 		clip-path: url(#chart-clip-path);
 	}
 

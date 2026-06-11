@@ -165,8 +165,10 @@ function useSize(configs: ChartProps) {
 	const [rect, setRect] = useState<SVGRectElement | null>(null);
 
 	const margin = { ...DEFAULT_CONFIGS.margin, ...configs.margin };
-	const innerWidth = width - margin.left - margin.right;
-	const innerHeight = height - margin.top - margin.bottom;
+	const padding = 8; // for line box-shadows and points
+
+	const innerWidth = width - margin.left - margin.right + 2 * padding;
+	const innerHeight = height - margin.top - margin.bottom + 2 * padding;
 
 	useEffect(() => {
 		rect?.setAttribute("width", String(innerWidth));
@@ -201,8 +203,8 @@ function useSize(configs: ChartProps) {
 			let rect = clipPath.querySelector("rect");
 			if (!rect) {
 				rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-				rect.setAttribute("x", "0");
-				rect.setAttribute("y", "0");
+				rect.setAttribute("x", String(-padding));
+				rect.setAttribute("y", String(-padding));
 				clipPath.appendChild(rect);
 			}
 			return rect;

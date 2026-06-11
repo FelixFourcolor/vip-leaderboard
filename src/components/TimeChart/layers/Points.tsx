@@ -18,7 +18,7 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 	);
 
 	return (
-		<g>
+		<g data-points-layer>
 			{series.map(({ id, data, color }) =>
 				data
 					.filter(({ data }) => data.y !== null)
