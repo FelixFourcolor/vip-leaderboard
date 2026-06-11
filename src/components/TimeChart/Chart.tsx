@@ -43,16 +43,17 @@ export function Chart({ className, ...configs }: ChartProps) {
 	const { renderReady } = useChart();
 	const data = useDataOrdering();
 	const colors = useColors();
-	const { ref, width, height } = useChartSize();
+	const { chartRef, svgRef, width, height, margin } = useSize(configs);
 	const { gridXValues, axisBottom } = useHorizontalScale(configs, width);
 	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs, height);
 
 	return (
-		<div ref={ref} className={cx("chart", className)}>
+		<div ref={chartRef} className={cx("chart", className)}>
 			{renderReady && data ? (
 				<ResponsiveLine
 					{...DEFAULT_CONFIGS}
-					margin={{ ...DEFAULT_CONFIGS.margin, ...configs.margin }}
+					ref={svgRef}
+					margin={margin}
 					data={data}
 					colors={colors}
 					gridXValues={gridXValues}
@@ -139,30 +140,76 @@ function useColors() {
 	return (series: ChartSeries) => colorMapping[series.id]!;
 }
 
-function useChartSize() {
-	const ref = useRef<HTMLDivElement | null>(null);
-	const [width, setChartWidth] = useState(0);
-	const [height, setChartHeight] = useState(0);
+function useSize(configs: ChartProps) {
+	const [width, setWidth] = useState(0);
+	const [height, setHeight] = useState(0);
+	const chartRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		const chart = ref.current;
+		const chart = chartRef.current;
 		if (!chart) {
 			return;
 		}
-
 		const observer = new ResizeObserver(([entry]) => {
 			if (entry) {
 				const { width, height } = entry.contentRect;
-				setChartWidth(width);
-				setChartHeight(height);
+				setWidth(width);
+				setHeight(height);
 			}
 		});
-
 		observer.observe(chart);
 		return () => observer.disconnect();
 	}, []);
 
-	return { ref, width, height };
+	const [svg, svgRef] = useState<SVGSVGElement | null>();
+	const [rect, setRect] = useState<SVGRectElement | null>(null);
+
+	const margin = { ...DEFAULT_CONFIGS.margin, ...configs.margin };
+	const innerWidth = width - margin.left - margin.right;
+	const innerHeight = height - margin.top - margin.bottom;
+
+	useEffect(() => {
+		rect?.setAttribute("width", String(innerWidth));
+		rect?.setAttribute("height", String(innerHeight));
+	}, [rect, innerHeight, innerWidth]);
+
+	useEffect(() => {
+		if (!svg) {
+			return;
+		}
+		setRect((alreadySet) => {
+			if (alreadySet) {
+				return alreadySet;
+			}
+
+			let defs = svg.querySelector("defs");
+			if (!defs) {
+				defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+				svg.prepend(defs);
+			}
+
+			let clipPath = defs.querySelector("clipPath");
+			if (!clipPath) {
+				clipPath = document.createElementNS(
+					"http://www.w3.org/2000/svg",
+					"clipPath",
+				);
+				clipPath.id = "chart-clip-path";
+				defs.appendChild(clipPath);
+			}
+
+			let rect = clipPath.querySelector("rect");
+			if (!rect) {
+				rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+				rect.setAttribute("x", "0");
+				rect.setAttribute("y", "0");
+				clipPath.appendChild(rect);
+			}
+			return rect;
+		});
+	}, [svg]);
+
+	return { chartRef, svgRef, width, height, margin };
 }
 
 const LABEL_WIDTH = 64; // estimate based on current styles
@@ -225,7 +272,7 @@ function useVerticalScale(configs: ChartProps, chartHeight: number) {
 
 	return {
 		yScale: { ...DEFAULT_CONFIGS.yScale, min, max, reverse },
-		axisLeft: { ...configs.axisLeft, tickValues },
+		axisLeft: { ...DEFAULT_CONFIGS.axisLeft, ...configs.axisLeft, tickValues },
 		gridYValues: tickValues,
 	};
 }

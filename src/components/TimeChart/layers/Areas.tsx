@@ -25,7 +25,7 @@ export function Areas({
 		.curve(curveFromProp(curve));
 
 	return (
-		<g>
+		<g data-areas-layer>
 			{series.map(({ id, data, color }) => (
 				<Area
 					key={id}

@@ -14,7 +14,7 @@ export function Lines({
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const { ranked, area } = useChart();
 	return (
-		<g>
+		<g data-lines-layer>
 			{series.map(({ id, data, color }, seriesIndex) => (
 				<Fragment key={id}>
 					<Line
