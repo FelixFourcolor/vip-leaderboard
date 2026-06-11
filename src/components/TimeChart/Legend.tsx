@@ -14,7 +14,7 @@ import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
 import type { AtLeastOneOf, Maybe } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
-import { useChart } from "./context";
+import { useChart } from "./chartContext";
 import styles from "./TimeChart.module.css";
 
 const cx = classNames.bind(styles);

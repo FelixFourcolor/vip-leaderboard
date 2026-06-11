@@ -13,8 +13,8 @@ import { fromEntries, keys } from "@/utils/object";
 import { monthsInRange, toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "./Chart";
+import { ChartContext } from "./chartContext";
 import { category10 } from "./colors";
-import { ChartContext } from "./context";
 import type { InteractivePoint } from "./layers/Interaction";
 import type { PointTooltipProps } from "./layers/Points";
 

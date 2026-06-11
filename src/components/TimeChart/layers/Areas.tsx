@@ -3,7 +3,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { area } from "d3-shape";
 import type { ChartSeries } from "../Chart";
-import { useChart } from "../context";
+import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);

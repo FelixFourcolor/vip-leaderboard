@@ -5,7 +5,7 @@ import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
 import { toYyyyMm } from "@/utils/time";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import type { TimePoint, TimeSeries } from "../ChartWrapper";
-import { useChart } from "../context";
+import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);

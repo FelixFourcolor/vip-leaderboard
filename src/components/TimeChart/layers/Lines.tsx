@@ -2,7 +2,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { Fragment } from "react/jsx-runtime";
 import type { ChartSeries } from "../Chart";
-import { useChart } from "../context";
+import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
 
 const cx = classNames.bind(styles);

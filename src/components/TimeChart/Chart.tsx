@@ -11,7 +11,7 @@ import {
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { toDate } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
-import { useChart } from "./context";
+import { useChart } from "./chartContext";
 import { Areas } from "./layers/Areas";
 import { Interaction } from "./layers/Interaction";
 import { Labels } from "./layers/Labels";

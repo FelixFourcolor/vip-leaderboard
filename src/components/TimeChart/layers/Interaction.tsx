@@ -4,7 +4,7 @@ import type { MouseEvent } from "react";
 import { useGrab } from "@/components/RangeSlider";
 import { useResize } from "@/components/Resizer";
 import type { ChartSeries } from "../Chart";
-import { useChart } from "../context";
+import { useChart } from "../chartContext";
 
 export type InteractivePoint = { x: Date; seriesId: string };
 type Props = LineCustomSvgLayerProps<ChartSeries>;

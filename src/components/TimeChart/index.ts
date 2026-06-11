@@ -2,7 +2,7 @@ export type {
 	TimeSeries,
 	TransformOptions,
 } from "./ChartWrapper";
-export { useChart } from "./context";
+export { useChart } from "./chartContext";
 export type { LegendEntryProps } from "./Legend";
 export type { PointTooltipProps } from "./layers/Points.tsx";
 
