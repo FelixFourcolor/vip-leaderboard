@@ -66,7 +66,7 @@ export function ChartPage() {
 						<fieldset className={cx("chart")}>
 							<legend>chart</legend>
 							<TimeChart.Chart
-								margin={{ top: 22, right: 34, bottom: 30, left: 70 }}
+								margin={{ top: 18, right: 34, bottom: 30, left: 70 }}
 								axisLeft={{ legendOffset: -54, legend }}
 							/>
 						</fieldset>

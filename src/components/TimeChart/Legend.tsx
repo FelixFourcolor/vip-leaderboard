@@ -2,8 +2,6 @@ import classNames from "classnames/bind";
 import {
 	type ComponentProps,
 	type FC,
-	type UIEventHandler,
-	useCallback,
 	useEffect,
 	useLayoutEffect,
 	useRef,
@@ -119,24 +117,19 @@ export function Legend<S extends TimeSeries>({
 		return () => clearTimeout(timeoutId);
 	}, [seriesData, entryHeight, gap]);
 
-	const onScroll = useCallback<UIEventHandler>(
-		({ currentTarget: { scrollTop } }) => {
-			if (ignoreScroll.current || !entryHeight) {
-				return;
-			}
-			const index = calculateIdx(scrollTop, { entryHeight, gap });
-			prevFromIdx.current = index;
-			setVisibleFrom(index);
-		},
-		[entryHeight, gap],
-	);
-
 	const isEntryFocusedRef = useRef(false);
 	return (
 		<ol
 			style={{ gap, maxHeight }}
 			ref={legendRef}
-			onScroll={onScroll}
+			onScroll={({ currentTarget: { scrollTop } }) => {
+				if (ignoreScroll.current || !entryHeight) {
+					return;
+				}
+				const index = calculateIdx(scrollTop, { entryHeight, gap });
+				prevFromIdx.current = index;
+				setVisibleFrom(index);
+			}}
 			className={cx("legend", className)}
 			onKeyDown={(e) => {
 				if (
