@@ -72,9 +72,9 @@ const DEFAULT_CONFIGS = {
 	xFormat: "time:%Y-%m",
 	xScale: { type: "time" },
 	yScale: { type: "linear", nice: false },
-	axisBottom: { format: "%Y-%m", tickSize: 0 },
-	axisLeft: { tickSize: 0 },
-	margin: { top: 28, right: 28, bottom: 28, left: 28 },
+	axisBottom: { format: "%Y-%m", tickSize: 8 },
+	axisLeft: { tickSize: 8 },
+	margin: { top: 32, right: 32, bottom: 32, left: 32 },
 	layers: ["grid", "axes", Areas, Lines, Points, Labels, Interaction],
 	theme: {
 		background: "var(--bg-secondary)",
