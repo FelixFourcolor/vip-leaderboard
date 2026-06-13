@@ -163,8 +163,10 @@ function useHorizontalScale() {
 	}, [visibleXValues, labelsCount]);
 
 	const xScale = useMemo(() => {
-		const min = toDate(visibleXValues[0]!);
-		const max = toDate(visibleXValues.at(-1)!);
+		const since = visibleXValues[0];
+		const min = since ? toDate(since) : undefined;
+		const until = visibleXValues.at(-1)!;
+		const max = until ? toDate(until) : undefined;
 		return { ...DEFAULT_CONFIGS.xScale, min, max };
 	}, [visibleXValues]);
 

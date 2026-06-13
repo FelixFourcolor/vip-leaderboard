@@ -43,7 +43,11 @@ function dbBundler(): Plugin {
 
 			const db = new DatabaseSync(res("public/db.sqlite"));
 
-			const { date } = db
+			const { date: firstTimestamp } = db
+				.prepare("SELECT date FROM activity ORDER BY date ASC LIMIT 1")
+				.get() as { date: number };
+
+			const { date: lastTimestamp } = db
 				.prepare("SELECT date FROM activity ORDER BY date DESC LIMIT 1")
 				.get() as { date: number };
 
@@ -59,7 +63,8 @@ function dbBundler(): Plugin {
 
 			db.close();
 
-			return `export const LAST_UPDATE = new Date(${date * 1000});
+			return `export const FIRST_DATE = new Date(${firstTimestamp * 1000})
+					export const LAST_UPDATE = new Date(${lastTimestamp * 1000});
 					export const ZACK = { avatarUrl: "${avatarUrl}", color: "${color}" };`;
 		},
 	};

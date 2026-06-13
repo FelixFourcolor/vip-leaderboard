@@ -23,16 +23,10 @@ export const Interaction = (props: Props) => (
 );
 
 function ClipPath({ innerWidth, innerHeight }: Props) {
-	const { setChartHeight, setChartWidth, xZoom, yZoom, clipPathId } =
-		useChartZoom();
+	const { setChartHeight, setChartWidth, clipPathId } = useChartZoom();
 
 	useEffect(() => setChartHeight(innerHeight), [setChartHeight, innerHeight]);
 	useEffect(() => setChartWidth(innerWidth), [setChartWidth, innerWidth]);
-
-	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
-	if (!isZoomed) {
-		return;
-	}
 
 	const padding = 8; // space for lines box-shadow and points
 	return (

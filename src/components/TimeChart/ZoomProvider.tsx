@@ -13,11 +13,11 @@ export function ZoomProvider({ since, until, children }: Props) {
 	const [chartHeight, setChartHeight] = useState<number>();
 	const [chartWidth, setChartWidth] = useState<number>();
 
-	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
-	const yRange = useYRange();
-
 	const [xZoom, setXZoom] = useState<Readonly<Pair<number>>>([0, 0]);
 	const [yZoom, setYZoom] = useState<Readonly<Pair<number>>>([0, 0]);
+
+	const xValues = useXValues(since, until);
+	const yRange = useYRange();
 
 	const clipPathId = useId();
 
@@ -40,6 +40,40 @@ export function ZoomProvider({ since, until, children }: Props) {
 			{children}
 		</ZoomContext>
 	);
+}
+
+function useXValues(since: YyyyMm, until: YyyyMm) {
+	const { chartData, area } = useChart();
+
+	return useMemo(() => {
+		const xValues = monthsInRange(since, until);
+		if (!chartData?.length) {
+			return xValues;
+		}
+		const sinceIndex = (() => {
+			for (let i = 0; i < xValues.length; ++i) {
+				for (const { data } of chartData) {
+					const point = data[i]!;
+					if (area ? point.value : point.y) {
+						return i;
+					}
+				}
+			}
+			return 0;
+		})();
+		const untilIndex = (() => {
+			for (let i = xValues.length; i--; ) {
+				for (const { data } of chartData) {
+					const point = data[i]!;
+					if (area ? point.value : point.y) {
+						return i;
+					}
+				}
+			}
+			return xValues.length - 1;
+		})();
+		return xValues.slice(sinceIndex, untilIndex + 1);
+	}, [chartData, area, since, until]);
 }
 
 function useYRange() {
