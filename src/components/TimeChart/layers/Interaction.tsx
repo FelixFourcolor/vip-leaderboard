@@ -86,12 +86,16 @@ function useHover({ innerWidth, innerHeight, series, yScale }: Props) {
 			.filter(({ data }) => data.y)
 			.map(({ data, position }) => ({ data, position, seriesId })),
 	);
-	const proximityThreshold = (innerHeight + innerWidth) / 20;
+	const proximityThreshold = (innerHeight + innerWidth) / 16;
 	const getClosestPoint = (mouse: { x: number; y: number }) => {
 		type Accumulator = { dist: number; point?: InteractivePoint };
 		const { dist, point } = allPoints.reduce<Accumulator>(
 			(best, { position, data, seriesId }) => {
-				const dist = Math.hypot(position.x - mouse.x, position.y - mouse.y);
+				const dist = Math.hypot(
+					// prioritize points closwer on the x-axis
+					2 * (position.x - mouse.x),
+					position.y - mouse.y,
+				);
 				return dist < best.dist
 					? { point: { seriesId, x: data.x }, dist }
 					: best;
