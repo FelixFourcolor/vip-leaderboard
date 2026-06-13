@@ -1,5 +1,6 @@
 import { type ReactNode, useId, useMemo, useState } from "react";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
+import type { Pair } from "@/utils/types";
 import { useChart } from "./chartContext";
 import { ZoomContext } from "./zoomContext";
 
@@ -15,8 +16,8 @@ export function ZoomProvider({ since, until, children }: Props) {
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const yRange = useYRange();
 
-	const [xZoom, setXZoom] = useState({ sinceOffset: 0, untilOffset: 0 });
-	const [yZoom, setYZoom] = useState({ minOffset: 0, maxOffset: 0 });
+	const [xZoom, setXZoom] = useState<Readonly<Pair<number>>>([0, 0]);
+	const [yZoom, setYZoom] = useState<Readonly<Pair<number>>>([0, 0]);
 
 	const clipPathId = useId();
 

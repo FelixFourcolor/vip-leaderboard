@@ -40,7 +40,7 @@ export function Chart({ className, ...configs }: ChartProps) {
 	const data = useDataOrdering();
 	const colors = useColors();
 	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
-	const { gridXValues, axisBottom } = useHorizontalScale();
+	const { xScale, axisBottom, gridXValues } = useHorizontalScale();
 
 	return (
 		<div
@@ -55,6 +55,7 @@ export function Chart({ className, ...configs }: ChartProps) {
 					colors={colors}
 					gridXValues={gridXValues}
 					axisBottom={axisBottom}
+					xScale={xScale}
 					yScale={yScale}
 					axisLeft={axisLeft}
 					gridYValues={gridYValues}
@@ -146,8 +147,8 @@ function useHorizontalScale() {
 		: undefined;
 
 	const visibleXValues = useMemo(() => {
-		const { sinceOffset, untilOffset } = xZoom;
-		return xValues.slice(sinceOffset, untilOffset || undefined);
+		const [startOffset, endOffset] = xZoom;
+		return xValues.slice(startOffset, -endOffset || undefined);
 	}, [xValues, xZoom]);
 
 	const gridXValues = useMemo(() => {
@@ -161,18 +162,17 @@ function useHorizontalScale() {
 			.map(toDate);
 	}, [visibleXValues, labelsCount]);
 
-	const axisBottom = useMemo(() => {
-		const minX = visibleXValues[0]!;
-		const maxX = visibleXValues.at(-1)!;
-		return {
-			...DEFAULT_CONFIGS.axisBottom,
-			min: toDate(minX),
-			max: toDate(maxX),
-			tickValues: gridXValues,
-		};
-	}, [visibleXValues, gridXValues]);
+	const xScale = useMemo(() => {
+		const min = toDate(visibleXValues[0]!);
+		const max = toDate(visibleXValues.at(-1)!);
+		return { ...DEFAULT_CONFIGS.xScale, min, max };
+	}, [visibleXValues]);
 
-	return { axisBottom, gridXValues };
+	const axisBottom = useMemo(() => {
+		return { ...DEFAULT_CONFIGS.axisBottom, tickValues: gridXValues };
+	}, [gridXValues]);
+
+	return { axisBottom, xScale, gridXValues };
 }
 
 const LABEL_HEIGHT = 32; // estimate based on current styles
@@ -187,8 +187,9 @@ function useVerticalScale(configs: ChartProps) {
 		? Math.min(Math.max(Math.floor(chartHeight / LABEL_HEIGHT), 2), 12)
 		: undefined;
 
-	const min = yRange.min + yZoom.minOffset;
-	const max = yRange.max - yZoom.maxOffset;
+	const [startOffset, endOffset] = yZoom;
+	const min = yRange.min + startOffset;
+	const max = yRange.max - endOffset;
 
 	const interval = labelsCount
 		? Math.ceil((max - min) / (labelsCount - 1))

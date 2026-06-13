@@ -29,11 +29,7 @@ function ClipPath({ innerWidth, innerHeight }: Props) {
 	useEffect(() => setChartHeight(innerHeight), [setChartHeight, innerHeight]);
 	useEffect(() => setChartWidth(innerWidth), [setChartWidth, innerWidth]);
 
-	const isZoomed =
-		xZoom.sinceOffset ||
-		xZoom.untilOffset ||
-		yZoom.minOffset ||
-		yZoom.maxOffset;
+	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
 	if (!isZoomed) {
 		return;
 	}

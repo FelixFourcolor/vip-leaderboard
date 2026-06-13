@@ -4,13 +4,13 @@ import type { Maybe, State } from "@/utils/types";
 
 interface ZoomContextValue
 	extends State<{
-		xZoom: { sinceOffset: number; untilOffset: number };
-		yZoom: { minOffset: number; maxOffset: number };
+		xZoom: readonly [startOffset: number, endOffset: number];
+		yZoom: readonly [startOffset: number, endOffset: number];
 		chartHeight: Maybe<number>;
 		chartWidth: Maybe<number>;
 	}> {
 	xValues: readonly YyyyMm[];
-	yRange: { min: number; max: number };
+	yRange: Readonly<{ min: number; max: number }>;
 	clipPathId: string;
 }
 
