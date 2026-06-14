@@ -1,6 +1,5 @@
 import classNames from "classnames/bind";
-import { type MouseEvent, useEffect, useRef } from "react";
-import { useResizePrivate } from "./Manager";
+import { useDrag } from "@/hooks/useDrag";
 import styles from "./Resizer.module.css";
 
 const cx = classNames.bind(styles);
@@ -16,29 +15,14 @@ export function Resizer({ side, onChange, className }: Props) {
 	const direction =
 		side === "right" || side === "bottom" ? "positive" : "negative";
 
-	const { isResizing, delta, onResize } = useResizePrivate();
-
-	const isResizingRef = useRef(false);
-	const onMouseDown = ({ clientX, clientY }: MouseEvent) => {
-		isResizingRef.current = true;
-		onResize(type, type === "column" ? clientX : clientY);
-	};
-	useEffect(() => {
-		if (!isResizing) {
-			isResizingRef.current = false;
-		}
-	}, [isResizing]);
-
-	useEffect(() => {
-		if (isResizingRef.current) {
-			const signedDelta = direction === "positive" ? delta : -delta;
-			onChange(signedDelta);
-		}
-	}, [delta, direction, onChange]);
+	const { isDragging, onMouseDown } = useDrag(`resize-${type}`, (delta) => {
+		const signedDelta = direction === "positive" ? delta : -delta;
+		onChange(signedDelta);
+	});
 
 	return (
 		<div
-			data-is-active={isResizingRef.current && isResizing != null}
+			data-is-active={isDragging}
 			onMouseDown={onMouseDown}
 			className={cx("resizer", type, className)}
 		>

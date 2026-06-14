@@ -8,8 +8,7 @@ import {
 	useState,
 } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { useGrab } from "@/components/RangeSlider";
-import { useResize } from "@/components/Resizer";
+import { useDrag } from "@/hooks/useDrag";
 import type { AtLeastOneOf, Maybe } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./chartContext";
@@ -36,8 +35,7 @@ export function Legend<S extends TimeSeries>({
 	entriesGap: { min: minGap = 0, max: maxGap } = { min: 0 },
 	className,
 }: Props<S>) {
-	const { isGrabbing } = useGrab();
-	const { isResizing } = useResize();
+	const { isDragging } = useDrag();
 	const { colors, seriesData, setActiveSeries, setVisibleIdx, renderReady } =
 		useChart<S>();
 
@@ -151,7 +149,7 @@ export function Legend<S extends TimeSeries>({
 						ref={i === 0 ? entryRef : undefined}
 						seriesColor={colors[i % colors.length]!}
 						onMouseEnter={() => {
-							if (!isResizing && !isGrabbing) {
+							if (!isDragging) {
 								setActiveSeries(series.id);
 							}
 						}}

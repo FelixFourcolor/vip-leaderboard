@@ -1,7 +1,7 @@
 import classNames from "classnames/bind";
-import type { ComponentProps } from "react";
+import { type ComponentProps, useEffect, useEffectEvent } from "react";
 import { getTrackBackground } from "react-range";
-import { useIsGrabbing } from "./Manager";
+import { useDrag } from "@/hooks/useDrag";
 import styles from "./RangeSlider.module.css";
 import { Thumb } from "./Thumb";
 
@@ -25,7 +25,9 @@ export function Track({
 	children,
 	...divProps
 }: TrackProps) {
-	useIsGrabbing(isDragged);
+	const { setIsDragging } = useDrag("grab");
+	const onDragChange = useEffectEvent(setIsDragging);
+	useEffect(() => onDragChange(isDragged), [isDragged]);
 
 	const [from, to] = value;
 

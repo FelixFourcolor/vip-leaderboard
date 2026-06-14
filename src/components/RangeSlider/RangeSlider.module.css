@@ -16,11 +16,8 @@
 		margin: 0 64px;
 	}
 
-	[data-is-grabbing="false"] & {
-		&,
-		.label {
-			cursor: grab !important;
-		}
+	:root:not([data-is-dragging="grab"]) :is(&, .label) {
+		cursor: grab !important;
 	}
 
 	.bar {

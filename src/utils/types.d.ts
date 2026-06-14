@@ -26,3 +26,5 @@ export type AtLeastOneOf<T extends object> = {
 export type OneOf<T extends object, K extends keyof T = keyof T> = K extends K
 	? Required<Pick<T, K>> & Partial<Record<Exclude<keyof T, K>, never>>
 	: never;
+
+export type XY = { x: number; y: number };

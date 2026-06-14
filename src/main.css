@@ -46,14 +46,13 @@
 		--weight-bold: 550;
 	}
 
-	&[data-is-grabbing="true"] * {
+	&[data-is-dragging="grab"] * {
 		cursor: grabbing !important;
 	}
-
-	&[data-is-resizing="column"] * {
+	&[data-is-dragging="resize-column"] * {
 		cursor: col-resize !important;
 	}
-	&[data-is-resizing="row"] * {
+	&[data-is-dragging="resize-row"] * {
 		cursor: row-resize !important;
 	}
 

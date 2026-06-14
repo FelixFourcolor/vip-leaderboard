@@ -1,3 +1,4 @@
+import "@/main.css";
 import {
 	createHashHistory,
 	createRouter,
@@ -5,11 +6,9 @@ import {
 } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { GrabManager } from "./components/RangeSlider";
-import { ResizeManager } from "./components/Resizer";
-import { routeTree } from "./routeTree.gen";
-import "@/main.css";
 import { PopupMenu } from "./components/PopupMenu";
+import { DragManager } from "./hooks/useDrag";
+import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
 	routeTree,
@@ -26,11 +25,9 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<PopupMenu.Manager>
-			<GrabManager>
-				<ResizeManager>
-					<RouterProvider router={router} />
-				</ResizeManager>
-			</GrabManager>
+			<DragManager>
+				<RouterProvider router={router} />
+			</DragManager>
 		</PopupMenu.Manager>
 	</StrictMode>,
 );

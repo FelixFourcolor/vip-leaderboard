@@ -1,8 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { isEqual } from "es-toolkit";
 import { type MouseEvent, useEffect } from "react";
-import { useGrab } from "@/components/RangeSlider";
-import { useResize } from "@/components/Resizer";
+import { useDrag } from "@/hooks/useDrag";
 import type { ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
 import { useChartZoom } from "../zoomContext";
@@ -44,8 +43,7 @@ function ClipPath({ innerWidth, innerHeight }: Props) {
 }
 
 function useHover({ innerWidth, innerHeight, series, yScale }: Props) {
-	const { isGrabbing } = useGrab();
-	const { isResizing } = useResize();
+	const { isDragging } = useDrag();
 	const { setActiveSeries, setHoveredPoint, area } = useChart();
 
 	const focus = (point: InteractivePoint) => {
@@ -108,7 +106,7 @@ function useHover({ innerWidth, innerHeight, series, yScale }: Props) {
 	};
 
 	const onMouseMove = ({ currentTarget, clientX, clientY }: MouseEvent) => {
-		if (isGrabbing || isResizing) {
+		if (isDragging) {
 			return;
 		}
 

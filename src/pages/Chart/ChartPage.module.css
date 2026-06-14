@@ -27,7 +27,7 @@ body:has(.chart-page) {
 			color: var(--text-secondary);
 		}
 
-		:root:not([data-is-resizing]) &:hover,
+		:root:not([data-is-dragging*="resize"]) &:hover,
 		&:focus-within {
 			border-color: var(--accent);
 			legend {
