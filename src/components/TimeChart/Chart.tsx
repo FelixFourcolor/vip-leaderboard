@@ -24,22 +24,17 @@ export type ChartPoint = {
 	rank?: number;
 };
 
-type NivoProps = ComponentProps<typeof ResponsiveLine<ChartSeries>>;
 type ChartProps = {
-	margin?: NivoProps["margin"];
-	axisLeft?: Pick<
-		NonNullable<NivoProps["axisLeft"]>,
-		"legendOffset" | "legend"
-	>;
+	title: string;
 	className?: string;
 };
 
-export function Chart({ className, ...configs }: ChartProps) {
+export function Chart({ title, className }: ChartProps) {
 	const { renderReady } = useChart();
 	const { clipPathId, isInteracting } = useChartZoom();
 	const data = useDataOrdering();
 	const colors = useColors();
-	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
+	const { yScale, axisLeft, gridYValues } = useVerticalScale(title);
 	const { xScale, axisBottom, gridXValues } = useHorizontalScale();
 
 	return (
@@ -50,7 +45,6 @@ export function Chart({ className, ...configs }: ChartProps) {
 			{renderReady && data ? (
 				<ResponsiveLine
 					{...DEFAULT_CONFIGS}
-					margin={{ ...DEFAULT_CONFIGS.margin, ...configs.margin }}
 					data={data}
 					colors={colors}
 					gridXValues={gridXValues}
@@ -74,8 +68,8 @@ const DEFAULT_CONFIGS = {
 	xScale: { type: "time" },
 	yScale: { type: "linear", nice: false },
 	axisBottom: { format: "%Y-%m", tickSize: 8 },
-	axisLeft: { tickSize: 8 },
-	margin: { top: 32, right: 32, bottom: 32, left: 32 },
+	axisLeft: { tickSize: 8, legendOffset: -60 },
+	margin: { top: 18, right: 36, bottom: 34, left: 76 },
 	layers: ["grid", "axes", Areas, Lines, Points, Labels, Interaction],
 	theme: {
 		background: "var(--bg-secondary)",
@@ -204,7 +198,7 @@ const LABEL_HEIGHT = 32; // estimate based on current styles
 const NICE_INTERVALS = [
 	1, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000,
 ] as const;
-function useVerticalScale(configs: ChartProps) {
+function useVerticalScale(title?: string) {
 	const { area, ranked } = useChart();
 	const { chartHeight, yRange, yZoom } = useChartZoom();
 
@@ -257,15 +251,13 @@ function useVerticalScale(configs: ChartProps) {
 		[min, max, reverse],
 	);
 
-	const { legend, legendOffset } = configs.axisLeft ?? {};
 	const axisLeft = useMemo(
 		() => ({
 			...DEFAULT_CONFIGS.axisLeft,
-			legend,
-			legendOffset,
+			legend: title,
 			tickValues: gridYValues,
 		}),
-		[legend, legendOffset, gridYValues],
+		[title, gridYValues],
 	);
 
 	return { yScale, axisLeft, gridYValues };

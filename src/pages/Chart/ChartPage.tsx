@@ -44,7 +44,7 @@ export function ChartPage() {
 		},
 	});
 
-	const legend = useMemo(() => {
+	const title = useMemo(() => {
 		const type = types.map((t) => activityLabels[t]).join(" + ");
 		if (area || !ranked) {
 			return type || "Activities";
@@ -65,10 +65,7 @@ export function ChartPage() {
 					>
 						<fieldset className={cx("chart")}>
 							<legend>chart</legend>
-							<TimeChart.Chart
-								margin={{ top: 18, right: 34, bottom: 34, left: 76 }}
-								axisLeft={{ legendOffset: -60, legend }}
-							/>
+							<TimeChart.Chart title={title} />
 						</fieldset>
 						<SidePanel>
 							<TimeChart.Legend
