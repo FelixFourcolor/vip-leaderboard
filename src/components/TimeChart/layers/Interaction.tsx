@@ -171,8 +171,8 @@ function useZoom(onInteract: () => void) {
 
 	const xLength = xValues.length;
 	const yLength = yRange.max - yRange.min + 1;
-	const xUnit = xLength / 16;
-	const yUnit = yLength / 16;
+	const xUnit = xLength / 24;
+	const yUnit = yLength / 24;
 	const xScale = xLength / innerWidth;
 	const yScale = yLength / innerHeight;
 
@@ -280,7 +280,7 @@ function usePanHandler(setValue: ZoomContextValue["setXZoom"]) {
 function useThrottle<F extends (...args: any[]) => void>(f: F) {
 	const throttledRef = useRef(f);
 	useEffect(() => {
-		const throttledF = throttle(f, 16, { edges: ["leading"] });
+		const throttledF = throttle(f, 24, { edges: ["leading"] });
 		throttledRef.current = throttledF as any as F;
 		return () => throttledF.cancel();
 	}, [f]);
