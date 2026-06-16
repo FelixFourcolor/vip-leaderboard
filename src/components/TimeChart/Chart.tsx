@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 import { partition, range } from "es-toolkit";
 import { type ComponentProps, useMemo } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { timeOffset, toDate } from "@/utils/time";
+import { dateOffset, toDate } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
 import { useChart } from "./chartContext";
 import { Areas } from "./layers/Areas";
@@ -135,57 +135,58 @@ function useColors() {
 
 const LABEL_WIDTH = 64; // estimate based on current styles
 function useHorizontalScale() {
-	const { chartWidth, xValues, xZoom } = useChartZoom();
+	const {
+		chartWidth,
+		xValues,
+		xZoom: [startOffset, endOffset],
+	} = useChartZoom();
 
-	const labelsCount = chartWidth
+	const howManyLabelsCanFit = chartWidth
 		? Math.max(Math.floor(chartWidth / LABEL_WIDTH), 2)
 		: undefined;
 
-	const startOffset = Math.ceil(xZoom[0]);
-	const startOffsetLeftover = startOffset - xZoom[0];
-	const endOffset = Math.ceil(xZoom[1]);
-	const endOffsetLeftover = endOffset - xZoom[1];
+	const intStartOffset = Math.ceil(startOffset);
+	const fracStartOffset = intStartOffset - startOffset;
 
-	const visibleXValues = useMemo(
-		() => xValues.slice(startOffset, -endOffset || undefined),
-		[xValues, startOffset, endOffset],
+	const intEndOffset = Math.ceil(endOffset);
+	const fracEndOffset = intEndOffset - endOffset;
+
+	const zoomedXValues = useMemo(
+		() => xValues.slice(intStartOffset, -intEndOffset || undefined),
+		[xValues, intStartOffset, intEndOffset],
 	);
 
 	const gridXValues = useMemo(() => {
-		if (!labelsCount) {
+		if (!howManyLabelsCanFit) {
 			return undefined;
 		}
-		const xLength = visibleXValues.length;
-		const interval = Math.ceil((xLength - 1) / (labelsCount - 1));
+		const xLength = zoomedXValues.length;
+		const interval = Math.ceil((xLength - 1) / (howManyLabelsCanFit - 1));
 
 		return range(xLength - 1, -1, -Math.max(interval, 1))
-			.map((i) => visibleXValues[i]!)
+			.map((i) => zoomedXValues[i]!)
 			.map(toDate);
-	}, [visibleXValues, labelsCount]);
+	}, [zoomedXValues, howManyLabelsCanFit]);
 
 	const xScale = useMemo(() => {
 		const min = (() => {
-			const since = visibleXValues[0];
+			const since = zoomedXValues[0];
 			if (!since) {
 				return undefined;
 			}
-			const sinceDate = new Date(timeOffset(since, { months: -1 }));
-			sinceDate.setUTCDate(30 * (1 - startOffsetLeftover));
-			return sinceDate;
+			const sinceDate = toDate(since);
+			return dateOffset(sinceDate, { months: -fracStartOffset });
 		})();
-
 		const max = (() => {
-			const until = visibleXValues.at(-1);
+			const until = zoomedXValues.at(-1)!;
 			if (!until) {
 				return undefined;
 			}
-			const untilDate = new Date(until);
-			untilDate.setUTCDate(30 * endOffsetLeftover);
-			return untilDate;
+			const untilDate = toDate(until);
+			return dateOffset(untilDate, { months: fracEndOffset });
 		})();
-
 		return { ...DEFAULT_CONFIGS.xScale, min, max };
-	}, [visibleXValues, startOffsetLeftover, endOffsetLeftover]);
+	}, [zoomedXValues, fracStartOffset, fracEndOffset]);
 
 	const axisBottom = useMemo(() => {
 		return { ...DEFAULT_CONFIGS.axisBottom, tickValues: gridXValues };
@@ -202,7 +203,7 @@ function useVerticalScale(title?: string) {
 	const { area, ranked } = useChart();
 	const { chartHeight, yRange, yZoom } = useChartZoom();
 
-	const labelsCount = chartHeight
+	const howManyLabelsCanFit = chartHeight
 		? Math.min(Math.max(Math.floor(chartHeight / LABEL_HEIGHT), 2), 12)
 		: undefined;
 
@@ -210,8 +211,8 @@ function useVerticalScale(title?: string) {
 	const min = yRange.min + startOffset;
 	const max = yRange.max - endOffset;
 
-	const interval = labelsCount
-		? Math.ceil((max - min) / (labelsCount - 1))
+	const interval = howManyLabelsCanFit
+		? Math.ceil((max - min) / (howManyLabelsCanFit - 1))
 		: undefined;
 
 	const niceInterval = useMemo(() => {

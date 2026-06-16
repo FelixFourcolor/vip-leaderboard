@@ -5,7 +5,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { activityColors } from "@/db/activity";
 import { getUserStats, type UserStats, userSortBy } from "@/db/user";
 import { useWindowSize } from "@/hooks/useWindowSize";
-import { timeOffset } from "@/utils/time";
+import { yyyyMmOffset } from "@/utils/time";
 import { useHomeControls } from "./HomeControls";
 import styles from "./HomePage.module.css";
 
@@ -20,8 +20,8 @@ export function RankingTable() {
 	useEffect(() => {
 		getUserStats({ since, until }).then(setUsers);
 		getUserStats({
-			since: timeOffset(since, { months: -1 }),
-			until: timeOffset(until, { months: -1 }),
+			since: yyyyMmOffset(since, { months: -1 }),
+			until: yyyyMmOffset(until, { months: -1 }),
 		}).then(setUsersLastMonth);
 	}, [since, until]);
 

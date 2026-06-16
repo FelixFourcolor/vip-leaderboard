@@ -29,7 +29,7 @@ export function monthsInRange(since: YyyyMm, until: YyyyMm): YyyyMm[] {
 	);
 }
 
-export function timeOffset(
+export function yyyyMmOffset(
 	from: YyyyMm,
 	offset: AtLeastOneOf<{ months: number; years: number }>,
 ): YyyyMm {
@@ -42,3 +42,17 @@ export function timeOffset(
 	}
 	return toYyyyMm(date);
 }
+
+const msPerDay = 24 * 60 * 60 * 1000;
+const msPerYear = 365.25 * msPerDay;
+const msPerMonth = msPerYear / 12;
+export const dateOffset = (
+	from: Date,
+	offset: AtLeastOneOf<{ days: number; months: number; years: number }>,
+): Date =>
+	new Date(
+		from.getTime() +
+			(offset.days ?? 0) * msPerDay +
+			(offset.months ?? 0) * msPerMonth +
+			(offset.years ?? 0) * msPerYear,
+	);

@@ -3,7 +3,7 @@ import { and } from "drizzle-orm/sqlite-core/expressions";
 import { groupBy } from "es-toolkit";
 import type { DataRow } from "@/components/DataBarTable";
 import type { TimeSeries } from "@/components/TimeChart";
-import { timeOffset, type YyyyMm } from "@/utils/time";
+import { type YyyyMm, yyyyMmOffset } from "@/utils/time";
 import { loadDb } from "./loader";
 import { activity } from "./schema";
 
@@ -43,7 +43,7 @@ export async function getActivityStats({
 	user,
 }: ActivityParams): Promise<ActivityStats[]> {
 	// make "until" include the last month
-	until = until ? timeOffset(until, { months: 1 }) : undefined;
+	until = until ? yyyyMmOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
 
 	const rows = db
@@ -84,7 +84,7 @@ export async function getActivityMonthlyStats({
 	user,
 }: ActivityParams): Promise<ActivityMonthlyCount[]> {
 	// make "until" include the last month
-	until = until ? timeOffset(until, { months: 1 }) : undefined;
+	until = until ? yyyyMmOffset(until, { months: 1 }) : undefined;
 	const db = await loadDb();
 
 	const rows = db
