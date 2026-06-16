@@ -3,7 +3,7 @@ import classNames from "classnames/bind";
 import { partition, range } from "es-toolkit";
 import { type ComponentProps, useMemo } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { toDate } from "@/utils/time";
+import { timeOffset, toDate } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
 import { useChart } from "./chartContext";
 import { Areas } from "./layers/Areas";
@@ -36,7 +36,7 @@ type ChartProps = {
 
 export function Chart({ className, ...configs }: ChartProps) {
 	const { renderReady } = useChart();
-	const { clipPathId } = useChartZoom();
+	const { clipPathId, isInteracting } = useChartZoom();
 	const data = useDataOrdering();
 	const colors = useColors();
 	const { yScale, axisLeft, gridYValues } = useVerticalScale(configs);
@@ -59,6 +59,7 @@ export function Chart({ className, ...configs }: ChartProps) {
 					yScale={yScale}
 					axisLeft={axisLeft}
 					gridYValues={gridYValues}
+					animate={!isInteracting}
 				/>
 			) : (
 				<LoadingSpinner size={48} />
@@ -146,10 +147,15 @@ function useHorizontalScale() {
 		? Math.max(Math.floor(chartWidth / LABEL_WIDTH), 2)
 		: undefined;
 
-	const visibleXValues = useMemo(() => {
-		const [startOffset, endOffset] = xZoom;
-		return xValues.slice(startOffset, -endOffset || undefined);
-	}, [xValues, xZoom]);
+	const startOffset = Math.ceil(xZoom[0]);
+	const startOffsetLeftover = startOffset - xZoom[0];
+	const endOffset = Math.ceil(xZoom[1]);
+	const endOffsetLeftover = endOffset - xZoom[1];
+
+	const visibleXValues = useMemo(
+		() => xValues.slice(startOffset, -endOffset || undefined),
+		[xValues, startOffset, endOffset],
+	);
 
 	const gridXValues = useMemo(() => {
 		if (!labelsCount) {
@@ -157,18 +163,35 @@ function useHorizontalScale() {
 		}
 		const xLength = visibleXValues.length;
 		const interval = Math.ceil((xLength - 1) / (labelsCount - 1));
+
 		return range(xLength - 1, -1, -Math.max(interval, 1))
 			.map((i) => visibleXValues[i]!)
 			.map(toDate);
 	}, [visibleXValues, labelsCount]);
 
 	const xScale = useMemo(() => {
-		const since = visibleXValues[0];
-		const min = since ? toDate(since) : undefined;
-		const until = visibleXValues.at(-1)!;
-		const max = until ? toDate(until) : undefined;
+		const min = (() => {
+			const since = visibleXValues[0];
+			if (!since) {
+				return undefined;
+			}
+			const sinceDate = new Date(timeOffset(since, { months: -1 }));
+			sinceDate.setUTCDate(30 * (1 - startOffsetLeftover));
+			return sinceDate;
+		})();
+
+		const max = (() => {
+			const until = visibleXValues.at(-1);
+			if (!until) {
+				return undefined;
+			}
+			const untilDate = new Date(until);
+			untilDate.setUTCDate(30 * endOffsetLeftover);
+			return untilDate;
+		})();
+
 		return { ...DEFAULT_CONFIGS.xScale, min, max };
-	}, [visibleXValues]);
+	}, [visibleXValues, startOffsetLeftover, endOffsetLeftover]);
 
 	const axisBottom = useMemo(() => {
 		return { ...DEFAULT_CONFIGS.axisBottom, tickValues: gridXValues };
@@ -218,10 +241,13 @@ function useVerticalScale(configs: ChartProps) {
 			niceInterval * Math.floor(max / niceInterval) + 1,
 			niceInterval,
 		);
+
+		const intMin = Math.ceil(min);
+		const intMax = Math.floor(max);
 		return [
-			...((values[0] ?? min) - min >= interval ? [min] : []),
+			...((values[0] ?? intMin) - intMin >= interval ? [intMin] : []),
 			...values,
-			...(max - (values.at(-1) ?? max) >= interval ? [max] : []),
+			...(intMax - (values.at(-1) ?? intMax) >= interval ? [intMax] : []),
 		];
 	}, [min, max, interval, niceInterval]);
 

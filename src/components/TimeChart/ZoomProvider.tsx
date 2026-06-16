@@ -1,4 +1,4 @@
-import { type ReactNode, useId, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useId, useMemo, useState } from "react";
 import { monthsInRange, type YyyyMm } from "@/utils/time";
 import type { Pair } from "@/utils/types";
 import { useChart } from "./chartContext";
@@ -15,9 +15,18 @@ export function ZoomProvider({ since, until, children }: Props) {
 
 	const [xZoom, setXZoom] = useState<Readonly<Pair<number>>>([0, 0]);
 	const [yZoom, setYZoom] = useState<Readonly<Pair<number>>>([0, 0]);
+	const [isInteracting, setIsInteracting] = useState(false);
 
 	const xValues = useXValues(since, until);
 	const yRange = useYRange();
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset zoom when range changes
+	useEffect(() => {
+		setXZoom([0, 0]);
+	}, [xValues]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset zoom when range changes
+	useEffect(() => {
+		setYZoom([0, 0]);
+	}, [yRange]);
 
 	const clipPathId = useId();
 
@@ -34,6 +43,8 @@ export function ZoomProvider({ since, until, children }: Props) {
 				setYZoom,
 				xValues,
 				yRange,
+				isInteracting,
+				setIsInteracting,
 				clipPathId,
 			}}
 		>

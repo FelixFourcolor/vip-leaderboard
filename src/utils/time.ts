@@ -31,12 +31,9 @@ export function monthsInRange(since: YyyyMm, until: YyyyMm): YyyyMm[] {
 
 export function timeOffset(
 	from: YyyyMm,
-	offset: AtLeastOneOf<Record<"days" | "months" | "years", number>>,
+	offset: AtLeastOneOf<{ months: number; years: number }>,
 ): YyyyMm {
 	const date = new Date(from);
-	if (offset.days) {
-		date.setUTCDate(date.getUTCDate() + offset.days);
-	}
 	if (offset.months) {
 		date.setUTCMonth(date.getUTCMonth() + offset.months);
 	}

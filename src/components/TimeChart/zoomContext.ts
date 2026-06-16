@@ -2,12 +2,13 @@ import { createContext, use } from "react";
 import type { YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
 
-interface ZoomContextValue
+export interface ZoomContextValue
 	extends State<{
 		xZoom: readonly [startOffset: number, endOffset: number];
 		yZoom: readonly [startOffset: number, endOffset: number];
 		chartHeight: Maybe<number>;
 		chartWidth: Maybe<number>;
+		isInteracting: boolean;
 	}> {
 	xValues: readonly YyyyMm[];
 	yRange: Readonly<{ min: number; max: number }>;
