@@ -3,10 +3,10 @@ export const category10 = [
 	"#ff7f0e",
 	"#2ca02c",
 	"#d62728",
+	"#bcbd22",
 	"#9467bd",
 	"#17becf",
 	"#e377c2",
-	"#7f7f7f",
-	"#bcbd22",
 	"#8c564b",
+	"#7f7f7f",
 ] as const;
