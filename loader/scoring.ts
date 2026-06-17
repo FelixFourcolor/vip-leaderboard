@@ -156,10 +156,12 @@ const TICKET_RESOLVED_REACTIONS = new Set([
 	"lock",
 ]);
 const BAN_SUPPORT_REACTIONS = new Set([
-	"thumbsup",
-	"thumbsdown",
-	"hammer",
 	"white_check_mark",
+	"thumbsup",
+	"thumbup",
+	"ehh",
+	"thumbsdown",
+	"thumbdown",
 	"x",
 ]);
 

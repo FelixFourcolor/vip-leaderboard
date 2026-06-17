@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
 import { Header } from "../Header";
 import styles from "./AboutPage.module.css";
+import { DiscordEmoji } from "./DiscordEmoji";
 import { DiscordLink } from "./DiscordLink";
 import { Section, Subsection } from "./Section";
 
@@ -87,12 +88,19 @@ function Content() {
 						times, once for each recipient.
 					</p>
 					<p>
-						Any other VIP who reacts to a ban message with 👍/👎/🔨/✅/❌ also
-						earns 1 point, but only 1 even if it&apos;s a batch ban.
+						Any other VIP who reacts to a ban message with ✅/👍/
+						<DiscordEmoji thumbsup />
+						/
+						<DiscordEmoji thumbup />
+						/
+						<DiscordEmoji ehh />
+						/👎/
+						<DiscordEmoji thumbdown />
+						/❌ also earns 1 point, but only 1 even if it&apos;s a batch ban.
 					</p>
 					<p>Approved and rejected bans are counted the same.</p>
 					<p>
-						Reacting <img src="./icon.png" width="16" alt="verified" /> to an
+						Reacting <img src="./icon.png" width={16} alt="verified" /> to an
 						auto ban announcement earns 1 point. Batch autobans count multiple
 						times.
 					</p>

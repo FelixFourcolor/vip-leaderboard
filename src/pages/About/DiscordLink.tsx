@@ -1,15 +1,16 @@
 import classNames from "classnames/bind";
+import { keys } from "@/utils/object";
 import type { OneOf } from "@/utils/types";
 import styles from "./AboutPage.module.css";
 
 const cx = classNames.bind(styles);
 
 export function DiscordLink(channel: OneOf<Record<ChannelName, true>>) {
-	const channelName = Object.keys(channel)[0] as ChannelName;
+	const channelName = keys(channel)[0]!;
 	return (
 		<a
 			className={cx("discord-link")}
-			href={channelUrls[channelName]}
+			href={channelURLs[channelName]}
 			target="_blank"
 			rel="noopener noreferrer"
 		>
@@ -18,7 +19,7 @@ export function DiscordLink(channel: OneOf<Record<ChannelName, true>>) {
 	);
 }
 
-const channelUrls = {
+const channelURLs = {
 	"incorrect-submissions":
 		"https://discord.com/channels/603643120093233162/655247785561554945",
 	"report-a-user":
@@ -34,4 +35,4 @@ const channelUrls = {
 		"https://discord.com/channels/603643120093233162/897699762738966558",
 } as const;
 
-type ChannelName = keyof typeof channelUrls;
+type ChannelName = keyof typeof channelURLs;
