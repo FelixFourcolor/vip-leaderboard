@@ -62,9 +62,13 @@ export function Interaction(props: Props) {
 					if (e.buttons === 1) {
 						// left click
 						onSelectStart(e);
-					} else if (e.buttons === 4 && isZoomed) {
-						// middle click
+					} else if (isZoomed) {
 						onPanStart(e);
+					}
+				}}
+				onContextMenu={(e) => {
+					if (isZoomed) {
+						e.preventDefault();
 					}
 				}}
 				onMouseMove={(e) => {
