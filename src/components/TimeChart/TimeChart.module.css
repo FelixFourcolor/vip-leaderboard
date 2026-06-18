@@ -7,6 +7,16 @@
 		clip-path: var(--clip-path-url);
 	}
 
+	[data-interaction-layer] {
+		cursor: crosshair;
+
+		.selection-overlay {
+			fill: rgb(from var(--text-tertiary) r g b / 0.2);
+			stroke: var(--text-primary);
+			pointer-events: none;
+		}
+	}
+
 	path {
 		transition:
 			stroke 0.2s ease,

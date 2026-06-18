@@ -1,57 +1,86 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
+import classNames from "classnames/bind";
 import { isEqual, throttle } from "es-toolkit";
 import {
 	type MouseEvent,
 	useCallback,
 	useEffect,
 	useEffectEvent,
+	useMemo,
 	useRef,
+	useState,
 } from "react";
 import { useDrag } from "@/hooks/useDrag";
 import type { XY } from "@/utils/types";
 import type { ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
+import styles from "../TimeChart.module.css";
 import { useChartZoom, type ZoomContextValue } from "../zoomContext";
+
+const cx = classNames.bind(styles);
 
 export type InteractivePoint = { x: Date; seriesId: string };
 type Props = LineCustomSvgLayerProps<ChartSeries>;
 
 export function Interaction(props: Props) {
-	const { onHover, onUnhover } = useHover(props);
-	const { onWheel, onPanStart } = useZoom(onUnhover);
-	const { isInteracting } = useChartZoom();
+	const [boundRect = { x: 0, y: 0 }, setBoundRect] = useState<XY>();
+	const gRef = useRef<SVGGElement | null>(null);
+	useEffect(() => {
+		setBoundRect(gRef.current?.getBoundingClientRect());
+	}, []);
 
-	const ref = useRef<SVGRectElement | null>(null);
+	const { onHover, onUnhover } = useHover(props);
+	const { onWheel, onPanStart } = useZoom();
+	const { selection, onSelectStart, isSelecting } = useSelect(boundRect);
+
+	const { isInteracting, xZoom, yZoom } = useChartZoom();
+	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
+
+	const rectRef = useRef<SVGRectElement | null>(null);
+	const onWheelEvent = useEffectEvent((e: WheelEvent) => {
+		onUnhover();
+		onWheel(e);
+	});
+
 	useEffect(() => {
 		// React native event doesn't let you do `e.preventDefault()`
-		ref.current?.addEventListener("wheel", onWheel);
-		return () => ref.current?.removeEventListener("wheel", onWheel);
-	}, [onWheel]);
+		rectRef.current?.addEventListener("wheel", onWheelEvent);
+		return () => rectRef.current?.removeEventListener("wheel", onWheelEvent);
+	}, []);
 
 	return (
-		<g data-interaction-layer>
+		<g data-interaction-layer ref={gRef}>
 			<rect
-				width={props.innerWidth}
-				height={props.innerHeight}
+				x={-PADDING}
+				y={-PADDING}
+				width={props.innerWidth + 2 * PADDING}
+				height={props.innerHeight + 2 * PADDING}
 				opacity={0}
-				ref={ref}
+				ref={rectRef}
 				onMouseDown={(e) => {
-					if (e.buttons !== 2) {
-						// not right click
+					onUnhover();
+					if (e.buttons === 1) {
+						// left click
+						onSelectStart(e);
+					} else if (e.buttons === 4 && isZoomed) {
+						// middle click
 						onPanStart(e);
 					}
 				}}
 				onMouseMove={(e) => {
-					if (!isInteracting) {
+					if (!isInteracting && !isSelecting) {
 						onHover(e);
 					}
 				}}
 				onMouseLeave={onUnhover}
 			/>
+			{selection && <SelectionOverlay {...selection} />}
 			<ClipPath {...props} />
 		</g>
 	);
 }
+
+const PADDING = 8; // space for lines box-shadow and points
 
 function ClipPath({ innerWidth, innerHeight }: Props) {
 	const { setChartHeight, setChartWidth, clipPathId } = useChartZoom();
@@ -59,15 +88,14 @@ function ClipPath({ innerWidth, innerHeight }: Props) {
 	useEffect(() => setChartHeight(innerHeight), [setChartHeight, innerHeight]);
 	useEffect(() => setChartWidth(innerWidth), [setChartWidth, innerWidth]);
 
-	const padding = 8; // space for lines box-shadow and points
 	return (
 		<defs>
 			<clipPath id={clipPathId}>
 				<rect
-					x={-padding}
-					y={-padding}
-					width={innerWidth + 2 * padding}
-					height={innerHeight + 2 * padding}
+					x={-PADDING}
+					y={-PADDING}
+					width={innerWidth + 2 * PADDING}
+					height={innerHeight + 2 * PADDING}
 				/>
 			</clipPath>
 		</defs>
@@ -155,19 +183,136 @@ function useHover({ innerWidth, innerHeight, series, yScale }: Props) {
 	return { onHover, onUnhover: unfocus };
 }
 
-function useZoom(onInteract: () => void) {
+type Selection = { start: XY; current: XY };
+function SelectionOverlay({ start, current }: Selection) {
+	const margin = 1;
+	return (
+		<rect
+			className={cx("selection-overlay")}
+			x={Math.min(start.x, current.x) - margin}
+			y={Math.min(start.y, current.y) - margin}
+			width={Math.abs(current.x - start.x) + 2 * margin}
+			height={Math.abs(current.y - start.y) + 2 * margin}
+		/>
+	);
+}
+
+function useSelect(boundRect: XY) {
 	const { ranked, area } = useChart();
 	const reverse = ranked && !area;
 
 	const {
+		chartWidth = Infinity,
+		chartHeight = Infinity,
 		xValues,
 		yRange,
-		xZoom,
-		yZoom,
 		setXZoom,
 		setYZoom,
-		setIsInteracting,
 	} = useChartZoom();
+
+	const [selection, setSelection] = useState<Selection>();
+	const clampedSelection = useMemo(() => {
+		if (!selection) {
+			return;
+		}
+		return {
+			start: selection.start,
+			current: {
+				x: Math.min(Math.max(selection.current.x, 0), chartWidth),
+				y: Math.min(Math.max(selection.current.y, 0), chartHeight),
+			},
+		};
+	}, [chartWidth, chartHeight, selection]);
+
+	const onSelectStart = (e: MouseEvent) => {
+		const pos = {
+			x: e.clientX - boundRect.x,
+			y: e.clientY - boundRect.y,
+		};
+		setSelection({ start: pos, current: pos });
+		onMouseDown(e);
+	};
+	const onSelecting = ({ x, y }: XY) => {
+		setSelection((prev) => {
+			if (!prev) {
+				return;
+			}
+			return {
+				start: prev.start,
+				current: {
+					x: prev.current.x + x,
+					y: prev.current.y + y,
+				},
+			};
+		});
+	};
+	const onApplySelection = () => {
+		if (!clampedSelection) {
+			return;
+		}
+		const { start, current } = clampedSelection;
+
+		const x1 = Math.min(start.x, current.x) / chartWidth;
+		const x2 = Math.max(start.x, current.x) / chartWidth;
+		const y1 = Math.min(start.y, current.y) / chartHeight;
+		const y2 = Math.max(start.y, current.y) / chartHeight;
+
+		const xLength = xValues.length;
+		const yLength = yRange.max - yRange.min + 1;
+
+		setXZoom(([start, end]) => {
+			const zoomedLength = xLength - (start + end);
+
+			const newStart = start + x1 * zoomedLength;
+			const newEnd = end + (1 - x2) * zoomedLength;
+
+			if (newStart + newEnd > 0.9 * xLength) {
+				return [start, end];
+			}
+			return [newStart, newEnd];
+		});
+
+		setYZoom(([start, end]) => {
+			const zoomedLength = yLength - (start + end);
+
+			const [newStart, newEnd] = (() => {
+				if (reverse) {
+					const newStart = start + y1 * zoomedLength;
+					const newEnd = end + (1 - y2) * zoomedLength;
+					return [newStart, newEnd];
+				}
+				const newStart = start + (1 - y2) * zoomedLength;
+				const newEnd = end + y1 * zoomedLength;
+				return [newStart, newEnd];
+			})();
+
+			if (newStart + newEnd > 0.9 * yLength) {
+				return [start, end];
+			}
+			return [newStart, newEnd];
+		});
+
+		setSelection(undefined);
+	};
+	const { onMouseDown, isDragging } = useDrag(
+		"grab",
+		onSelecting,
+		onApplySelection,
+	);
+
+	return {
+		selection: clampedSelection,
+		onSelectStart,
+		isSelecting: isDragging,
+	};
+}
+
+function useZoom() {
+	const { ranked, area } = useChart();
+	const reverse = ranked && !area;
+
+	const { xValues, yRange, setXZoom, setYZoom, setIsInteracting } =
+		useChartZoom();
 
 	const xLength = xValues.length;
 	const yLength = yRange.max - yRange.min + 1;
@@ -200,7 +345,7 @@ function useZoom(onInteract: () => void) {
 	);
 
 	const wheelTimeout = useRef<number | undefined>(undefined);
-	const onWheel = useEffectEvent((e: WheelEvent) => {
+	const onWheel = (e: WheelEvent) => {
 		e.preventDefault();
 		if (e.ctrlKey) {
 			throttledZoom(-Math.sign(e.deltaY));
@@ -209,25 +354,20 @@ function useZoom(onInteract: () => void) {
 		}
 		clearTimeout(wheelTimeout.current);
 		setIsInteracting(true);
-		onInteract();
 		wheelTimeout.current = setTimeout(() => setIsInteracting(false), 100);
-	});
-
-	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
-	const onPanStart = (e: MouseEvent) => {
-		if (isZoomed) {
-			onInteract();
-			onMouseDown(e);
-			setIsInteracting(true);
-		}
 	};
-	const onDrag = ({ x, y }: XY) => {
+
+	const onPanStart = (e: MouseEvent) => {
+		onMouseDown(e);
+		setIsInteracting(true);
+	};
+	const onPan = ({ x, y }: XY) => {
 		pan(-x * xScale, y * yScale);
 	};
-	const onDragEnd = () => {
+	const onPanEnd = () => {
 		setIsInteracting(false);
 	};
-	const { onMouseDown } = useDrag("grab", onDrag, onDragEnd);
+	const { onMouseDown } = useDrag("grab", onPan, onPanEnd);
 
 	return { onWheel, onPanStart };
 }
@@ -240,7 +380,7 @@ function useZoomHandler(
 		(delta: number) =>
 			setValue((current) => {
 				const [startOffset, endOffset] = current;
-				const available = length - 3 - startOffset - endOffset;
+				const available = 0.9 * length - startOffset - endOffset;
 				if (delta > 0) {
 					delta = Math.min(delta, Math.floor(available / 2));
 				}
