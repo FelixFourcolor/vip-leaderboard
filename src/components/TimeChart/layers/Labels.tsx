@@ -90,7 +90,10 @@ function useVisibility() {
 	}, [chartData, cumulative, area]);
 
 	const labelsCount = cumulative ? 10 : 20;
-	const xLength = xValues.slice(startOffset, -endOffset || undefined).length;
+	const xLength = xValues.slice(
+		Math.ceil(startOffset),
+		-Math.ceil(endOffset) || undefined,
+	).length;
 	const labelInterval = Math.max(1, Math.ceil(xLength / labelsCount));
 	const isLabelIndex = (i: number, seriesId: string) =>
 		// reversed to show label at the end
