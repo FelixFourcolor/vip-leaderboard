@@ -22,5 +22,14 @@ export function useChartZoom() {
 	if (!context) {
 		throw new Error("useChartZoom must be used within ZoomContext");
 	}
-	return context;
+
+	const { xZoom, yZoom, setXZoom, setYZoom } = context;
+
+	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
+	const resetZoom = () => {
+		setXZoom([0, 0]);
+		setYZoom([0, 0]);
+	};
+
+	return { ...context, isZoomed, resetZoom };
 }

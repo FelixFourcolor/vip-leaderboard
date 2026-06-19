@@ -74,8 +74,8 @@ export function ChartPage() {
 								entriesGap={{ min: 24, max: 64 }}
 							/>
 						</SidePanel>
+						<ChartControls />
 					</TimeChart>
-					<ChartControls />
 				</Activity>
 			</main>
 		</>

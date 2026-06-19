@@ -5,6 +5,7 @@ export type {
 export { useChart } from "./chartContext";
 export type { LegendEntryProps } from "./Legend";
 export type { PointTooltipProps } from "./layers/Points.tsx";
+export { useChartZoom } from "./zoomContext";
 
 import { Chart } from "./Chart";
 import { ChartWrapper } from "./ChartWrapper";

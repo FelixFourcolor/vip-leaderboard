@@ -23,6 +23,8 @@ export type InteractivePoint = { x: Date; seriesId: string };
 type Props = LineCustomSvgLayerProps<ChartSeries>;
 
 export function Interaction(props: Props) {
+	const { isInteracting, isZoomed } = useChartZoom();
+
 	const [boundRect = { x: 0, y: 0 }, setBoundRect] = useState<XY>();
 	const gRef = useRef<SVGGElement | null>(null);
 	useEffect(() => {
@@ -32,9 +34,6 @@ export function Interaction(props: Props) {
 	const { onHover, onUnhover } = useHover(props);
 	const { onWheel, onPanStart } = useZoom();
 	const { selection, onSelectStart, isSelecting } = useSelect(boundRect);
-
-	const { isInteracting, xZoom, yZoom } = useChartZoom();
-	const isZoomed = xZoom.some(Boolean) || yZoom.some(Boolean);
 
 	const rectRef = useRef<SVGRectElement | null>(null);
 	const onWheelEvent = useEffectEvent((e: WheelEvent) => {

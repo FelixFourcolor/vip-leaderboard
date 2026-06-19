@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
+import { useChartZoom } from "@/components/TimeChart";
 import { activityIcons, activityLabels, activityTypes } from "@/db/activity";
 import { ALL_MONTHS, LAST_MONTH, TWO_YEARS_AGO } from "@/db/time";
 import { type ChartOptions, Route } from "@/routes/chart";
@@ -15,6 +16,7 @@ import styles from "./ChartPage.module.css";
 const cx = classNames.bind(styles);
 
 export function ChartControls() {
+	const { isZoomed, resetZoom } = useChartZoom();
 	const [options, setOptions] = useChartControls();
 	const { until, since, cumulative, area, ranked, types } = options;
 
@@ -95,8 +97,11 @@ export function ChartControls() {
 						</PopupMenu.Group>
 						<hr />
 						<PopupMenu.Item
-							disabled={isDefaultOptions(options)}
-							onClick={() => setOptions(defaultOptions)}
+							disabled={!isZoomed && isDefaultOptions(options)}
+							onClick={() => {
+								setOptions(defaultOptions);
+								resetZoom();
+							}}
 							stayOpenOnClick
 							className={cx("menu-item")}
 						>
