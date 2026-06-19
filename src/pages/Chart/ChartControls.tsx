@@ -39,7 +39,6 @@ export function ChartControls() {
 					domain={ALL_MONTHS}
 					selected={[since, until]}
 					onChange={onDateChange}
-					autoHideLabel
 					minDistance={area ? 1 : 0}
 				/>
 

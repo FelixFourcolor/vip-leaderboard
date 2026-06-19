@@ -7,11 +7,10 @@ import {
 	useEffectEvent,
 	useMemo,
 	useRef,
-	useState,
 } from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";
-import type { Maybe, Pair } from "@/utils/types";
+import type { Pair } from "@/utils/types";
 import { ThumbWrapper } from "./Thumb";
 import { Track } from "./Track";
 
@@ -23,7 +22,6 @@ type RangeSliderProps<Value> = {
 	className?: string;
 	minDistance?: number;
 	maxDistance?: number;
-	autoHideLabel?: boolean;
 };
 
 export function RangeSlider<Value>({
@@ -34,7 +32,6 @@ export function RangeSlider<Value>({
 	minDistance = 0,
 	maxDistance = domain.length - 1,
 	className,
-	autoHideLabel = false,
 }: RangeSliderProps<Value>) {
 	const onChangeDebounced = useMemo(
 		() => (debounceMs !== false ? debounce(onChange, debounceMs) : onChange),
@@ -67,37 +64,12 @@ export function RangeSlider<Value>({
 		});
 	};
 
-	const [isActive, setIsActive] = useState<Pair<boolean>>([false, false]);
-	const activeTimeoutRef = useRef<Pair<Maybe<number>>>([undefined, undefined]);
-	const activateThumb = (...indices: number[]) => {
-		if (indices.length === 0) {
-			indices = [0, 1];
-		}
-		indices.forEach((i) => {
-			setIsActive((current) => {
-				const updated = [...current] as Pair<boolean>;
-				updated[i] = true;
-				return updated;
-			});
-			clearTimeout(activeTimeoutRef.current[i]);
-			activeTimeoutRef.current[i] = setTimeout(() => {
-				setIsActive((current) => {
-					const updated = [...current] as Pair<boolean>;
-					updated[i] = false;
-					return updated;
-				});
-			}, 2000);
-		});
-	};
-
 	const onDrag = (values: number[]) => {
 		let [from, to] = values as [number, number];
 		setValues(([currentFrom, currentTo]) => {
 			if (from === currentFrom && to === currentTo) {
 				return [currentFrom, currentTo];
 			}
-
-			activateThumb(from === currentFrom ? 1 : 0);
 
 			const distance = to - from;
 			if (distance < minDistance) {
@@ -138,7 +110,6 @@ export function RangeSlider<Value>({
 				from = to - currentDistance;
 			}
 
-			activateThumb();
 			return [from, to];
 		});
 	};
@@ -167,7 +138,6 @@ export function RangeSlider<Value>({
 				to -= Math.ceil(adjustment / 2);
 			}
 
-			activateThumb();
 			return [from, to];
 		});
 	};
@@ -228,9 +198,6 @@ export function RangeSlider<Value>({
 					values={values}
 					index={index}
 					domain={domain}
-					isActive={isActive}
-					autoHideLabel={autoHideLabel}
-					onFocus={() => activateThumb(index)}
 				/>
 			)}
 		/>
