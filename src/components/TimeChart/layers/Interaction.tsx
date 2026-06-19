@@ -269,7 +269,7 @@ function useSelect(boundRect: XY) {
 			const newStart = start + x1 * zoomedLength;
 			const newEnd = end + (1 - x2) * zoomedLength;
 
-			if (newStart + newEnd > 0.9 * xLength) {
+			if (newStart + newEnd > Math.min(0.9 * xLength, xLength - 1)) {
 				return [start, end];
 			}
 			return [newStart, newEnd];
@@ -289,7 +289,7 @@ function useSelect(boundRect: XY) {
 				return [newStart, newEnd];
 			})();
 
-			if (newStart + newEnd > 0.9 * yLength) {
+			if (newStart + newEnd > Math.min(0.9 * yLength, yLength - 1)) {
 				return [start, end];
 			}
 			return [newStart, newEnd];
@@ -423,7 +423,7 @@ function usePanHandler(setValue: ZoomContextValue["setXZoom"]) {
 function useThrottle<F extends (...args: any[]) => void>(f: F) {
 	const throttledRef = useRef(f);
 	useEffect(() => {
-		const throttledF = throttle(f, 24, { edges: ["leading"] });
+		const throttledF = throttle(f, 16, { edges: ["leading"] });
 		throttledRef.current = throttledF as any as F;
 		return () => throttledF.cancel();
 	}, [f]);
