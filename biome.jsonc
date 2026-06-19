@@ -12,6 +12,9 @@
 				"useIterableCallbackReturn": "off"
 			},
 			"a11y": "off"
+		},
+		"domains": {
+			"react": "recommended"
 		}
 	}
 }
