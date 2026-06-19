@@ -1,6 +1,14 @@
 import { isEqual } from "es-toolkit";
 import { debounce } from "es-toolkit/function";
-import { type Dispatch, useCallback, useMemo, useRef, useState } from "react";
+import {
+	type Dispatch,
+	useCallback,
+	useEffect,
+	useEffectEvent,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";
 import type { Maybe, Pair } from "@/utils/types";
@@ -164,6 +172,21 @@ export function RangeSlider<Value>({
 		});
 	};
 
+	const onWheel = useEffectEvent((e: WheelEvent) => {
+		const { deltaX, deltaY } = e;
+		e.preventDefault();
+		if (Math.abs(deltaX) > Math.abs(deltaY)) {
+			onShift(Math.sign(deltaX));
+		} else {
+			onZoom(Math.sign(deltaY));
+		}
+	});
+	const trackRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		trackRef.current?.addEventListener("wheel", onWheel);
+		return () => trackRef.current?.removeEventListener("wheel", onWheel);
+	});
+
 	const rangeRef = useRef<Range>(null);
 	const max = domain.length - 1;
 
@@ -176,20 +199,21 @@ export function RangeSlider<Value>({
 			min={0}
 			step={1}
 			max={max}
-			renderTrack={({ props: trackProps, children, ...rest }) => (
+			renderTrack={({
+				props: { ref: propsRef, ...trackProps },
+				children,
+				...rest
+			}) => (
 				<Track
 					{...trackProps}
 					{...rest}
+					ref={(e) => {
+						propsRef.current = e;
+						trackRef.current = e;
+					}}
 					min={0}
 					max={max}
 					value={values}
-					onWheel={({ deltaX, deltaY }) => {
-						if (Math.abs(deltaX) > Math.abs(deltaY)) {
-							onShift(Math.sign(deltaX));
-						} else {
-							onZoom(Math.sign(deltaY));
-						}
-					}}
 					domain={domain}
 					className={className}
 				>
