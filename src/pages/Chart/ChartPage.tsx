@@ -70,6 +70,7 @@ export function ChartPage() {
 						<SidePanel>
 							<TimeChart.Legend
 								className={cx("legend")}
+								vertical
 								Entry={LegendEntry}
 								entriesGap={{ min: 24, max: 64 }}
 							/>

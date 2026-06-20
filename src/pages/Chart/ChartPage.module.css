@@ -63,8 +63,6 @@ body:has(.chart-page) {
 			--box-shadow-size: 10px;
 			padding: var(--box-shadow-size) var(--legend-padding);
 			margin: calc(var(--legend-padding) - var(--box-shadow-size)) 0;
-			display: flex;
-			flex-direction: column;
 		}
 
 		+ .legend-resizer {

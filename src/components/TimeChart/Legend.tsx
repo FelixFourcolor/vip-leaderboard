@@ -9,7 +9,7 @@ import {
 } from "react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useDrag } from "@/hooks/useDrag";
-import type { AtLeastOneOf, Maybe } from "@/utils/types";
+import type { AtLeastOneOf, Maybe, OneOf } from "@/utils/types";
 import type { TimeSeries } from "./ChartWrapper";
 import { useChart } from "./chartContext";
 import styles from "./TimeChart.module.css";
@@ -25,16 +25,20 @@ export type LegendEntryProps<S extends TimeSeries> = {
 	"onFocus" | "onBlur" | "onKeyDown" | "onMouseEnter" | "onMouseLeave" | "ref"
 >;
 
+type Direction = "horizontal" | "vertical";
 type Props<S extends TimeSeries> = {
 	Entry: FC<LegendEntryProps<S>>;
 	entriesGap?: AtLeastOneOf<{ min: number; max: number }>;
 	className?: string;
-};
+} & OneOf<Record<Direction, true>>;
 export function Legend<S extends TimeSeries>({
 	Entry,
+	vertical,
 	entriesGap: { min: minGap = 0, max: maxGap } = { min: 0 },
 	className,
 }: Props<S>) {
+	const direction = vertical ? "vertical" : "horizontal";
+
 	const { isDragging } = useDrag();
 	const { colors, seriesData, setActiveSeries, setVisibleIdx, renderReady } =
 		useChart<S>();
@@ -47,38 +51,40 @@ export function Legend<S extends TimeSeries>({
 		setVisibleIdx([visibleFrom, visibleTo]);
 	}, [setVisibleIdx, visibleFrom, visibleTo]);
 
-	const [entryHeight, setEntryHeight] = useState<Maybe<number>>();
+	const [entrySize, setEntrySize] = useState<Maybe<number>>();
 	const entryRef = (entry: HTMLLIElement | null) => {
-		if (entry && !entryHeight) {
-			const entryHeight = entry.getBoundingClientRect().height;
-			setEntryHeight(entryHeight);
+		if (entry && !entrySize) {
+			const rect = entry.getBoundingClientRect();
+			const entrySize = direction === "vertical" ? rect.height : rect.width;
+			setEntrySize(entrySize);
 		}
 	};
-	const maxHeight =
-		entryHeight && maxGap
-			? entryHeight * maxVisibleCount + maxGap * (maxVisibleCount - 1)
+	const maxSize =
+		entrySize && maxGap
+			? entrySize * maxVisibleCount + maxGap * (maxVisibleCount - 1)
 			: undefined;
 
 	const [gap, setGap] = useState(minGap);
 	const legendRef = useRef<HTMLOListElement>(null);
 	useEffect(() => {
 		const legend = legendRef.current;
-		if (!legend || !entryHeight) {
+		if (!legend || !entrySize) {
 			return;
 		}
 
 		const observer = new ResizeObserver((entries) => {
-			const containerHeight = entries[0]?.contentRect.height;
-			if (!containerHeight) {
+			const rect = entries[0]?.contentRect;
+			if (!rect) {
 				return;
 			}
+			const containerSize = direction === "vertical" ? rect.height : rect.width;
 
 			const visibleCount = Math.min(
-				Math.floor((containerHeight + minGap) / (entryHeight + minGap)),
+				Math.floor((containerSize + minGap) / (entrySize + minGap)),
 				maxVisibleCount,
 			);
 			const gap = Math.max(
-				(containerHeight - entryHeight * visibleCount) / (visibleCount - 1),
+				(containerSize - entrySize * visibleCount) / (visibleCount - 1),
 				minGap,
 			);
 
@@ -92,43 +98,54 @@ export function Legend<S extends TimeSeries>({
 
 		observer.observe(legend);
 		return () => observer.disconnect();
-	}, [maxVisibleCount, minGap, maxGap, entryHeight]);
+	}, [maxVisibleCount, direction, minGap, maxGap, entrySize]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
 	useLayoutEffect(() => {
 		const legend = legendRef.current;
-		if (!legend || !entryHeight || !seriesData) {
+		if (!legend || !entrySize || !seriesData) {
 			return;
 		}
 
 		// ignore scrolls triggered by re-rendering the legend
 		ignoreScroll.current = true;
-		legend.scrollTo(calculateScroll(prevFromIdx.current, { entryHeight, gap }));
+		legend.scrollTo(
+			calculateScroll(prevFromIdx.current, { entrySize, direction, gap }),
+		);
 		// If out of bound, the browser will clamp it.
 		// So read back the value for the actual rank
-		const index = calculateIdx(legend.scrollTop, { entryHeight, gap });
+		const index = calculateIdx(legend, { entrySize, direction, gap });
 		setVisibleFrom(index);
 		prevFromIdx.current = index;
 
 		const timeoutId = setTimeout(() => (ignoreScroll.current = false), 100);
 		return () => clearTimeout(timeoutId);
-	}, [seriesData, entryHeight, gap]);
+	}, [seriesData, entrySize, direction, gap]);
 
 	const isEntryFocusedRef = useRef(false);
 	return (
 		<ol
-			style={{ gap, maxHeight }}
+			style={{
+				gap,
+				...(direction === "vertical"
+					? { maxHeight: maxSize }
+					: { maxWidth: maxSize }),
+			}}
 			ref={legendRef}
-			onScroll={({ currentTarget: { scrollTop } }) => {
-				if (ignoreScroll.current || !entryHeight) {
+			onScroll={({ currentTarget }) => {
+				if (ignoreScroll.current || !entrySize) {
 					return;
 				}
-				const index = calculateIdx(scrollTop, { entryHeight, gap });
+				const index = calculateIdx(currentTarget, {
+					entrySize,
+					direction,
+					gap,
+				});
 				prevFromIdx.current = index;
 				setVisibleFrom(index);
 			}}
-			className={cx("legend", className)}
+			className={cx("legend", direction, className)}
 			onKeyDown={(e) => {
 				if (
 					isEntryFocusedRef.current &&
@@ -156,16 +173,19 @@ export function Legend<S extends TimeSeries>({
 						onMouseLeave={() => setActiveSeries(undefined)}
 						onFocus={() => {
 							const legend = legendRef.current;
-							if (!legend || !entryHeight) {
+							if (!legend || !entrySize) {
 								return;
 							}
 
 							if (i >= visibleTo) {
-								legend.scrollTo(calculateScroll(i, { entryHeight, gap }));
+								legend.scrollTo(
+									calculateScroll(i, { entrySize, direction, gap }),
+								);
 							} else if (i < visibleFrom) {
 								legend.scrollTo(
 									calculateScroll(Math.max(0, i - visibleCount + 1), {
-										entryHeight,
+										entrySize,
+										direction,
 										gap,
 									}),
 								);
@@ -198,12 +218,20 @@ export function Legend<S extends TimeSeries>({
 	);
 }
 
-const calculateIdx = (
-	scrollTop: number,
-	{ entryHeight, gap }: { entryHeight: number; gap: number },
-) => Math.floor((scrollTop + gap) / (entryHeight + gap));
+type CalculateArgs = { entrySize: number; direction: Direction; gap: number };
 
-const calculateScroll = (
+function calculateIdx(
+	{ scrollTop, scrollLeft }: { scrollTop: number; scrollLeft: number },
+	{ entrySize, direction, gap }: CalculateArgs,
+) {
+	const scroll = direction === "vertical" ? scrollTop : scrollLeft;
+	return Math.floor((scroll + gap) / (entrySize + gap));
+}
+
+function calculateScroll(
 	index: number,
-	{ entryHeight, gap }: { entryHeight: number; gap: number },
-) => ({ top: index * (entryHeight + gap) });
+	{ entrySize, direction, gap }: CalculateArgs,
+) {
+	const pos = index * (entrySize + gap);
+	return direction === "vertical" ? { top: pos } : { left: pos };
+}

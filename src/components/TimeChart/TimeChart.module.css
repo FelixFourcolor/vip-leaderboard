@@ -144,5 +144,14 @@
 
 .legend {
 	margin: 0;
-	overflow-y: auto;
+	display: flex;
+
+	&.vertical {
+		flex-direction: column;
+		overflow-y: auto;
+	}
+	&.horizontal {
+		flex-direction: row;
+		overflow-x: auto;
+	}
 }
