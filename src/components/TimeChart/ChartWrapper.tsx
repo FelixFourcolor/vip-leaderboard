@@ -144,7 +144,7 @@ function useTransform(
 			if (!cumulative) {
 				const data = xValues.map((month) => {
 					const x = new Date(month);
-					const y = yValues[month] ?? (area ? 0 : null);
+					const y = yValues[month] ?? null;
 					return { x, y, value: y ?? 0 };
 				});
 				return { id, data };
