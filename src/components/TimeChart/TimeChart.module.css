@@ -3,8 +3,7 @@
 
 	[data-areas-layer],
 	[data-lines-layer],
-	[data-points-layer],
-	[data-labels-layer] {
+	[data-points-layer] {
 		clip-path: var(--clip-path-url);
 	}
 

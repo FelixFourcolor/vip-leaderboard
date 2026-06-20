@@ -1,6 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useEffect, useMemo, useState } from "react";
+import { monthsInRange } from "@/utils/time";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
@@ -41,41 +42,45 @@ type LabelProps = {
 	value: number;
 	rank?: number;
 };
-function Label({ value, rank, ...xy }: LabelProps) {
-	const [showRank, setShowRank] = useState(!!rank);
+function Label({ value, rank, x, y }: LabelProps) {
+	const { area } = useChart();
+	const { chartHeight = Infinity } = useChartZoom();
+	const offset = area ? -4 : 12;
+	const visible = y + offset <= chartHeight;
 
+	const [showRank, setShowRank] = useState(!!rank);
 	useEffect(() => {
-		if (!rank) {
+		if (!rank || !visible) {
 			return;
 		}
 		const timer = setInterval(() => setShowRank((current) => !current), 1000);
 		return () => clearInterval(timer);
-	}, [rank]);
+	}, [rank, visible]);
 
-	return (
-		<text {...xy} className={cx("label")}>
-			{showRank ? `#${rank}` : value}
-		</text>
-	);
+	if (visible) {
+		return (
+			<text x={x} y={y} className={cx("label")}>
+				{showRank ? `#${rank}` : value}
+			</text>
+		);
+	}
 }
 
 function useVisibility() {
 	const {
 		cumulative,
 		area,
+		since,
 		chartData,
 		isPointIsolated,
 		isHighlighted,
 		isPointHovered,
 		PointTooltip,
 	} = useChart();
-	const {
-		xValues,
-		xZoom: [startOffset, endOffset],
-	} = useChartZoom();
 
-	const lastIndexMap = useMemo(() => {
-		if (!cumulative || area || !chartData) {
+	const lastNonNullIdxMap = useMemo(() => {
+		if (!chartData || cumulative || area) {
+			// when cumulative or area, last non-null index is always the last
 			return null;
 		}
 		return Object.fromEntries(
@@ -89,15 +94,40 @@ function useVisibility() {
 		);
 	}, [chartData, cumulative, area]);
 
-	const labelsCount = cumulative ? 10 : 20;
-	const xLength = xValues.slice(
-		Math.ceil(startOffset),
-		-Math.ceil(endOffset) || undefined,
-	).length;
-	const labelInterval = Math.max(1, Math.ceil(xLength / labelsCount));
-	const isLabelIndex = (i: number, seriesId: string) =>
-		// reversed to show label at the end
-		(-i + (lastIndexMap?.[seriesId] ?? xLength - 1)) % labelInterval === 0;
+	const { xValues, xZoom } = useChartZoom();
+	const xLength = xValues.length;
+	const zoomFirstIdx = Math.ceil(xZoom[0]);
+	const zoomLastIdx = Math.floor(xLength - 1 - xZoom[1]);
+	const zoomXLength = xValues.slice(zoomFirstIdx, zoomLastIdx + 1).length;
+
+	const idxOffset = useMemo(() => {
+		const firstMonth = xValues[0];
+		if (!firstMonth) {
+			return 0;
+		}
+		return monthsInRange(since, firstMonth).length - 1;
+	}, [since, xValues[0]]);
+
+	const labelsCount = cumulative ? 10 : 16;
+	const labelInterval = Math.max(1, Math.ceil(zoomXLength / labelsCount));
+	const isLabelIndex = (i: number, seriesId: string) => {
+		i -= idxOffset;
+		if (!(zoomFirstIdx <= i && i <= zoomLastIdx)) {
+			return false;
+		}
+		const lastIdx = Math.min(
+			(() => {
+				const lastNonNullIdx = lastNonNullIdxMap?.[seriesId];
+				if (!lastNonNullIdx) {
+					return xLength - 1;
+				}
+				return lastNonNullIdx - idxOffset;
+			})(),
+			zoomLastIdx,
+		);
+		// reverse to show label at the end (later is more important)
+		return (lastIdx - i) % labelInterval === 0;
+	};
 
 	return (seriesId: string, index: number, { x, value }: ChartPoint) =>
 		value &&

@@ -16,6 +16,8 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	chartData: Maybe<readonly ChartSeries[]>;
 	setVisibleIdx: (range: [from: number, to: number]) => void;
 	renderReady: boolean;
+	since: YyyyMm;
+	until: YyyyMm;
 	area: boolean;
 	cumulative: boolean;
 	ranked: boolean;

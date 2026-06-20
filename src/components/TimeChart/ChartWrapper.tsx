@@ -105,6 +105,8 @@ export function ChartWrapper<S extends TimeSeries>({
 				setVisibleIdx,
 				renderReady: useDelay(renderDelay),
 				colors,
+				since,
+				until,
 				area,
 				cumulative,
 				ranked,
@@ -116,9 +118,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				setHoveredPoint,
 			}}
 		>
-			<ZoomProvider since={since} until={until}>
-				{children}
-			</ZoomProvider>
+			<ZoomProvider>{children}</ZoomProvider>
 		</ChartContext>
 	);
 }

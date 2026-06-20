@@ -4,12 +4,7 @@ import type { Pair } from "@/utils/types";
 import { useChart } from "./chartContext";
 import { ZoomContext } from "./zoomContext";
 
-type Props = {
-	since: YyyyMm;
-	until: YyyyMm;
-	children?: ReactNode;
-};
-export function ZoomProvider({ since, until, children }: Props) {
+export function ZoomProvider({ children }: { children?: ReactNode }) {
 	const [chartHeight, setChartHeight] = useState<number>();
 	const [chartWidth, setChartWidth] = useState<number>();
 
@@ -17,6 +12,7 @@ export function ZoomProvider({ since, until, children }: Props) {
 	const [yZoom, setYZoom] = useState<Readonly<Pair<number>>>([0, 0]);
 	const [isInteracting, setIsInteracting] = useState(false);
 
+	const { since, until } = useChart();
 	const xValues = useXValues(since, until);
 	const yRange = useYRange();
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset zoom when range changes
