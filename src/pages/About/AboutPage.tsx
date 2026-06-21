@@ -88,7 +88,7 @@ function Content() {
 						times, once for each recipient.
 					</p>
 					<p>
-						Any other VIP who reacts to a ban message with ✅/👍/
+						Any other VIP who reacts to a ban message with ✅/🔨/👍/
 						<DiscordEmoji thumbsup />
 						/
 						<DiscordEmoji thumbup />

@@ -157,6 +157,7 @@ const TICKET_RESOLVED_REACTIONS = new Set([
 ]);
 const BAN_SUPPORT_REACTIONS = new Set([
 	"white_check_mark",
+	"hammer",
 	"thumbsup",
 	"thumbup",
 	"ehh",
