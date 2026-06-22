@@ -11,7 +11,7 @@ import {
 	createContext,
 	use,
 	useCallback,
-	useState,
+	useId,
 } from "react";
 import { GlobalMenuContext } from "./Manager";
 
@@ -37,7 +37,8 @@ export function PopupWrapper({
 	placement,
 	offset = 8,
 }: Props) {
-	const [menuId] = useState(() => menuIdProp || crypto.randomUUID());
+	const randomId = useId();
+	const menuId = menuIdProp || randomId;
 
 	const { refs, floatingStyles } = useFloating({
 		strategy: "absolute",

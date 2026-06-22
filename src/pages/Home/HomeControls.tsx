@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import { isEqual, mapValues } from "es-toolkit";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { PopupMenu, usePopupMenu } from "@/components/PopupMenu";
 import { RangeSlider } from "@/components/RangeSlider";
@@ -23,7 +23,7 @@ export function HomeControls() {
 		[setOptions],
 	);
 
-	const [controlMenuId] = useState(() => crypto.randomUUID());
+	const controlMenuId = useId();
 	const { activeMenuId, closeMenu } = usePopupMenu();
 	const isMenuOpen = activeMenuId === controlMenuId;
 

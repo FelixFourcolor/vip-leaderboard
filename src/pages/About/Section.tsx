@@ -5,6 +5,7 @@ import {
 	type ReactNode,
 	use,
 	useCallback,
+	useId,
 	useMemo,
 	useState,
 } from "react";
@@ -51,7 +52,7 @@ export function Section({ title, children }: Props) {
 }
 
 export function Subsection({ title, children }: Props) {
-	const [id] = useState(() => crypto.randomUUID());
+	const id = useId();
 	const [isExpanded, setIsExpanded] = useExpandState(id);
 
 	const ref = () => {
