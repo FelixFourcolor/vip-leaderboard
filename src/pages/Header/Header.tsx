@@ -56,7 +56,7 @@ export function Header({ position = "sticky", containerRef }: Props) {
 				<h1>VIP leaderboard</h1>
 				<dl>
 					<dt>Last update</dt>
-					<dd>{LAST_UPDATE.toLocaleDateString()}</dd>
+					<dd>{LAST_UPDATE.toISOString().slice(0, 10)}</dd>
 				</dl>
 			</div>
 			<nav>
