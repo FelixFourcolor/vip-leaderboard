@@ -96,17 +96,25 @@ section {
 			&::marker {
 				color: var(--text-secondary);
 			}
+			cursor: pointer;
+			user-select: none;
 		}
-		&[open] .subheader {
-			margin-bottom: var(--small-space);
+
+		&::details-content {
+			interpolate-size: allow-keywords;
+			height: 0;
+			overflow: hidden;
+			transition: all 0.15s ease;
+			transition-behavior: allow-discrete;
+		}
+		&:open::details-content {
+			height: auto;
 		}
 	}
 
 	p {
 		margin: 0;
-		&:not(:last-child) {
-			margin-bottom: var(--small-space);
-		}
+		margin-top: var(--small-space);
 	}
 
 	ol,
