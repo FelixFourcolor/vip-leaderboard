@@ -146,7 +146,7 @@ export function RangeSlider<Value>({
 		const { deltaX, deltaY } = e;
 		e.preventDefault();
 		if (Math.abs(deltaX) > Math.abs(deltaY)) {
-			onShift(Math.sign(deltaX));
+			onShift(-Math.sign(deltaX));
 		} else {
 			onZoom(Math.sign(deltaY));
 		}
