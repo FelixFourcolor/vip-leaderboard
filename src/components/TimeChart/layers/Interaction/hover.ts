@@ -15,7 +15,7 @@ export function useHover({
 	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const { isDragging } = useDrag();
-	const { setActiveSeries, setHoveredPoint, area } = useChart();
+	const { setActiveSeries, setHoveredPoint, area, enableHover } = useChart();
 
 	const focus = (point: InteractivePoint) => {
 		setActiveSeries(point.seriesId);
@@ -77,7 +77,7 @@ export function useHover({
 	};
 
 	const onHover = ({ currentTarget, clientX, clientY }: MouseEvent) => {
-		if (isDragging) {
+		if (isDragging || !enableHover) {
 			return;
 		}
 

@@ -9,7 +9,6 @@ import { useWindowSize } from "@/hooks/useWindowSize";
 import { Header } from "../Header";
 import { ChartControls, useChartControls } from "./ChartControls";
 import styles from "./ChartPage.module.css";
-import { LegendEntry } from "./LegendEntry";
 import { PointTooltip } from "./PointTooltip";
 import { SidePanel } from "./SidePanel";
 
@@ -67,14 +66,7 @@ export function ChartPage() {
 							<legend>chart</legend>
 							<TimeChart.Chart title={title} />
 						</fieldset>
-						<SidePanel>
-							<TimeChart.Legend
-								className={cx("legend")}
-								vertical
-								Entry={LegendEntry}
-								entriesGap={{ min: 24, max: 64 }}
-							/>
-						</SidePanel>
+						<SidePanel />
 						<ChartControls />
 					</TimeChart>
 				</Activity>

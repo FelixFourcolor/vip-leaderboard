@@ -4,6 +4,7 @@ import {
 	type FC,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -40,8 +41,14 @@ export function Legend<S extends TimeSeries>({
 	const direction = vertical ? "vertical" : "horizontal";
 
 	const { isDragging } = useDrag();
-	const { colors, seriesData, setActiveSeries, setVisibleIdx, renderReady } =
-		useChart<S>();
+	const {
+		colors,
+		seriesData,
+		activeSeries,
+		setActiveSeries,
+		setVisibleIdx,
+		renderReady,
+	} = useChart<S>();
 
 	const maxVisibleCount = colors.length;
 	const [visibleFrom, setVisibleFrom] = useState(0);
@@ -52,13 +59,6 @@ export function Legend<S extends TimeSeries>({
 	}, [setVisibleIdx, visibleFrom, visibleTo]);
 
 	const [entrySize, setEntrySize] = useState<Maybe<number>>();
-	const entryRef = (entry: HTMLLIElement | null) => {
-		if (entry && !entrySize) {
-			const rect = entry.getBoundingClientRect();
-			const entrySize = direction === "vertical" ? rect.height : rect.width;
-			setEntrySize(entrySize);
-		}
-	};
 	const maxSize =
 		entrySize && maxGap
 			? entrySize * maxVisibleCount + maxGap * (maxVisibleCount - 1)
@@ -99,6 +99,53 @@ export function Legend<S extends TimeSeries>({
 		observer.observe(legend);
 		return () => observer.disconnect();
 	}, [maxVisibleCount, direction, minGap, maxGap, entrySize]);
+
+	const lastHoveredSeries = useRef<Maybe<string>>(undefined);
+	const entriesMapRef = useRef<Record<string, HTMLLIElement>>({});
+	useEffect(() => {
+		if (activeSeries) {
+			entriesMapRef.current[activeSeries]?.focus();
+		}
+	}, [activeSeries]);
+
+	// scroll to active series when changed externally
+	const entryIndexMap = useMemo(() => {
+		if (!seriesData) {
+			return;
+		}
+		return Object.fromEntries(
+			seriesData.map((series, index) => [series.id, index]),
+		);
+	}, [seriesData]);
+	useEffect(() => {
+		if (!activeSeries) {
+			return;
+		}
+		const activeIndex = entryIndexMap?.[activeSeries];
+		if (activeIndex === undefined) {
+			return;
+		}
+
+		setVisibleIdx((current) => {
+			if (!current) {
+				return current;
+			}
+
+			const [currentFrom, currentTo] = current;
+			if (currentFrom <= activeIndex && activeIndex < currentTo) {
+				return current;
+			}
+
+			const legend = legendRef?.current;
+			if (entrySize && legend) {
+				legend.scrollTo(
+					calculateScroll(activeIndex, { entrySize, direction, gap }),
+				);
+			}
+
+			return [activeIndex, activeIndex + currentTo - currentFrom];
+		});
+	}, [activeSeries, setVisibleIdx, entryIndexMap, direction, entrySize, gap]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
@@ -156,6 +203,7 @@ export function Legend<S extends TimeSeries>({
 					e.preventDefault();
 				}
 			}}
+			tabIndex={-1}
 		>
 			{renderReady && seriesData ? (
 				seriesData.map((series, i) => (
@@ -163,10 +211,27 @@ export function Legend<S extends TimeSeries>({
 						key={series.id}
 						series={series}
 						seriesIndex={i}
-						ref={i === 0 ? entryRef : undefined}
+						ref={(entry) => {
+							if (!entry) {
+								return;
+							}
+							entriesMapRef.current[series.id] = entry;
+							// measure entry size
+							// entries are assumed to be the same size, so just take the 1st
+							if (i === 0 && !entrySize) {
+								const rect = entry.getBoundingClientRect();
+								const entrySize =
+									direction === "vertical" ? rect.height : rect.width;
+								setEntrySize(entrySize);
+							}
+						}}
 						seriesColor={colors[i % colors.length]!}
 						onMouseEnter={() => {
-							if (!isDragging) {
+							if (
+								!isDragging &&
+								(!activeSeries || lastHoveredSeries.current !== series.id)
+							) {
+								lastHoveredSeries.current = series.id;
 								setActiveSeries(series.id);
 							}
 						}}
@@ -218,11 +283,11 @@ export function Legend<S extends TimeSeries>({
 	);
 }
 
-type CalculateArgs = { entrySize: number; direction: Direction; gap: number };
+type ScrollArgs = { entrySize: number; direction: Direction; gap: number };
 
 function calculateIdx(
 	{ scrollTop, scrollLeft }: { scrollTop: number; scrollLeft: number },
-	{ entrySize, direction, gap }: CalculateArgs,
+	{ entrySize, direction, gap }: ScrollArgs,
 ) {
 	const scroll = direction === "vertical" ? scrollTop : scrollLeft;
 	return Math.floor((scroll + gap) / (entrySize + gap));
@@ -230,7 +295,7 @@ function calculateIdx(
 
 function calculateScroll(
 	index: number,
-	{ entrySize, direction, gap }: CalculateArgs,
+	{ entrySize, direction, gap }: ScrollArgs,
 ) {
 	const pos = index * (entrySize + gap);
 	return direction === "vertical" ? { top: pos } : { left: pos };

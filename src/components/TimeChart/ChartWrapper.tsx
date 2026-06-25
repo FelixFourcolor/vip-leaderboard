@@ -1,12 +1,5 @@
 import { zip } from "es-toolkit";
-import {
-	type JSX,
-	type ReactNode,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type JSX, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useDelay } from "@/hooks/useDelay";
 import { mapReduce, windowed } from "@/utils/array";
 import { fromEntries, keys } from "@/utils/object";
@@ -53,6 +46,7 @@ export function ChartWrapper<S extends TimeSeries>({
 }: Props<S>) {
 	const [activeSeries, setActiveSeries] = useState<string>();
 	const [hoveredPoint, setHoveredPoint] = useState<InteractivePoint>();
+	const [enableHover, setEnableHover] = useState(true);
 
 	const xValues = useMemo(() => monthsInRange(since, until), [since, until]);
 	const transformedData = useTransform(data, xValues, {
@@ -69,32 +63,31 @@ export function ChartWrapper<S extends TimeSeries>({
 		[transformedData, visibleIdx],
 	);
 
-	// Sync activeSeries, hoveredPoint, and visibleIdx
 	const visibleIds = useMemo(
 		() => new Set(chartData?.map((s) => s.id)),
 		[chartData],
 	);
-	const prevActiveSeries = useRef(activeSeries);
+	// Mobile-specific handling
 	useEffect(() => {
-		if (activeSeries) {
-			// inactivate series if it becomes invisible
-			if (!visibleIds.has(activeSeries)) {
-				setActiveSeries(undefined);
-				prevActiveSeries.current = activeSeries;
-			}
-			// hide tooltip if hovered point doesn't belong to active series anymore
-			else if (hoveredPoint && hoveredPoint.seriesId !== activeSeries) {
-				setHoveredPoint(undefined);
-			}
-		}
-		// recover the active series if it becomes visible again
-		else if (
-			prevActiveSeries.current &&
-			prevActiveSeries.current === hoveredPoint?.seriesId &&
-			visibleIds?.has(hoveredPoint.seriesId)
-		) {
-			setActiveSeries(hoveredPoint.seriesId);
-		}
+		const timeout = setTimeout(
+			() => {
+				if (!activeSeries) {
+					return;
+				}
+				// on mobile, it's possible to scroll the legend while a series is still focused,
+				// so, inactivate the series if it's no longer visible
+				if (!visibleIds.has(activeSeries)) {
+					setActiveSeries(undefined);
+				}
+				// similarly, reset hovered point
+				if (hoveredPoint && hoveredPoint.seriesId !== activeSeries) {
+					setHoveredPoint(undefined);
+				}
+			},
+			0, // legend auto-scrolls to the active series when changed externally,
+			// delay to avoid conflict
+		);
+		return () => clearTimeout(timeout);
 	}, [visibleIds, activeSeries, hoveredPoint]);
 
 	return (
@@ -116,6 +109,8 @@ export function ChartWrapper<S extends TimeSeries>({
 				setActiveSeries,
 				hoveredPoint,
 				setHoveredPoint,
+				enableHover,
+				setEnableHover,
 			}}
 		>
 			<ZoomProvider>{children}</ZoomProvider>

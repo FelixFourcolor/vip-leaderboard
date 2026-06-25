@@ -1,19 +1,18 @@
 import classNames from "classnames/bind";
 import { useDrag } from "@/hooks/useDrag";
+import type { OneOf } from "@/utils/types";
 import styles from "./Resizer.module.css";
 
 const cx = classNames.bind(styles);
 
 type Props = {
-	side: "left" | "right" | "top" | "bottom";
 	onChange: (delta: number) => void;
 	className?: string;
-};
+} & OneOf<Record<"left" | "right" | "top" | "bottom", true>>;
 
-export function Resizer({ side, onChange, className }: Props) {
-	const type = side === "left" || side === "right" ? "column" : "row";
-	const direction =
-		side === "right" || side === "bottom" ? "positive" : "negative";
+export function Resizer({ left, right, bottom, onChange, className }: Props) {
+	const type = left || right ? "column" : "row";
+	const direction = right || bottom ? "positive" : "negative";
 
 	const { isDragging, onMouseDown } = useDrag(`resize-${type}`, (delta) => {
 		const signedDelta = direction === "positive" ? delta : -delta;
