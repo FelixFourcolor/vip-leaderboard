@@ -1,13 +1,13 @@
-import { throttle } from "es-toolkit";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useThrottle } from "@/hooks/useThrottle";
 import { useChartZoom } from "../../zoomContext";
 import { usePanHandler } from "./pan";
 import { useZoomHandler } from "./zoom";
 
 export function useWheel() {
 	const { setIsInteracting } = useChartZoom();
-	const pan = useThrottle(usePanHandler());
-	const zoom = useThrottle(useZoomHandler());
+	const pan = useThrottle(usePanHandler(), 12);
+	const zoom = useThrottle(useZoomHandler(), 12);
 	const timeoutRef = useRef<number>(undefined);
 
 	return (e: WheelEvent) => {
@@ -22,16 +22,4 @@ export function useWheel() {
 		setIsInteracting(true);
 		timeoutRef.current = setTimeout(() => setIsInteracting(false), 100);
 	};
-}
-
-function useThrottle<F extends (...args: any[]) => void>(f: F) {
-	const throttledRef = useRef(f);
-
-	useEffect(() => {
-		const throttledF = throttle(f, 12, { edges: ["leading"] });
-		throttledRef.current = throttledF as any as F;
-		return () => throttledF.cancel();
-	}, [f]);
-
-	return throttledRef.current;
 }

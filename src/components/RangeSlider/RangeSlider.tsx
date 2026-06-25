@@ -1,15 +1,9 @@
 import { isEqual } from "es-toolkit";
 import { debounce } from "es-toolkit/function";
-import {
-	type Dispatch,
-	useCallback,
-	useEffect,
-	useEffectEvent,
-	useMemo,
-	useRef,
-} from "react";
+import { type Dispatch, useCallback, useEffect, useMemo, useRef } from "react";
 import { Range } from "react-range";
 import { useSyncedState } from "@/hooks/useSyncedState";
+import { useThrottle } from "@/hooks/useThrottle";
 import type { Pair } from "@/utils/types";
 import { ThumbWrapper } from "./Thumb";
 import { Track } from "./Track";
@@ -28,13 +22,13 @@ export function RangeSlider<Value>({
 	domain,
 	selected: [selectedFrom, selectedTo],
 	onChange,
-	debounce: debounceMs = 50,
+	debounce: debounceMs = 64,
 	minDistance = 0,
 	maxDistance = domain.length - 1,
 	className,
 }: RangeSliderProps<Value>) {
 	const onChangeDebounced = useMemo(
-		() => (debounceMs !== false ? debounce(onChange, debounceMs) : onChange),
+		() => debounce(onChange, debounceMs || 0),
 		[onChange, debounceMs],
 	);
 
@@ -49,20 +43,23 @@ export function RangeSlider<Value>({
 			];
 		}, [domain, selectedFrom, selectedTo]),
 	);
-	const setValues = (updater: (_: Pair<number>) => Pair<number>) => {
-		_setValues((current) => {
-			const updated = updater(current);
-			if (isEqual(current, updated)) {
-				return current;
-			}
-			const fromValue = domain[updated[0]];
-			const toValue = domain[updated[1]];
-			if (fromValue !== undefined && toValue !== undefined) {
-				onChangeDebounced([fromValue, toValue]);
-			}
-			return updated;
-		});
-	};
+	const setValues = useCallback(
+		(updater: (_: Pair<number>) => Pair<number>) => {
+			_setValues((current) => {
+				const updated = updater(current);
+				if (isEqual(current, updated)) {
+					return current;
+				}
+				const fromValue = domain[updated[0]];
+				const toValue = domain[updated[1]];
+				if (fromValue !== undefined && toValue !== undefined) {
+					onChangeDebounced([fromValue, toValue]);
+				}
+				return updated;
+			});
+		},
+		[_setValues, domain, onChangeDebounced],
+	);
 
 	const onDrag = (values: number[]) => {
 		let [from, to] = values as [number, number];
@@ -94,68 +91,80 @@ export function RangeSlider<Value>({
 			return [from, to];
 		});
 	};
-	const onShift = (delta: number) => {
-		if (!delta) {
-			return;
-		}
-		setValues(([currentFrom, currentTo]) => {
-			const currentDistance = currentTo - currentFrom;
-			let from = currentFrom + delta;
-			let to = currentTo + delta;
-			if (from < 0) {
-				from = 0;
-				to = currentDistance;
-			} else if (to >= domain.length) {
-				to = domain.length - 1;
-				from = to - currentDistance;
+	const onShift = useCallback(
+		(delta: number) => {
+			if (!delta) {
+				return;
 			}
+			setValues(([currentFrom, currentTo]) => {
+				const currentDistance = currentTo - currentFrom;
+				let from = currentFrom + delta;
+				let to = currentTo + delta;
+				if (from < 0) {
+					from = 0;
+					to = currentDistance;
+				} else if (to >= domain.length) {
+					to = domain.length - 1;
+					from = to - currentDistance;
+				}
 
-			return [from, to];
-		});
-	};
-	const onZoom = (delta: number) => {
-		if (!delta) {
-			return;
-		}
-		setValues(([currentFrom, currentTo]) => {
-			let from = currentFrom - delta;
-			let to = currentTo + delta;
-			if (from < 0) {
-				from = 0;
+				return [from, to];
+			});
+		},
+		[domain, setValues],
+	);
+	const onZoom = useCallback(
+		(delta: number) => {
+			if (!delta) {
+				return;
 			}
-			if (to >= domain.length) {
-				to = domain.length - 1;
-			}
+			setValues(([currentFrom, currentTo]) => {
+				let from = currentFrom - delta;
+				let to = currentTo + delta;
+				if (from < 0) {
+					from = 0;
+				}
+				if (to >= domain.length) {
+					to = domain.length - 1;
+				}
 
-			const distance = to - from;
-			if (distance < minDistance) {
-				const adjustment = minDistance - distance;
-				from -= Math.floor(adjustment / 2);
-				to += Math.ceil(adjustment / 2);
-			} else if (distance > maxDistance) {
-				const adjustment = distance - maxDistance;
-				from += Math.floor(adjustment / 2);
-				to -= Math.ceil(adjustment / 2);
-			}
+				const distance = to - from;
+				if (distance < minDistance) {
+					const adjustment = minDistance - distance;
+					from -= Math.floor(adjustment / 2);
+					to += Math.ceil(adjustment / 2);
+				} else if (distance > maxDistance) {
+					const adjustment = distance - maxDistance;
+					from += Math.floor(adjustment / 2);
+					to -= Math.ceil(adjustment / 2);
+				}
 
-			return [from, to];
-		});
-	};
+				return [from, to];
+			});
+		},
+		[maxDistance, minDistance, domain, setValues],
+	);
 
-	const onWheel = useEffectEvent((e: WheelEvent) => {
-		const { deltaX, deltaY } = e;
-		e.preventDefault();
-		if (Math.abs(deltaX) > Math.abs(deltaY)) {
-			onShift(-Math.sign(deltaX));
-		} else {
-			onZoom(Math.sign(deltaY));
-		}
-	});
+	const onWheel = useThrottle(
+		useCallback(
+			(e: WheelEvent) => {
+				e.preventDefault();
+				const { deltaX, deltaY } = e;
+				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+					onShift(-Math.sign(deltaX));
+				} else {
+					onZoom(Math.sign(deltaY));
+				}
+			},
+			[onShift, onZoom],
+		),
+		8,
+	);
 	const trackRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		trackRef.current?.addEventListener("wheel", onWheel);
 		return () => trackRef.current?.removeEventListener("wheel", onWheel);
-	});
+	}, [onWheel]);
 
 	const rangeRef = useRef<Range>(null);
 	const max = domain.length - 1;
@@ -166,6 +175,7 @@ export function RangeSlider<Value>({
 			values={values}
 			allowOverlap
 			onChange={onDrag}
+			onFinalChange={onChangeDebounced.flush}
 			min={0}
 			step={1}
 			max={max}
