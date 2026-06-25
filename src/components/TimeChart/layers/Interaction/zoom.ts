@@ -26,7 +26,9 @@ export function useZoomHandler() {
 }
 
 const createZoomHandler =
-	(setValue: ZoomContextValue["setXZoom"], length: number) => (delta: number) =>
+	(setValue: ZoomContextValue["setXZoom"], length: number) =>
+	(delta: number) => {
+		delta *= length;
 		setValue((current) => {
 			const [startOffset, endOffset] = current;
 			const available = 0.9 * length - startOffset - endOffset;
@@ -39,3 +41,4 @@ const createZoomHandler =
 			];
 			return isEqual(current, newValue) ? current : newValue;
 		});
+	};

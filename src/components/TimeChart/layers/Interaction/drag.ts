@@ -5,17 +5,11 @@ import { useChartZoom } from "../../zoomContext";
 import { usePanHandler } from "./pan";
 
 export function useDrag() {
-	const { xValues, yRange, setIsInteracting } = useChartZoom();
-	
-	const xLength = xValues.length;
-	const yLength = yRange.max - yRange.min + 1;
-	const xScale = xLength / innerWidth;
-	const yScale = yLength / innerHeight;
-
+	const { setIsInteracting } = useChartZoom();
 	const pan = usePanHandler();
 
 	const onDrag = ({ x, y }: XY) => {
-		pan(-x * xScale, y * yScale);
+		pan(-x / innerWidth, y / innerHeight);
 	};
 	const onDragEnd = () => {
 		setIsInteracting(false);

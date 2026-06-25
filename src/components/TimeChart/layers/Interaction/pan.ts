@@ -7,10 +7,18 @@ export function usePanHandler() {
 	const { ranked, area } = useChart();
 	const reverse = ranked && !area;
 
-	const { setXZoom, setYZoom } = useChartZoom();
+	const { xValues, yRange, setXZoom, setYZoom } = useChartZoom();
+	const xLength = xValues.length;
+	const yLength = yRange.max - yRange.min + 1;
 
-	const panX = useMemo(() => createPanHandler(setXZoom), [setXZoom]);
-	const panY = useMemo(() => createPanHandler(setYZoom), [setYZoom]);
+	const panX = useMemo(
+		() => createPanHandler(setXZoom, xLength),
+		[setXZoom, xLength],
+	);
+	const panY = useMemo(
+		() => createPanHandler(setYZoom, yLength),
+		[setYZoom, yLength],
+	);
 
 	return useCallback(
 		(deltaX: number, deltaY: number) => {
@@ -22,13 +30,15 @@ export function usePanHandler() {
 }
 
 const createPanHandler =
-	(setValue: ZoomContextValue["setXZoom"]) => (delta: number) =>
+	(setValue: ZoomContextValue["setXZoom"], length: number) => (delta: number) =>
 		setValue((current) => {
 			const [startOffset, endOffset] = current;
 			const zoomLevel = startOffset + endOffset;
+			const scaldedDelta = delta * (length - zoomLevel);
+
 			const newValue = ((): typeof current => {
-				const newStartOffset = startOffset + delta;
-				const newEndOffset = endOffset - delta;
+				const newStartOffset = startOffset + scaldedDelta;
+				const newEndOffset = endOffset - scaldedDelta;
 				if (newStartOffset < 0) {
 					return [0, zoomLevel];
 				}
