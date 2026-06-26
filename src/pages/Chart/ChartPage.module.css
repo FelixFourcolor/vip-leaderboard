@@ -51,30 +51,36 @@ body:has(.chart-page) {
 
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 
 		/* pre-set width to prevent layout shift on load */
 		--legend-padding: 16px;
 		min-width: calc(var(--legend-width) + var(--legend-padding) * 2);
 		/* use min-width instead of width just in case somehow the content overflows */
 
-		--box-shadow-size: 10px;
-		.legend {
-			outline: none;
-			--box-shadow-size: 10px;
-			padding: var(--box-shadow-size) var(--legend-padding);
-			margin: var(--legend-padding) 0;
+		.search-bar {
+			z-index: 2;
+			margin: var(--legend-padding) auto 0;
+			width: var(--legend-width);
+		}
+
+		.legend-container {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			overflow: hidden;
+
+			.legend {
+				outline: none;
+				--box-shadow-size: 10px;
+				padding: var(--box-shadow-size) var(--legend-padding);
+				margin: var(--legend-padding) 0;
+			}
 		}
 
 		+ .legend-resizer {
 			grid-row: 1 / -1;
 			grid-column: 2;
-		}
-
-		.search-bar {
-			z-index: 2;
-			margin: var(--legend-padding) auto 0;
-			width: var(--legend-width);
 		}
 	}
 

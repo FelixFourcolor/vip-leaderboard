@@ -18,7 +18,7 @@ export function SidePanel() {
 		setLegendWidth((current) => Math.max(Math.min(current + delta, 305), 121));
 	}, []);
 
-	const suggestions = useMemo(() => {
+	const searchSuggestions = useMemo(() => {
 		if (!seriesData) {
 			return [];
 		}
@@ -30,7 +30,7 @@ export function SidePanel() {
 			),
 		);
 	}, [seriesData]);
-	const nameToUserIdMap = useMemo(() => {
+	const suggestionToIdMap = useMemo(() => {
 		if (!seriesData) {
 			return;
 		}
@@ -53,7 +53,7 @@ export function SidePanel() {
 					<SearchBar
 						placeholder="Search user.."
 						onChange={(name) => {
-							const userId = nameToUserIdMap?.[name];
+							const userId = suggestionToIdMap?.[name];
 							if (userId) {
 								// momentarily disable hover to avoid conflict
 								setEnableHover(false);
@@ -61,16 +61,18 @@ export function SidePanel() {
 								setTimeout(() => setEnableHover(true), 0);
 							}
 						}}
-						suggestions={suggestions}
+						suggestions={searchSuggestions}
 						className={cx("search-bar")}
 					/>
 				)}
-				<TimeChart.Legend
-					vertical
-					Entry={LegendEntry}
-					entriesGap={{ min: 24, max: 64 }}
-					className={cx("legend")}
-				/>
+				<div className={cx("legend-container")}>
+					<TimeChart.Legend
+						vertical
+						Entry={LegendEntry}
+						entriesGap={{ min: 24, max: 64 }}
+						className={cx("legend")}
+					/>
+				</div>
 			</fieldset>
 			<Resizer left onChange={resizeWidth} className={cx("legend-resizer")} />
 		</>
