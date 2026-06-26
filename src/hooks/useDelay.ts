@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Maybe } from "@/utils/types";
 
-export function useDelay(ms?: number) {
+export function useDelay(ms = 0) {
 	const [isReady, setIsReady] = useState(ms === undefined);
 
 	const timeout = useRef<Maybe<number>>(undefined);

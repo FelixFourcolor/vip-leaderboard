@@ -26,8 +26,6 @@ interface Props<S extends TimeSeries> extends TransformOptions {
 	since: YyyyMm;
 	until: YyyyMm;
 	colors?: readonly string[];
-	/** Delay ms before rendering the chart. Helps with perceived performance. */
-	renderDelay?: number;
 	PointTooltip?: (props: PointTooltipProps<S>) => JSX.Element | null;
 	children: ReactNode;
 }
@@ -40,7 +38,6 @@ export function ChartWrapper<S extends TimeSeries>({
 	area = false,
 	cumulative = false,
 	ranked = false,
-	renderDelay,
 	PointTooltip,
 	children,
 }: Props<S>) {
@@ -95,7 +92,7 @@ export function ChartWrapper<S extends TimeSeries>({
 				seriesData: data,
 				chartData,
 				setVisibleIdx,
-				renderReady: useDelay(renderDelay),
+				renderReady: useDelay(),
 				colors,
 				since,
 				until,

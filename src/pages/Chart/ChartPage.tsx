@@ -1,10 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import classNames from "classnames/bind";
-import { Activity, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TimeChart } from "@/components/TimeChart";
 import { activityLabels } from "@/db/activity";
 import { getUserMonthlyCount, type UserMonthlyCount } from "@/db/user";
-import { useDelay } from "@/hooks/useDelay";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { Header } from "../Header";
 import { ChartControls, useChartControls } from "./ChartControls";
@@ -55,21 +54,14 @@ export function ChartPage() {
 		<>
 			<Header position="absolute" />
 			<main className={cx("chart-page")}>
-				<Activity mode={useDelay(0) ? "visible" : "hidden"}>
-					<TimeChart
-						{...options}
-						data={data}
-						PointTooltip={PointTooltip}
-						renderDelay={100}
-					>
-						<fieldset className={cx("chart")}>
-							<legend>chart</legend>
-							<TimeChart.Chart title={title} />
-						</fieldset>
-						<SidePanel />
-						<ChartControls />
-					</TimeChart>
-				</Activity>
+				<TimeChart {...options} data={data} PointTooltip={PointTooltip}>
+					<fieldset className={cx("chart")}>
+						<legend>chart</legend>
+						<TimeChart.Chart title={title} />
+					</fieldset>
+					<SidePanel />
+					<ChartControls />
+				</TimeChart>
 			</main>
 		</>
 	);

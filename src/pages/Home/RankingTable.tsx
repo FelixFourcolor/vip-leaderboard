@@ -1,54 +1,25 @@
 import classNames from "classnames/bind";
-import { useEffect, useMemo, useState } from "react";
 import { DataBarTable } from "@/components/DataBarTable";
 import { UserHeader } from "@/components/UserHeader";
 import { activityColors } from "@/db/activity";
-import { getUserStats, type UserStats, userSortBy } from "@/db/user";
+import type { UserStats } from "@/db/user";
 import { useWindowSize } from "@/hooks/useWindowSize";
-import { yyyyMmOffset } from "@/utils/time";
 import { useHomeControls } from "./HomeControls";
 import styles from "./HomePage.module.css";
 
 const cx = classNames.bind(styles);
 
-export function RankingTable() {
-	const [options, setOptions] = useHomeControls();
-	const { until, since, sortBy } = options;
+interface Ranking extends UserStats {
+	rankChange: number;
+}
 
-	const [users, setUsers] = useState<UserStats[]>();
-	const [usersLastMonth, setUsersLastMonth] = useState<UserStats[]>();
-	useEffect(() => {
-		getUserStats({ since, until }).then(setUsers);
-		getUserStats({
-			since: yyyyMmOffset(since, { months: -1 }),
-			until: yyyyMmOffset(until, { months: -1 }),
-		}).then(setUsersLastMonth);
-	}, [since, until]);
-
-	const rankings = useMemo(() => {
-		if (!users || !usersLastMonth) {
-			return;
-		}
-		const lastMonthIndex = Object.fromEntries(
-			usersLastMonth
-				.sort(userSortBy((u) => u.data[sortBy]))
-				.map(({ id }, index) => [id, index]),
-		);
-		return users.sort(userSortBy((u) => u.data[sortBy])).map((user, index) => ({
-			...user,
-			rankChange: (lastMonthIndex[user.id] ?? usersLastMonth.length) - index,
-		}));
-	}, [users, usersLastMonth, sortBy]);
-
+export function RankingTable({ data }: { data: Ranking[] }) {
+	const [{ sortBy }, setOptions] = useHomeControls();
 	const isLargeScreen = useWindowSize({ minWidth: 501 });
-
-	if (!rankings) {
-		return;
-	}
 
 	return (
 		<DataBarTable
-			rows={rankings}
+			rows={data}
 			primaryKey="id"
 			columns={{
 				"[index]": {
