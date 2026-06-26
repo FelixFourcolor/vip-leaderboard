@@ -130,13 +130,18 @@
 				fill: var(--series-color);
 			}
 			&.inner {
-				r: 4px;
-				fill: var(--bg-primary);
+				r: 5px;
+				fill: var(--bg-secondary);
 			}
 			&.area-mode {
 				/* cannot use `display: none`, tooltip needs to know its position */
 				visibility: hidden;
 			}
+		}
+
+		&.label-background {
+			fill: var(--bg-secondary);
+			r: 16px;
 		}
 	}
 }

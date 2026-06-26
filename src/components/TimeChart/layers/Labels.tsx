@@ -2,6 +2,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useEffect, useMemo, useState } from "react";
 import { monthsInRange } from "@/utils/time";
+import type { XY } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import { useChart } from "../chartContext";
 import styles from "../TimeChart.module.css";
@@ -18,52 +19,64 @@ export function Labels({
 
 	return (
 		<g data-labels-layer>
-			{series.map(({ id, data }, seriesIndex) => {
-				return data.map(({ position, data }, pointIndex) => {
+			{series.map(({ id, data }, seriesIndex) =>
+				data.map(({ position, data }, pointIndex) => {
 					if (shouldShowLabel(id, pointIndex, data)) {
 						return (
 							<Label
 								key={`${id}-${data.x}`}
-								{...data}
-								x={position.x}
-								y={getYPosition(seriesIndex, pointIndex)}
+								seriesId={id}
+								data={data}
+								position={{
+									x: position.x,
+									y: getYPosition(seriesIndex, pointIndex),
+								}}
 							/>
 						);
 					}
-				});
-			})}
+				}),
+			)}
 		</g>
 	);
 }
 
 type LabelProps = {
-	x: number;
-	y: number;
-	value: number;
-	rank?: number;
+	seriesId: string;
+	position: XY;
+	data: ChartPoint;
 };
-function Label({ value, rank, x, y }: LabelProps) {
-	const { area } = useChart();
+function Label({ seriesId, data, position }: LabelProps) {
+	const { area, isPointHovered } = useChart();
 	const { chartHeight = Infinity } = useChartZoom();
 	const offset = area ? -4 : 12;
-	const visible = y + offset <= chartHeight;
+	const visible = position.y + offset <= chartHeight;
 
-	const [showRank, setShowRank] = useState(!!rank);
+	const [showRank, setShowRank] = useState(!!data.rank);
 	useEffect(() => {
-		if (!rank || !visible) {
+		if (!data.rank || !visible) {
 			return;
 		}
 		const timer = setInterval(() => setShowRank((current) => !current), 1000);
 		return () => clearInterval(timer);
-	}, [rank, visible]);
+	}, [data.rank, visible]);
 
-	if (visible) {
-		return (
-			<text x={x} y={y} className={cx("label")}>
-				{showRank ? `#${rank}` : value}
-			</text>
-		);
+	if (!visible) {
+		return;
 	}
+
+	return (
+		<>
+			{area && isPointHovered({ x: data.x, seriesId }) && (
+				<circle
+					transform={`translate(${position.x},${position.y})`}
+					className={cx("label-background")}
+				/>
+			)}
+			<text className={cx("label")} {...position}>
+				{showRank ? `#${data.rank}` : data.value}
+			</text>
+		</>
+	);
 }
 
 function useVisibility() {
@@ -129,11 +142,18 @@ function useVisibility() {
 		return (lastIdx - i) % labelInterval === 0;
 	};
 
-	return (seriesId: string, index: number, { x, value }: ChartPoint) =>
-		value &&
-		isHighlighted(seriesId) &&
-		(area || !PointTooltip || !isPointHovered({ seriesId, x })) &&
-		(isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x }));
+	return (seriesId: string, index: number, { x, value }: ChartPoint) => {
+		if (!value || !isHighlighted(seriesId)) {
+			return false;
+		}
+
+		const isRelevant =
+			isLabelIndex(index, seriesId) || isPointIsolated({ seriesId, x });
+
+		return area
+			? isRelevant || isPointHovered({ seriesId, x })
+			: isRelevant && (!PointTooltip || !isPointHovered({ seriesId, x }));
+	};
 }
 
 function useYPosition(
