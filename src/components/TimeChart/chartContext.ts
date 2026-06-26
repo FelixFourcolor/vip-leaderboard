@@ -6,7 +6,7 @@ import {
 	type SetStateAction,
 	use,
 } from "react";
-import { toYyyyMm, type YyyyMm } from "@/utils/time";
+import type { YyyyMm } from "@/utils/time";
 import type { Maybe, State } from "@/utils/types";
 import type { ChartSeries } from "./Chart";
 import type { TimeSeries } from "./ChartWrapper";
@@ -29,7 +29,6 @@ interface ChartContextValue<S extends TimeSeries = TimeSeries>
 	cumulative: boolean;
 	ranked: boolean;
 	colors: readonly string[];
-	isolatedPoints: Record<string, Set<YyyyMm>>;
 	PointTooltip: Maybe<(props: PointTooltipProps<S>) => ReactElement | null>;
 }
 
@@ -41,14 +40,12 @@ export function useChart<S extends TimeSeries = TimeSeries>() {
 		throw new Error("useChart must be used within ChartContext");
 	}
 
-	const { hoveredPoint, isolatedPoints, activeSeries, ...rest } = context;
+	const { hoveredPoint, activeSeries, ...rest } = context;
 	return {
 		...rest,
 		activeSeries,
 		isHighlighted: (seriesId: string) => activeSeries === seriesId,
 		isMuted: (seriesId: string) => activeSeries && activeSeries !== seriesId,
 		isPointHovered: (point: InteractivePoint) => isEqual(point, hoveredPoint),
-		isPointIsolated: ({ seriesId, x }: InteractivePoint) =>
-			isolatedPoints[seriesId]?.has(toYyyyMm(x)) ?? false,
 	};
 }

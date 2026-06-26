@@ -1,9 +1,9 @@
 import { zip } from "es-toolkit";
 import { type JSX, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useDelay } from "@/hooks/useDelay";
-import { mapReduce, windowed } from "@/utils/array";
+import { mapReduce } from "@/utils/array";
 import { fromEntries, keys } from "@/utils/object";
-import { monthsInRange, toYyyyMm, type YyyyMm } from "@/utils/time";
+import { monthsInRange, type YyyyMm } from "@/utils/time";
 import type { Maybe } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "./Chart";
 import { ChartContext } from "./chartContext";
@@ -54,7 +54,6 @@ export function ChartWrapper<S extends TimeSeries>({
 		cumulative,
 		ranked,
 	});
-	const isolatedPoints = useIsolatedPoints(transformedData);
 
 	const [visibleIdx = [], setVisibleIdx] =
 		useState<[from: number, to: number]>();
@@ -104,7 +103,6 @@ export function ChartWrapper<S extends TimeSeries>({
 				cumulative,
 				ranked,
 				PointTooltip,
-				isolatedPoints,
 				activeSeries,
 				setActiveSeries,
 				hoveredPoint,
@@ -261,19 +259,3 @@ function useTransform(
 
 	return ranked ? rankedData : area ? stackedData : interpolatedData;
 }
-
-const useIsolatedPoints = (data: readonly ChartSeries[] = []) =>
-	useMemo(() => {
-		return Object.fromEntries(
-			data.map(({ id, data }) => {
-				const isolatedXValues = new Set(
-					windowed(data, 3)
-						.filter(([prev, curr, next]) => {
-							return prev?.y == null && curr.y != null && next?.y == null;
-						})
-						.map(([, { x }]) => toYyyyMm(x)),
-				);
-				return [id, isolatedXValues];
-			}),
-		);
-	}, [data]);

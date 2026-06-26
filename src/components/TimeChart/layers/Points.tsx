@@ -1,8 +1,9 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
-import { type Ref, useMemo } from "react";
+import { createContext, type Ref, use, useMemo } from "react";
 import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
-import { toYyyyMm } from "@/utils/time";
+import { windowed } from "@/utils/array";
+import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import type { TimePoint, TimeSeries } from "../ChartWrapper";
 import { useChart } from "../chartContext";
@@ -11,52 +12,71 @@ import styles from "../TimeChart.module.css";
 const cx = classNames.bind(styles);
 
 export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
-	const { seriesData = [] } = useChart();
+	const { seriesData = [], chartData = [] } = useChart();
+
 	const seriesMap = useMemo(
 		() => Object.fromEntries(seriesData.map((series) => [series.id, series])),
 		[seriesData],
 	);
 
+	const isolatedPoints = useMemo(() => {
+		return Object.fromEntries(
+			chartData.map(({ id, data }) => {
+				const isolatedXValues = new Set(
+					windowed(data, 3)
+						.filter(([prev, curr, next]) => !prev?.y && curr.y && !next?.y)
+						.map(([, { x }]) => toYyyyMm(x)),
+				);
+				return [id, isolatedXValues];
+			}),
+		);
+	}, [chartData]);
+
 	return (
 		<g data-points-layer>
-			{series.map(({ id, data, color }) =>
-				data
-					.filter(({ data }) => data.y !== null)
-					.map(({ data, position: { x, y } }) => (
-						<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
-							<Point series={seriesMap[id]!} color={color} data={data} />
-						</g>
-					)),
-			)}
+			<IsolatedPointsContext value={isolatedPoints}>
+				{series.map(({ id, data, color }) =>
+					data
+						.filter(({ data }) => data.y !== null)
+						.map(({ data, position: { x, y } }) => (
+							<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
+								<Point series={seriesMap[id]!} color={color} data={data} />
+							</g>
+						)),
+				)}
+			</IsolatedPointsContext>
 		</g>
 	);
 }
+
+const IsolatedPointsContext = createContext<Record<string, Set<YyyyMm>>>({});
 
 type PointProps = {
 	series: TimeSeries;
 	color: string;
 	data: ChartPoint;
 };
-
 function Point({ data, series, color }: PointProps) {
 	const { isPointHovered } = useChart();
+	const isolatedPoints = use(IsolatedPointsContext);
 
-	const Renderer = isPointHovered({ seriesId: series.id, x: data.x })
-		? HoveredPoint
-		: IsolatedPoint;
-
-	return <Renderer series={series} color={color} data={data} />;
+	if (isPointHovered({ seriesId: series.id, x: data.x })) {
+		return <HoveredPoint series={series} color={color} data={data} />;
+	}
+	if (isolatedPoints[series.id]?.has(toYyyyMm(data.x))) {
+		return <IsolatedPoint seriesId={series.id} color={color} />;
+	}
 }
 
-function IsolatedPoint({ series, color, data: { x } }: PointProps) {
-	const { isMuted, isHighlighted, isPointIsolated } = useChart();
+type IsolatedPointProps = {
+	seriesId: string;
+	color: string;
+};
+function IsolatedPoint({ seriesId, color }: IsolatedPointProps) {
+	const { isMuted, isHighlighted } = useChart();
 
-	if (!isPointIsolated({ seriesId: series.id, x })) {
-		return null;
-	}
-
-	const highlighted = isHighlighted(series.id);
-	const muted = isMuted(series.id);
+	const highlighted = isHighlighted(seriesId);
+	const muted = isMuted(seriesId);
 
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
