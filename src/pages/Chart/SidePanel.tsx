@@ -28,7 +28,7 @@ export function SidePanel() {
 					.flatMap((user) => [user.id, user.name])
 					.map((value) => [value.toLowerCase(), value]),
 			),
-		);
+		).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 	}, [seriesData]);
 	const suggestionToIdMap = useMemo(() => {
 		if (!seriesData) {
