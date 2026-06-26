@@ -2,7 +2,6 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import { isEqual } from "es-toolkit";
 import type { MouseEvent } from "react";
 import { useDrag } from "@/hooks/useDrag";
-import type { XY } from "@/utils/types";
 import type { ChartSeries } from "../../Chart";
 import { useChart } from "../../chartContext";
 
@@ -12,7 +11,6 @@ export function useHover({
 	innerWidth,
 	innerHeight,
 	series,
-	yScale,
 }: LineCustomSvgLayerProps<ChartSeries>) {
 	const { isDragging } = useDrag();
 	const { setActiveSeries, setHoveredPoint, area, enableHover } = useChart();
@@ -31,7 +29,16 @@ export function useHover({
 			data: data.x,
 			position: position.x,
 		})) ?? [];
-	const getHoveredArea = (mouse: XY) => {
+	const getHoveredArea = (mouse: Mouse) => {
+		const seriesId = document
+			.elementsFromPoint(mouse.clientX, mouse.clientY)
+			.find(
+				(e): e is SVGElement => e instanceof SVGElement && !!e.dataset.seriesId,
+			)?.dataset.seriesId;
+		if (!seriesId) {
+			return null;
+		}
+
 		const { index: pointIndex } = pointXs.reduce(
 			(best, { position }, index) => {
 				const dist = Math.abs(position - mouse.x);
@@ -39,15 +46,7 @@ export function useHover({
 			},
 			{ dist: Infinity, index: 0 },
 		);
-		const hoveredSeries = series.find(({ data }) => {
-			const point = data[pointIndex]!.data;
-			const y = point.y ?? 0;
-			const height = point.value ?? 0;
-			return yScale(y) <= mouse.y && mouse.y <= yScale(y - height);
-		});
-		return hoveredSeries
-			? { seriesId: hoveredSeries.id, x: pointXs[pointIndex]!.data }
-			: null;
+		return { seriesId, x: pointXs[pointIndex]!.data };
 	};
 
 	const allPoints = series.flatMap(({ data: seriesData, id: seriesId }) =>
@@ -56,7 +55,7 @@ export function useHover({
 			.map(({ data, position }) => ({ data, position, seriesId })),
 	);
 	const proximityThreshold = (innerHeight + innerWidth) / 16;
-	const getClosestPoint = (mouse: XY) => {
+	const getClosestPoint = (mouse: Mouse) => {
 		type Accumulator = { dist: number; point?: InteractivePoint };
 		const { dist, point } = allPoints.reduce<Accumulator>(
 			(best, { position, data, seriesId }) => {
@@ -76,13 +75,20 @@ export function useHover({
 		}
 	};
 
+	type Mouse = Record<"clientX" | "clientY" | "x" | "y", number>;
+
 	const onHover = ({ currentTarget, clientX, clientY }: MouseEvent) => {
 		if (isDragging || !enableHover) {
 			return;
 		}
 
 		const rect = currentTarget.getBoundingClientRect();
-		const mouse = { x: clientX - rect.left, y: clientY - rect.top };
+		const mouse = {
+			clientX,
+			clientY,
+			x: clientX - rect.left,
+			y: clientY - rect.top,
+		};
 		const target = (area ? getHoveredArea : getClosestPoint)(mouse);
 
 		if (target) {

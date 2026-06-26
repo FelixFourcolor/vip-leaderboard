@@ -57,6 +57,7 @@ function Area({ seriesId, path, color }: AreaProps) {
 	return (
 		<path
 			d={path ?? undefined}
+			data-series-id={seriesId}
 			style={{ ["--series-color" as string]: color }}
 			className={cx("area", { highlighted, muted })}
 		/>
