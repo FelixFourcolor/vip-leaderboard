@@ -1,7 +1,7 @@
 import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { useEffect, useMemo, useState } from "react";
-import { windowed } from "@/utils/array";
+import { windowed3 } from "@/utils/array";
 import { monthsInRange } from "@/utils/time";
 import type { XY } from "@/utils/types";
 import type { ChartPoint, ChartSeries } from "../Chart";
@@ -160,7 +160,7 @@ function useVisibility() {
 				});
 				// ensure each continuous segment has at least one label
 				let segmentHasLabel = false;
-				windowed(data, 3).forEach(([prev, curr, next], i) => {
+				windowed3(data).forEach(([prev, curr, next], i) => {
 					if (!isIndexVisible(i)) {
 						return;
 					}

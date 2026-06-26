@@ -2,7 +2,7 @@ import type { LineCustomSvgLayerProps } from "@nivo/line";
 import classNames from "classnames/bind";
 import { createContext, type Ref, use, useMemo } from "react";
 import { Tooltip, type TooltipContentProps } from "@/components/Tooltip";
-import { windowed } from "@/utils/array";
+import { windowed3 } from "@/utils/array";
 import { toYyyyMm, type YyyyMm } from "@/utils/time";
 import type { ChartPoint, ChartSeries } from "../Chart";
 import type { TimePoint, TimeSeries } from "../ChartWrapper";
@@ -23,7 +23,7 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 		return Object.fromEntries(
 			chartData.map(({ id, data }) => {
 				const isolatedXValues = new Set(
-					windowed(data, 3)
+					windowed3(data)
 						.filter(([prev, curr, next]) => !prev?.y && curr.y && !next?.y)
 						.map(([, { x }]) => toYyyyMm(x)),
 				);
