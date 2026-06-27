@@ -12,7 +12,7 @@ import styles from "../TimeChart.module.css";
 const cx = classNames.bind(styles);
 
 export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
-	const { seriesData = [], chartData = [] } = useChart();
+	const { seriesData = [], chartData = [], area, cumulative } = useChart();
 
 	const seriesMap = useMemo(
 		() => Object.fromEntries(seriesData.map((series) => [series.id, series])),
@@ -20,6 +20,9 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 	);
 
 	const isolatedPoints = useMemo(() => {
+		if (area || cumulative) {
+			return {};
+		}
 		return Object.fromEntries(
 			chartData.map(({ id, data }) => {
 				const isolatedXValues = new Set(
@@ -30,7 +33,7 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 				return [id, isolatedXValues];
 			}),
 		);
-	}, [chartData]);
+	}, [chartData, area, cumulative]);
 
 	return (
 		<g data-points-layer>
