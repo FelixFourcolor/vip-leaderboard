@@ -50,16 +50,23 @@ function Line({ seriesId, path, color }: LineProps) {
 	const highlighted = isHighlighted(seriesId);
 	const muted = isMuted(seriesId);
 
+	const d = path ?? undefined;
 	return (
 		<g style={{ ["--series-color" as string]: color }}>
 			{!area && (
-				<path
-					d={path ?? undefined}
-					className={cx("outline", { highlighted })}
-				/>
+				<>
+					<path // hit box for hover
+						d={d}
+						fill="none"
+						stroke="transparent"
+						strokeWidth={64}
+						data-series-id={seriesId}
+					/>
+					<path d={d} className={cx("outline", { highlighted })} />
+				</>
 			)}
 			<path
-				d={path ?? undefined}
+				d={d}
 				className={cx("line", { "area-mode": area, highlighted, muted })}
 			/>
 		</g>

@@ -35,6 +35,9 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 		);
 	}, [chartData, area, cumulative]);
 
+	if (area) {
+		return;
+	}
 	return (
 		<g data-points-layer>
 			<IsolatedPointsContext value={isolatedPoints}>
@@ -44,6 +47,8 @@ export function Points({ series }: LineCustomSvgLayerProps<ChartSeries>) {
 						.map(({ data, position: { x, y } }) => (
 							<g key={`${id}-${data.x}`} transform={`translate(${x},${y})`}>
 								<Point series={seriesMap[id]!} color={color} data={data} />
+								{/* hit box for hover */}
+								<circle fill="transparent" r={32} data-series-id={id} />
 							</g>
 						)),
 				)}
