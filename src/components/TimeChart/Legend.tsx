@@ -35,6 +35,7 @@ type Props<S extends TimeSeries> = {
 export function Legend<S extends TimeSeries>({
 	Entry,
 	vertical,
+	horizontal,
 	entriesGap: { min: minGap = 0, max: maxGap } = { min: 0 },
 	className,
 }: Props<S>) {
@@ -194,10 +195,7 @@ export function Legend<S extends TimeSeries>({
 			}}
 			className={cx("legend", direction, className)}
 			onKeyDown={(e) => {
-				if (
-					isEntryFocusedRef.current &&
-					(e.key === "ArrowDown" || e.key === "ArrowUp")
-				) {
+				if (isEntryFocusedRef.current && e.key.startsWith("Arrow")) {
 					// prevent native keyboard scrolling
 					// because we're manually controlling the scroll to snap to entry
 					e.preventDefault();
@@ -268,9 +266,15 @@ export function Legend<S extends TimeSeries>({
 							key,
 							currentTarget: { nextSibling, previousSibling },
 						}) => {
-							if (key === "ArrowDown") {
+							if (
+								(vertical && key === "ArrowDown") ||
+								(horizontal && key === "ArrowRight")
+							) {
 								(nextSibling as HTMLElement | null)?.focus();
-							} else if (key === "ArrowUp") {
+							} else if (
+								(vertical && key === "ArrowUp") ||
+								(horizontal && key === "ArrowLeft")
+							) {
 								(previousSibling as HTMLElement | null)?.focus();
 							}
 						}}
