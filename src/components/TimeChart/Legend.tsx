@@ -109,7 +109,7 @@ export function Legend<S extends TimeSeries>({
 		}
 	}, [activeSeries]);
 
-	// scroll to active series when changed externally
+	// sync visibleIdx when activeSeries changes and falls outside
 	const entryIndexMap = useMemo(() => {
 		if (!seriesData) {
 			return;
@@ -126,27 +126,17 @@ export function Legend<S extends TimeSeries>({
 		if (activeIndex === undefined) {
 			return;
 		}
-
 		setVisibleIdx((current) => {
 			if (!current) {
 				return current;
 			}
-
 			const [currentFrom, currentTo] = current;
 			if (currentFrom <= activeIndex && activeIndex < currentTo) {
 				return current;
 			}
-
-			const legend = legendRef?.current;
-			if (entrySize && legend) {
-				legend.scrollTo(
-					calculateScroll(activeIndex, { entrySize, direction, gap }),
-				);
-			}
-
 			return [activeIndex, activeIndex + currentTo - currentFrom];
 		});
-	}, [activeSeries, setVisibleIdx, entryIndexMap, direction, entrySize, gap]);
+	}, [activeSeries, setVisibleIdx, entryIndexMap]);
 
 	const ignoreScroll = useRef(false);
 	const prevFromIdx = useRef(0);
@@ -171,7 +161,6 @@ export function Legend<S extends TimeSeries>({
 		return () => clearTimeout(timeoutId);
 	}, [seriesData, entrySize, direction, gap]);
 
-	const isEntryFocusedRef = useRef(false);
 	return (
 		<ol
 			style={{
@@ -195,7 +184,7 @@ export function Legend<S extends TimeSeries>({
 			}}
 			className={cx("legend", direction, className)}
 			onKeyDown={(e) => {
-				if (isEntryFocusedRef.current && e.key.startsWith("Arrow")) {
+				if (e.key.startsWith("Arrow")) {
 					// prevent native keyboard scrolling
 					// because we're manually controlling the scroll to snap to entry
 					e.preventDefault();
@@ -253,11 +242,9 @@ export function Legend<S extends TimeSeries>({
 									}),
 								);
 							}
-							isEntryFocusedRef.current = true;
 							setActiveSeries(series.id);
 						}}
 						onBlur={() => {
-							isEntryFocusedRef.current = false;
 							setActiveSeries((current) =>
 								current === series.id ? undefined : current,
 							);
