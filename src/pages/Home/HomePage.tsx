@@ -35,15 +35,21 @@ export function HomePage() {
 		if (!users || !usersLastMonth) {
 			return;
 		}
-		const lastMonthIndex = Object.fromEntries(
-			usersLastMonth
+
+		const filteredUsersLastMonth = usersLastMonth.filter((u) => u.data[sortBy]);
+		const idxLastMonth = Object.fromEntries(
+			filteredUsersLastMonth
 				.sort(userSortBy((u) => u.data[sortBy]))
-				.map(({ id }, index) => [id, index]),
+				.map((u, i) => [u.id, i]),
 		);
-		return users.sort(userSortBy((u) => u.data[sortBy])).map((user, index) => ({
-			...user,
-			rankChange: (lastMonthIndex[user.id] ?? usersLastMonth.length) - index,
-		}));
+
+		return users
+			.filter((u) => u.data[sortBy])
+			.sort(userSortBy((u) => u.data[sortBy]))
+			.map((u, i) => ({
+				...u,
+				rankChange: (idxLastMonth[u.id] ?? filteredUsersLastMonth.length) - i,
+			}));
 	}, [users, usersLastMonth, sortBy]);
 
 	const containerRef = useRef<HTMLDivElement>(null);
