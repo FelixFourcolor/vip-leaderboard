@@ -2,42 +2,38 @@ import type { ActivityData, UserData } from "./data-save";
 import type { Channel, Message, User } from "./types";
 
 export function countActivities(channels: Channel[]) {
-	const usersMap = new Map<string, UserData>();
+	const usersData: (UserData & { date: Date })[] = [];
 	const activitiesMap = new Map<string, ActivityData>();
 
-	function getOrCreateUser({ name, nickname, avatarUrl, color }: User): string {
-		const id = name.toLowerCase(); // sql primary key may be case-insensitive
-		const existing = usersMap.get(id);
-
-		const avatarParamIndex = avatarUrl.lastIndexOf("?");
-		avatarUrl = avatarUrl.substring(
-			"https://cdn.discordapp.com/".length,
-			avatarParamIndex === -1 ? undefined : avatarParamIndex,
-		);
-
-		if (!existing) {
-			const name = nickname;
-			usersMap.set(id, { id, name, avatarUrl, color });
-		} else {
-			existing.avatarUrl = avatarUrl;
-			// color is sometimes null, need to check
-			if (color) {
-				existing.color = color;
-			}
-		}
-
-		return id;
-	}
+	const registerUser =
+		(timestamp: string) =>
+		({ name, nickname, avatarUrl, color }: User): string => {
+			const id = name.toLowerCase(); // sql primary key may be case-insensitive
+			const avatarParamIndex = avatarUrl.lastIndexOf("?");
+			avatarUrl = avatarUrl.substring(
+				"https://cdn.discordapp.com/".length,
+				avatarParamIndex === -1 ? undefined : avatarParamIndex,
+			);
+			usersData.push({
+				id,
+				name: nickname,
+				avatarUrl,
+				color,
+				date: new Date(timestamp),
+			});
+			return id;
+		};
 
 	const countTickets = (messages: Message[]) =>
 		messages.forEach(({ id, author, reactions, timestamp }) => {
 			const date = new Date(timestamp);
-			const authorId = getOrCreateUser(author);
+			const getUserId = registerUser(timestamp);
+			const authorId = getUserId(author);
 
 			reactions
 				.filter((r) => TICKET_RESOLVED_REACTIONS.has(r.emoji.code))
 				.flatMap((r) => r.users)
-				.map(getOrCreateUser)
+				.map(getUserId)
 				.filter((userId) => userId !== authorId)
 				.forEach((userId) =>
 					activitiesMap.set(`${id}-${userId}`, {
@@ -50,6 +46,9 @@ export function countActivities(channels: Channel[]) {
 
 	const countWarnings = (messages: Message[]) =>
 		messages.forEach(({ id, author, content, timestamp }) => {
+			const getUserId = registerUser(timestamp);
+			getUserId(author);
+
 			const recipientIds = content.match(USER_ID_REGEX);
 			if (!recipientIds?.length) {
 				return;
@@ -65,7 +64,7 @@ export function countActivities(channels: Channel[]) {
 			recipientIds.forEach((recipientId) =>
 				activitiesMap.set(`${id}-${recipientId}`, {
 					date,
-					userId: getOrCreateUser(author),
+					userId: getUserId(author),
 					type: "warning",
 				}),
 			);
@@ -74,6 +73,9 @@ export function countActivities(channels: Channel[]) {
 	const countBans = (messages: Message[]) =>
 		// biome-ignore format: one line
 		messages.forEach(({ id, author, content, reactions, embeds, timestamp }) => {
+			const getUserId = registerUser(timestamp);
+			const authorId = getUserId(author);
+
 			// Count the :verified: reactions on auto ban announcements
 			const autoban = embeds.find((e) => e.title === "Auto banned user");
 			if (autoban) {
@@ -84,7 +86,7 @@ export function countActivities(channels: Channel[]) {
 					reactions
 						.filter((r) => r.emoji.code === "verified")
 						.flatMap((r) => r.users)
-						.map(getOrCreateUser)
+						.map(getUserId)
 						.forEach((userId) =>
 							// intentionally not including message ID in the key
 							// because sometimes autobans have duplicate user IDs
@@ -110,8 +112,6 @@ export function countActivities(channels: Channel[]) {
 				return;
 			}
 
-			const authorId = getOrCreateUser(author);
-
 			recipientIds.forEach((recipientId) =>
 				activitiesMap.set(`${id}-${recipientId}`, {
 					date,
@@ -123,10 +123,9 @@ export function countActivities(channels: Channel[]) {
 			reactions
 				.filter((r) => BAN_SUPPORT_REACTIONS.has(r.emoji.code))
 				.flatMap((r) => r.users)
-				.map(getOrCreateUser)
+				.map(getUserId)
 				.filter((userId) => userId !== authorId)
-				.forEach((userId) =>
-					activitiesMap.set(`${id}-${userId}`, {
+				.forEach((userId) => activitiesMap.set(`${id}-${userId}`, {
 						date,
 						userId,
 						type: "ban",
@@ -144,7 +143,7 @@ export function countActivities(channels: Channel[]) {
 		}
 	});
 	return {
-		users: Array.from(usersMap.values()),
+		users: usersData.sort((u1, u2) => u1.date.valueOf() - u2.date.valueOf()),
 		activities: Array.from(activitiesMap.values()),
 	};
 }
