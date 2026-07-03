@@ -105,8 +105,7 @@ section {
 				interpolate-size: allow-keywords;
 				height: 0;
 				overflow: hidden;
-				transition: all 0.15s ease;
-				transition-behavior: allow-discrete;
+				transition: all 0.15s ease allow-discrete;
 			}
 			&:open::details-content {
 				height: auto;
