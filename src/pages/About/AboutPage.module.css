@@ -100,15 +100,17 @@ section {
 			user-select: none;
 		}
 
-		&::details-content {
-			interpolate-size: allow-keywords;
-			height: 0;
-			overflow: hidden;
-			transition: all 0.15s ease;
-			transition-behavior: allow-discrete;
-		}
-		&:open::details-content {
-			height: auto;
+		@supports (interpolate-size: allow-keywords) {
+			&::details-content {
+				interpolate-size: allow-keywords;
+				height: 0;
+				overflow: hidden;
+				transition: all 0.15s ease;
+				transition-behavior: allow-discrete;
+			}
+			&:open::details-content {
+				height: auto;
+			}
 		}
 	}
 
