@@ -81,5 +81,5 @@ function sqlWasmBundler(): Plugin {
 }
 
 function res(relativePath: string) {
-	return resolve(__dirname, relativePath);
+	return resolve(import.meta.dirname, relativePath);
 }
