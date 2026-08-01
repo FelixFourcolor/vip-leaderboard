@@ -17,16 +17,19 @@ export function SummaryTable({ data }: { data: ActivityStats[] }) {
 	const [{ until, since }] = useHomeControls();
 
 	const timePeriod = useMemo(() => {
-		if (since === until) {
-			return since;
-		}
 		if (until === LAST_MONTH) {
+			if (since === LAST_MONTH) {
+				return "Last month";
+			}
 			if (since === TWO_YEARS_AGO) {
-				return "last 2 years";
+				return "Last 2 years";
 			}
 			if (since === FIRST_MONTH) {
-				return "all time";
+				return "All time";
 			}
+		}
+		if (since === until) {
+			return since;
 		}
 		return `${since} - ${until}`;
 	}, [since, until]);
@@ -35,7 +38,7 @@ export function SummaryTable({ data }: { data: ActivityStats[] }) {
 		<DataBarTable
 			rows={data}
 			primaryKey="type"
-			title={`Summary (${timePeriod})`}
+			title={`${timePeriod} summary`}
 			columns={{
 				type: {
 					cell: ({ type }) => (
