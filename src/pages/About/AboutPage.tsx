@@ -194,7 +194,25 @@ function Content() {
 				</Subsection>
 
 				<Subsection title="Can I opt out?">
-					<p>Of course, just let me know.</p>
+					<p>
+						Of course, just let me know. Your entry will be removed from the
+						leaderboard, and your stats subtracted from the total count.
+					</p>
+				</Subsection>
+
+				<Subsection title="Why are some non-VIPs also on the leaderboard?">
+					<p>
+						The actual criterion is whether you have an exclusive role (i.e. can
+						only be granted by an admin, e.g. Events doesn&apos;t count). Most
+						non-VIPs get in by the Cool People role.
+					</p>
+					<p>
+						This is mostly for programming convenience; this loose filter
+						is easier to implement. Naturally, non-VIPs wouldn&apos;t do mod
+						activities, so they almost always get in by accident, and their
+						presence doesn&#39;t affect the leaderboard in any way. It&apos;s a
+						harmless laziness on my part.
+					</p>
 				</Subsection>
 
 				<Subsection title="Why is it buggy?">
