@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { ls, readJson, relativePath, rm, writeJson } from "./file-utils";
 import type { Channel } from "./types";
 
-const dataDir = "data-repo/data";
+const dataDir = "message-history/data";
 
 export const fetchCurrentData = () =>
 	Promise.all(
