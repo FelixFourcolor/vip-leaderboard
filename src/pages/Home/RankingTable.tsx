@@ -51,28 +51,28 @@ export function RankingTable({ data }: { data: Ranking[] }) {
 						<UserHeader {...user} className={cx("user-header")} />
 					),
 				},
-				ticket: {
-					header: "Tickets",
-					cell: ({ data }) => (
-						<div className={cx("cell")}>{data.ticket || ""}</div>
+				report: {
+					header: "Reports",
+					cell: ({ data: { report } }) => (
+						<div className={cx("cell")}>{report || ""}</div>
 					),
 				},
 				warning: {
 					header: "Warnings",
-					cell: ({ data }) => (
-						<div className={cx("cell")}>{data.warning || ""}</div>
+					cell: ({ data: { warning } }) => (
+						<div className={cx("cell")}>{warning || ""}</div>
 					),
 				},
 				ban: {
 					header: "Bans",
-					cell: ({ data }) => (
-						<div className={cx("cell")}>{data.ban || ""}</div>
+					cell: ({ data: { ban } }) => (
+						<div className={cx("cell")}>{ban || ""}</div>
 					),
 				},
 				total: {
 					header: "Total",
-					cell: ({ data }) => (
-						<div className={cx("cell")}>{data.total || ""}</div>
+					cell: ({ data: { total } }) => (
+						<div className={cx("cell")}>{total || ""}</div>
 					),
 				},
 			}}

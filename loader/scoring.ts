@@ -24,7 +24,7 @@ export function countActivities(channels: Channel[]) {
 			return id;
 		};
 
-	const countTickets = (messages: Message[]) =>
+	const countReports = (messages: Message[]) =>
 		messages.forEach(({ id, author, reactions, timestamp }) => {
 			const date = new Date(timestamp);
 			const getUserId = registerUser(timestamp);
@@ -39,7 +39,7 @@ export function countActivities(channels: Channel[]) {
 					activitiesMap.set(`${id}-${userId}`, {
 						userId,
 						date,
-						type: "ticket",
+						type: "report",
 					}),
 				);
 		});
@@ -139,7 +139,7 @@ export function countActivities(channels: Channel[]) {
 		} else if (id === BANS_CHANNEL_ID) {
 			countBans(messages);
 		} else {
-			countTickets(messages);
+			countReports(messages);
 		}
 	});
 	return {

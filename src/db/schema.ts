@@ -13,5 +13,5 @@ export const activity = sqliteTable("activity", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-	type: text("type", { enum: ["ticket", "warning", "ban"] }).notNull(),
+	type: text("type", { enum: ["report", "warning", "ban"] }).notNull(),
 });

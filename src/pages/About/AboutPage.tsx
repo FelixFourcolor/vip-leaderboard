@@ -37,7 +37,7 @@ function Content() {
 			</Section>
 
 			<Section title="How &quot;work&quot; is counted">
-				<Subsection title="1. Resolved tickets">
+				<Subsection title="1. Handled reports">
 					<p>Tracked channels:</p>
 					<ul>
 						<li>
@@ -53,16 +53,20 @@ function Content() {
 					</ul>
 					<p>
 						Any message with one of these reactions ✅/❌/🔒/🗑️ is considered a
-						ticket.
+						report.
 					</p>
 					<p>
-						Each VIP earns 1 point for each ticket they resolve. If multiple
-						VIPs work on the same ticket (e.g. one reacts ✅, another reacts
-						🔒), everyone involved earns 1 point.
+						Each VIP earns 1 point for each report they handle. If multiple VIPs
+						work on the same report (e.g. one reacts ✅, another reacts 🔒),
+						everyone involved earns 1 point.
+					</p>
+					<p>
+						⚠️/🔨, although also commonly used to handle reports, aren't counted
+						to avoid double-counting warnings and bans.
 					</p>
 				</Subsection>
 
-				<Subsection title="2. Warnings">
+				<Subsection title="2. Warnings issued">
 					<p>
 						Tracked channel: <DiscordLink warning-log />
 					</p>
@@ -84,7 +88,7 @@ function Content() {
 						</li>
 					</ul>
 					<p>
-						Each VIP earns 1 point for each ban. Batch bans count multiple
+						Each VIP earns 1 point for each ban/ban proposal. Batch bans count multiple
 						times, once for each recipient.
 					</p>
 					<p>
@@ -98,7 +102,7 @@ function Content() {
 						<DiscordEmoji thumbdown />
 						/❌ also earns 1 point, but only 1 even if it&apos;s a batch ban.
 					</p>
-					<p>Approved and rejected bans are counted the same.</p>
+					<p>Approved and rejected ban proposals are counted the same.</p>
 					<p>
 						Reacting <img src="./icon.png" width={16} alt="verified" /> to an
 						auto ban announcement earns 1 point. Batch autobans count multiple
@@ -113,7 +117,7 @@ function Content() {
 					<ul>
 						<li>
 							If a message has a ✅/❌/🔒/🗑️ reaction, it&apos;s probably a
-							ticket.
+							report.
 						</li>
 						<li>
 							If a message contains 64 consecutive alphanumeric characters,
@@ -202,16 +206,16 @@ function Content() {
 
 				<Subsection title="Why are some non-VIPs also on the leaderboard?">
 					<p>
-						The actual criterion is whether you have an exclusive role (i.e. can
+						The actual condition is whether you have an exclusive role (i.e. can
 						only be granted by an admin, e.g. Events doesn&apos;t count). Most
 						non-VIPs get in by the Cool People role.
 					</p>
 					<p>
-						This is mostly for programming convenience; this loose filter
-						is easier to implement. Naturally, non-VIPs wouldn&apos;t do mod
-						activities, so they almost always get in by accident, and their
-						presence doesn&#39;t affect the leaderboard in any way. It&apos;s a
-						harmless laziness on my part.
+						This is mostly for programming convenience, this loose filter is
+						easier to implement. Naturally, non-VIPs wouldn&apos;t do mod
+						activities, so if they get in, it's almost always by accident, and
+						their presence doesn&#39;t affect the leaderboard in any way.
+						It&apos;s a harmless laziness on my part.
 					</p>
 				</Subsection>
 

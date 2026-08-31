@@ -38,7 +38,7 @@ export function SummaryTable({ data }: { data: ActivityStats[] }) {
 		<DataBarTable
 			rows={data}
 			primaryKey="type"
-			title={`${timePeriod} summary`}
+			title={timePeriod}
 			columns={{
 				type: {
 					cell: ({ type }) => (

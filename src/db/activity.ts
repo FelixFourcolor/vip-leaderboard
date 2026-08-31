@@ -11,18 +11,18 @@ export const activityTypes = activity.type.enumValues;
 export type ActivityType = (typeof activityTypes)[number];
 
 export const activityLabels = {
-	ticket: "Tickets",
+	report: "Reports",
 	warning: "Warnings",
 	ban: "Bans",
 	total: "Total",
 } as const satisfies Record<ActivityType | "total", string>;
 export const activityIcons = {
-	ticket: "✅",
+	report: "✅",
 	warning: "⚠️",
 	ban: "🔨",
 } as const satisfies Record<ActivityType, string>;
 export const activityColors = {
-	ticket: "#5cc639",
+	report: "#5cc639",
 	warning: "#ffbf00",
 	ban: "#ff6673",
 	total: "#6e9cf7",
