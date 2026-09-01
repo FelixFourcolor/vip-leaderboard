@@ -22,6 +22,7 @@ export type Message = {
 	content: string;
 	reactions: Reaction[];
 	embeds: Embed[];
+	forwardedMessage?: { content: string };
 };
 
 export type Channel = {

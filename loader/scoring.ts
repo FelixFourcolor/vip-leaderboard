@@ -45,7 +45,7 @@ export function countActivities(channels: Channel[]) {
 		});
 
 	const countWarnings = (messages: Message[]) =>
-		messages.forEach(({ id, author, content, timestamp }) => {
+		messages.forEach(({ id, author, content, timestamp, forwardedMessage }) => {
 			const getUserId = registerUser(timestamp);
 			getUserId(author);
 
@@ -54,10 +54,12 @@ export function countActivities(channels: Channel[]) {
 				return;
 			}
 
+			const realContent = `${forwardedMessage?.content ?? ""}\n${content}`;
+
 			const date = new Date(timestamp);
 			// Before this date, bans and warnings were in the same channel.
 			// So only count if the message contains the word "warn"
-			if (date < bansChannelCreationDate && !content.match(/warn/i)) {
+			if (date < bansChannelCreationDate && !realContent.match(/warn/i)) {
 				return;
 			}
 
@@ -71,67 +73,78 @@ export function countActivities(channels: Channel[]) {
 		});
 
 	const countBans = (messages: Message[]) =>
-		// biome-ignore format: one line
-		messages.forEach(({ id, author, content, reactions, embeds, timestamp }) => {
-			const getUserId = registerUser(timestamp);
-			const authorId = getUserId(author);
+		messages.forEach(
+			({
+				id,
+				author,
+				content,
+				reactions,
+				embeds,
+				timestamp,
+				forwardedMessage,
+			}) => {
+				const getUserId = registerUser(timestamp);
+				const authorId = getUserId(author);
 
-			// Count the :verified: reactions on auto ban announcements
-			const autoban = embeds.find((e) => e.title === "Auto banned user");
-			if (autoban) {
+				// Count the :verified: reactions on auto ban announcements
+				const autoban = embeds.find((e) => e.title === "Auto banned user");
+				if (autoban) {
+					const date = new Date(timestamp);
+					const recipientIds = autoban.description.match(USER_ID_REGEX);
+
+					recipientIds?.forEach((recipientId) => {
+						reactions
+							.filter((r) => r.emoji.code === "verified")
+							.flatMap((r) => r.users)
+							.map(getUserId)
+							.forEach((userId) =>
+								// intentionally not including message ID in the key
+								// because sometimes autobans have duplicate user IDs
+								activitiesMap.set(`${recipientId}-${userId}`, {
+									date,
+									userId,
+									type: "ban",
+								}),
+							);
+					});
+					return;
+				}
+
+				// Normal bans: count the message's author and those reacting with BAN_SUPPORT_REACTIONS
+				// It doesn't matter whether the recipient was actually banned.
+				const realContent = `${forwardedMessage?.content ?? ""}\n${content}`;
+				const recipientIds = realContent.match(USER_ID_REGEX);
+				if (!recipientIds?.length) {
+					return;
+				}
+
 				const date = new Date(timestamp);
-				const recipientIds = autoban.description.match(USER_ID_REGEX);
+				if (date < bansChannelCreationDate && !realContent.match(/ban/i)) {
+					return;
+				}
 
-				recipientIds?.forEach((recipientId) => {
-					reactions
-						.filter((r) => r.emoji.code === "verified")
-						.flatMap((r) => r.users)
-						.map(getUserId)
-						.forEach((userId) =>
-							// intentionally not including message ID in the key
-							// because sometimes autobans have duplicate user IDs
-							activitiesMap.set(`${recipientId}-${userId}`, {
-								date,
-								userId,
-								type: "ban",
-							}),
-						);
-				});
-				return;
-			}
-
-			// Normal bans: count the message's author and those reacting with BAN_SUPPORT_REACTIONS
-			// It doesn't matter whether the recipient was actually banned.
-			const recipientIds = content.match(USER_ID_REGEX);
-			if (!recipientIds?.length) {
-				return;
-			}
-
-			const date = new Date(timestamp);
-			if (date < bansChannelCreationDate && !content.match(/ban/i)) {
-				return;
-			}
-
-			recipientIds.forEach((recipientId) =>
-				activitiesMap.set(`${id}-${recipientId}`, {
-					date,
-					userId: authorId,
-					type: "ban",
-				}),
-			);
-
-			reactions
-				.filter((r) => BAN_SUPPORT_REACTIONS.has(r.emoji.code))
-				.flatMap((r) => r.users)
-				.map(getUserId)
-				.filter((userId) => userId !== authorId)
-				.forEach((userId) => activitiesMap.set(`${id}-${userId}`, {
+				recipientIds.forEach((recipientId) =>
+					activitiesMap.set(`${id}-${recipientId}`, {
 						date,
-						userId,
+						userId: authorId,
 						type: "ban",
 					}),
 				);
-		});
+
+				reactions
+					.filter((r) => BAN_SUPPORT_REACTIONS.has(r.emoji.code))
+					.flatMap((r) => r.users)
+					.map(getUserId)
+					.filter((userId) => userId !== authorId)
+					.forEach((userId) =>
+						activitiesMap.set(`${id}-${userId}`, {
+							date,
+							userId,
+							type: "ban",
+						}),
+					);
+			},
+		);
 
 	channels.forEach(({ channel: { id }, messages }) => {
 		if (id === WARNINGS_CHANNEL_ID) {
