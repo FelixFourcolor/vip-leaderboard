@@ -31,7 +31,7 @@ export function countActivities(channels: Channel[]) {
 			const authorId = getUserId(author);
 
 			reactions
-				.filter((r) => TICKET_RESOLVED_REACTIONS.has(r.emoji.code))
+				.filter((r) => REPORT_HANDLE_REACTIONS.has(r.emoji.code))
 				.flatMap((r) => r.users)
 				.map(getUserId)
 				.filter((userId) => userId !== authorId)
@@ -161,7 +161,7 @@ export function countActivities(channels: Channel[]) {
 	};
 }
 
-const TICKET_RESOLVED_REACTIONS = new Set([
+const REPORT_HANDLE_REACTIONS = new Set([
 	"white_check_mark",
 	"x",
 	"wastebasket",
