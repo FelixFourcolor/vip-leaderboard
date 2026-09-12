@@ -1,9 +1,5 @@
 import "@/main.css";
-import {
-	createHashHistory,
-	createRouter,
-	RouterProvider,
-} from "@tanstack/react-router";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { PopupMenu } from "./components/PopupMenu";
@@ -12,7 +8,7 @@ import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
 	routeTree,
-	history: createHashHistory(),
+	basepath: "/vip-leaderboard/",
 	defaultPreload: "render",
 });
 
