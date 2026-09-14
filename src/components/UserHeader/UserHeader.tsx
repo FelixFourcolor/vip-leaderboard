@@ -17,7 +17,7 @@ export function UserHeader({ name, avatarUrl, color, className }: Props) {
 		<div className={cx("header", className)}>
 			{avatarUrl && isAvatarUrlValid && (
 				<img
-					src={`https://cdn.discordapp.com/${avatarUrl}?size=24`}
+					src={`https://cdn.discordapp.com/${avatarUrl}`}
 					onError={() => {
 						setAvatarUrlValid(false);
 						invalidAvatarURLs.add(avatarUrl);

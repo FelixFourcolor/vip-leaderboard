@@ -7,11 +7,10 @@ export function DiscordEmoji(emoji: OneOf<Record<EmojiCode, true>>) {
 }
 
 const emojiURLs = {
-	thumbsup: "https://cdn.discordapp.com/emojis/1031063526275551294.png?size=24",
-	thumbup: "https://cdn.discordapp.com/emojis/1031065865883500614.png?size=24",
-	ehh: "https://cdn.discordapp.com/emojis/1031079717828309063.png?size=24",
-	thumbdown:
-		"https://cdn.discordapp.com/emojis/1031068702864580699.png?size=24",
+	thumbsup: "https://cdn.discordapp.com/emojis/1031063526275551294.png",
+	thumbup: "https://cdn.discordapp.com/emojis/1031065865883500614.png",
+	ehh: "https://cdn.discordapp.com/emojis/1031079717828309063.png",
+	thumbdown: "https://cdn.discordapp.com/emojis/1031068702864580699.png",
 } as const;
 
 type EmojiCode = keyof typeof emojiURLs;
